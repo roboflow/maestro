@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "setofmark"
+version = "0.1.0rc1"
+description = "Visual Prompting for Large Multimodal Models (LMMs)"
+authors = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
+maintainers = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+packages = [{include = "som"}]
+homepage = "https://github.com/roboflow/set-of-mark"
+repository = "https://github.com/roboflow/set-of-mark"
+documentation = "https://github.com/roboflow/set-of-mark/blob/main/README.md"
+
+classifiers=[
+    'Development Status :: 2 - Pre-Alpha',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Education',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3 :: Only',
+    'Topic :: Software Development',
+    'Topic :: Scientific/Engineering',
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    'Typing :: Typed',
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: POSIX :: Linux',
+    'Operating System :: MacOS'
+]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.12.0"
+supervision = "^0.17.0rc3"
+requests = "^2.31.0"
+
+[tool.setuptools]
+include-package-data = false
