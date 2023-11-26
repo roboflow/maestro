@@ -1,3 +1,4 @@
+
 <div align="center">
 
   <h1>set-of-mark</h1>
@@ -15,6 +16,8 @@
 ## 👋 hello
 
 Visual Prompting for Large Multimodal Models (LMMs).
+
+https://github.com/roboflow/set-of-mark/assets/26109316/4b8a2eab-0f3d-454b-8649-61f6c2f78119
 
 ## 💻 install
 
