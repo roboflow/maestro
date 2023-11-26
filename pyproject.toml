@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "setofmark"
-version = "0.1.0rc1"
+version = "0.1.0rc2"
 description = "Visual Prompting for Large Multimodal Models (LMMs)"
 authors = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
 maintainers = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
@@ -34,8 +34,12 @@ classifiers=[
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.12.0"
-supervision = "^0.17.0rc3"
+supervision = "^0.17.0rc4"
 requests = "^2.31.0"
+transformers = "^4.35.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.2"
 
 [tool.setuptools]
 include-package-data = false

@@ -1,8 +1,15 @@
-[![version](https://badge.fury.io/py/setofmark.svg)](https://badge.fury.io/py/setofmark)
-[![license](https://img.shields.io/pypi/l/setofmark)](https://github.com/roboflow/setofmark/blob/main/LICENSE)
-[![python-version](https://img.shields.io/pypi/pyversions/setofmark)](https://badge.fury.io/py/setofmark)
+<div align="center">
 
-<h1 align="center">set-of-mark</h1>
+  <h1><code>set-of-mark</code></h1>
+
+  <br>
+
+  [![version](https://badge.fury.io/py/setofmark.svg)](https://badge.fury.io/py/setofmark)
+  [![license](https://img.shields.io/pypi/l/setofmark)](https://github.com/roboflow/setofmark/blob/main/LICENSE)
+  [![python-version](https://img.shields.io/pypi/pyversions/setofmark)](https://badge.fury.io/py/setofmark)
+
+
+</div>
 
 ## 👋 hello
 
