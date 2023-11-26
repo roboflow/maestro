@@ -1,6 +1,6 @@
 <div align="center">
 
-  <h1><code>set-of-mark</code></h1>
+  <h1>set-of-mark</h1>
 
   <br>
 

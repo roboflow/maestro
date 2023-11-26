@@ -3,7 +3,7 @@ from typing import List
 import pytest
 
 from som.core import Mode
-from som.utils import extract_marks_in_brackets
+from som.postprocess import extract_marks_in_brackets
 
 
 @pytest.mark.parametrize(
@@ -12,9 +12,13 @@ from som.utils import extract_marks_in_brackets
         ("[1]", Mode.NUMERIC, ["1"]),
         ("lorem ipsum [1] dolor sit amet", Mode.NUMERIC, ["1"]),
         ("[1] lorem ipsum [2] dolor sit amet", Mode.NUMERIC, ["1", "2"]),
+        ("[1] lorem ipsum [1] dolor sit amet", Mode.NUMERIC, ["1"]),
+        ("[2] lorem ipsum [1] dolor sit amet", Mode.NUMERIC, ["1", "2"]),
         ("[A]", Mode.ALPHABETIC, ["A"]),
         ("lorem ipsum [A] dolor sit amet", Mode.ALPHABETIC, ["A"]),
         ("[A] lorem ipsum [B] dolor sit amet", Mode.ALPHABETIC, ["A", "B"]),
+        ("[A] lorem ipsum [A] dolor sit amet", Mode.ALPHABETIC, ["A"]),
+        ("[B] lorem ipsum [A] dolor sit amet", Mode.ALPHABETIC, ["A", "B"]),
         ("[1] lorem ipsum [A] dolor sit amet", Mode.NUMERIC, ["1"]),
         ("[1] lorem ipsum [A] dolor sit amet", Mode.ALPHABETIC, ["A"]),
     ]
