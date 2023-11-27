@@ -22,7 +22,7 @@ https://github.com/roboflow/set-of-mark/assets/26109316/4b8a2eab-0f3d-454b-8649-
 ## 💻 install
 
 ```bash
-pip instal setofmark
+pip install setofmark
 ```
 
 ## 💜 acknowledgement
