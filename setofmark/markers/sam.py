@@ -5,6 +5,8 @@ import supervision as sv
 from PIL import Image
 from transformers import pipeline, SamModel, SamProcessor, SamImageProcessor
 
+from setofmark.postprocessing.mask import masks_to_marks
+
 
 class SegmentAnythingMarker:
     """
@@ -30,8 +32,8 @@ class SegmentAnythingMarker:
         Marks an image for segmentation.
 
         Parameters:
-            image (Union[np.ndarray, Image]): The image to be marked. Can be a
-                numpy array or a PIL image.
+            image (Union[np.ndarray, Image]): The image to be marked in RGB format. Can
+                be a numpy array or a PIL image.
 
         Returns:
             sv.Detections: An object containing the segmentation masks and their
@@ -41,10 +43,7 @@ class SegmentAnythingMarker:
             image = Image.fromarray(image)
         outputs = self.pipeline(image, points_per_batch=64)
         masks = np.array(outputs['masks'])
-        return sv.Detections(
-            mask=masks,
-            xyxy=sv.mask_to_xyxy(masks=masks)
-        )
+        return masks_to_marks(masks=masks)
 
     # def guided_mark(
     #     self,

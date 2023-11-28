@@ -2,6 +2,7 @@ from enum import Enum
 
 import cv2
 import numpy as np
+import supervision as sv
 
 
 class FeatureType(Enum):
@@ -46,7 +47,10 @@ def compute_mask_iou_vectorized(masks: np.ndarray) -> np.ndarray:
     return iou_matrix
 
 
-def mask_non_max_suppression(masks: np.ndarray, iou_threshold: float) -> np.ndarray:
+def mask_non_max_suppression(
+    masks: np.ndarray,
+    iou_threshold: float = 0.6
+) -> np.ndarray:
     """
     Performs Non-Max Suppression on a set of masks by prioritizing larger masks and
         removing smaller masks that overlap significantly.
@@ -83,8 +87,8 @@ def mask_non_max_suppression(masks: np.ndarray, iou_threshold: float) -> np.ndar
 
 def filter_masks_by_relative_area(
     masks: np.ndarray,
-    minimum_area: float,
-    maximum_area: float
+    minimum_area: float = 0.01,
+    maximum_area: float = 1.0
 ) -> np.ndarray:
     """
     Filters masks based on their relative area within the total area of each mask.
@@ -166,3 +170,64 @@ def adjust_mask_features_by_relative_area(
                 thickness=-1
             )
     return np.where(mask > 0, 1, 0).astype(bool)
+
+
+def masks_to_marks(masks: np.ndarray) -> sv.Detections:
+    """
+    Converts a set of masks to a marks (sv.Detections) object.
+
+    Parameters:
+        masks (np.ndarray): A 3D numpy array with shape `(N, H, W)`, where `N` is the
+            number of masks, `H` is the height, and `W` is the width.
+
+    Returns:
+        sv.Detections: An object containing the masks and their bounding box
+            coordinates.
+    """
+    return sv.Detections(
+        mask=masks,
+        xyxy=sv.mask_to_xyxy(masks=masks)
+    )
+
+
+def refine_masks(
+    masks: np.ndarray,
+    maximum_hole_area: float = 0.01,
+    maximum_island_area: float = 0.01,
+    minimum_mask_area: float = 0.02,
+    maximum_mask_area: float = 1.0
+) -> np.ndarray:
+    """
+    Refines a set of masks by removing small islands and holes, and filtering by mask
+    area.
+
+    Parameters:
+        masks (np.ndarray): A 3D numpy array with shape `(N, H, W)`, where `N` is the
+            number of masks, `H` is the height, and `W` is the width.
+        maximum_hole_area (float): The maximum relative area of holes to be filled in
+            each mask.
+        maximum_island_area (float): The maximum relative area of islands to be removed
+            from each mask.
+        minimum_mask_area (float): The minimum relative area for a mask to be retained.
+        maximum_mask_area (float): The maximum relative area for a mask to be retained.
+
+    Returns:
+        np.ndarray: A 3D numpy array of filtered masks.
+    """
+    refined_masks = []
+    for mask in masks:
+        mask = adjust_mask_features_by_relative_area(
+            mask=mask,
+            area_threshold=maximum_island_area,
+            feature_type=FeatureType.ISLAND)
+        mask = adjust_mask_features_by_relative_area(
+            mask=mask,
+            area_threshold=maximum_hole_area,
+            feature_type=FeatureType.HOLE)
+        if np.any(mask):
+            refined_masks.append(mask)
+    refined_masks = np.array(refined_masks)
+    return filter_masks_by_relative_area(
+        masks=refined_masks,
+        minimum_area=minimum_mask_area,
+        maximum_area=maximum_mask_area)

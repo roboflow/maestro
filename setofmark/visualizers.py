@@ -2,8 +2,16 @@ import numpy as np
 import supervision as sv
 
 
-class Visualizer:
+class MarkVisualizer:
+    """
+    A class for visualizing different marks including bounding boxes, masks, polygons,
+    and labels.
 
+    Parameters:
+        line_thickness (int): The thickness of the lines for boxes and polygons.
+        mask_opacity (float): The opacity level for masks.
+        text_scale (float): The scale of the text for labels.
+    """
     def __init__(
         self,
         line_thickness: int = 2,
@@ -29,24 +37,41 @@ class Visualizer:
     def visualize(
         self,
         image: np.ndarray,
-        detections: sv.Detections,
-        with_box: bool,
-        with_mask: bool,
-        with_polygon: bool,
-        with_label: bool
+        marks: sv.Detections,
+        with_box: bool = False,
+        with_mask: bool = False,
+        with_polygon: bool = True,
+        with_label: bool = True
     ) -> np.ndarray:
+        """
+        Visualizes annotations on an image.
+
+        This method takes an image and an instance of sv.Detections, and overlays
+        the specified types of marks (boxes, masks, polygons, labels) on the image.
+
+        Parameters:
+            image (np.ndarray): The image on which to overlay annotations.
+            marks (sv.Detections): The detection results containing the annotations.
+            with_box (bool): Whether to draw bounding boxes. Defaults to False.
+            with_mask (bool): Whether to overlay masks. Defaults to False.
+            with_polygon (bool): Whether to draw polygons. Defaults to True.
+            with_label (bool): Whether to add labels. Defaults to True.
+
+        Returns:
+            np.ndarray: The annotated image.
+        """
         annotated_image = image.copy()
         if with_box:
             annotated_image = self.box_annotator.annotate(
-                scene=annotated_image, detections=detections)
+                scene=annotated_image, detections=marks)
         if with_mask:
             annotated_image = self.mask_annotator.annotate(
-                scene=annotated_image, detections=detections)
+                scene=annotated_image, detections=marks)
         if with_polygon:
             annotated_image = self.polygon_annotator.annotate(
-                scene=annotated_image, detections=detections)
+                scene=annotated_image, detections=marks)
         if with_label:
-            labels = list(map(str, range(len(detections))))
+            labels = list(map(str, range(len(marks))))
             annotated_image = self.label_annotator.annotate(
-                scene=annotated_image, detections=detections, labels=labels)
+                scene=annotated_image, detections=marks, labels=labels)
         return annotated_image

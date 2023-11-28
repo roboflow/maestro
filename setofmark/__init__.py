@@ -13,11 +13,13 @@ from setofmark.postprocessing.mask import (
     mask_non_max_suppression,
     filter_masks_by_relative_area,
     adjust_mask_features_by_relative_area,
-    FeatureType
+    FeatureType,
+    masks_to_marks,
+    refine_masks
 )
 from setofmark.postprocessing.text import (
     extract_marks_in_brackets,
     extract_relevant_masks
 )
-from setofmark.visualizers import Visualizer
+from setofmark.visualizers import MarkVisualizer
 from setofmark.primitives import MarkMode
