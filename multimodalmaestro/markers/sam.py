@@ -1,9 +1,9 @@
-from typing import Union
-
+import cv2
 import numpy as np
 import supervision as sv
 from PIL import Image
 from transformers import pipeline, SamModel, SamProcessor, SamImageProcessor
+from typing import Union
 
 from multimodalmaestro.postprocessing.mask import masks_to_marks
 
@@ -38,7 +38,7 @@ class SegmentAnythingMarkGenerator:
             sv.Detections: An object containing the segmentation masks and their
                 corresponding bounding box coordinates.
         """
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         outputs = self.pipeline(image, points_per_batch=64)
         masks = np.array(outputs['masks'])
         return masks_to_marks(masks=masks)

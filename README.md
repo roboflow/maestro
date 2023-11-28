@@ -40,6 +40,14 @@ Find dog.
 <details close>
 <summary>👉 read more</summary>
 
+- **load image**
+
+```python
+import cv2
+
+image = cv2.imread("...")
+```
+
 - **create marks**
 
 ```python
@@ -67,6 +75,13 @@ Find dog.
 </details>
 
 ![multimodal-maestro-2](https://github.com/roboflow/multimodal-maestro/assets/26109316/c04f2b18-2a1d-4535-9582-e5d3ec0a926e)
+
+## 🚧 roadmap
+
+- [ ] Documentation page.
+- [ ] Segment Anything guided marks generation.
+- [ ] Non-Max Suppression marks refinement.
+- [ ] LLaVA demo.
 
 ## 💜 acknowledgement
 
