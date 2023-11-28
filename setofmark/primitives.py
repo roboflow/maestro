@@ -1,9 +1,9 @@
 from enum import Enum
 
 
-class Mode(Enum):
+class MarkMode(Enum):
     """
-    Enumeration for different marking modes.
+    An enumeration for different marking modes.
     """
     NUMERIC = "NUMERIC"
     ALPHABETIC = "ALPHABETIC"

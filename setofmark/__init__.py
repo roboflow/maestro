@@ -9,10 +9,13 @@ except importlib_metadata.PackageNotFoundError:
 from setofmark.lmms.gpt4 import prompt_image
 from setofmark.postprocessing.mask import (
     compute_mask_iou_vectorized,
-    mask_non_max_suppression
+    mask_non_max_suppression,
+    filter_masks_by_relative_area,
+    adjust_mask_features_by_relative_area
 )
 from setofmark.postprocessing.text import (
     extract_marks_in_brackets,
     extract_relevant_masks
 )
 from setofmark.visualizers import Visualizer
+from setofmark.primitives import MarkMode

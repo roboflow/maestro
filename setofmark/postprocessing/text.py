@@ -4,10 +4,10 @@ from typing import List, Dict
 import numpy as np
 import supervision as sv
 
-from setofmark.primitives import Mode
+from setofmark.primitives import MarkMode
 
 
-def extract_marks_in_brackets(text: str, mode: Mode) -> List[str]:
+def extract_marks_in_brackets(text: str, mode: MarkMode) -> List[str]:
     """
     Extracts all unique marks enclosed in square brackets from a given string, based
         on the specified mode. Duplicates are removed and the results are sorted in
@@ -15,16 +15,16 @@ def extract_marks_in_brackets(text: str, mode: Mode) -> List[str]:
 
     Args:
         text (str): The string to be searched.
-        mode (Mode): The mode to determine the type of marks to extract (NUMERIC or
+        mode (MarkMode): The mode to determine the type of marks to extract (NUMERIC or
             ALPHABETIC).
 
     Returns:
         List[str]: A list of unique marks found within square brackets, sorted in
             descending order.
     """
-    if mode == Mode.NUMERIC:
+    if mode == MarkMode.NUMERIC:
         pattern = r'\[(\d+)\]'
-    elif mode == Mode.ALPHABETIC:
+    elif mode == MarkMode.ALPHABETIC:
         pattern = r'\[([A-Za-z]+)\]'
     else:
         raise ValueError(f"Unknown mode: {mode}")
@@ -32,7 +32,7 @@ def extract_marks_in_brackets(text: str, mode: Mode) -> List[str]:
     found_marks = re.findall(pattern, text)
     unique_marks = set(found_marks)
 
-    if mode == Mode.NUMERIC:
+    if mode == MarkMode.NUMERIC:
         return sorted(unique_marks, key=int, reverse=False)
     else:
         return sorted(unique_marks, reverse=False)
@@ -54,7 +54,7 @@ def extract_relevant_masks(
         Dict[str, np.ndarray]: A dictionary where each key is a mark found in the text,
             and each value is the corresponding mask from detections.
     """
-    marks = extract_marks_in_brackets(text=text, mode=Mode.NUMERIC)
+    marks = extract_marks_in_brackets(text=text, mode=MarkMode.NUMERIC)
     return {
         mark: detections.mask[int(mark)]
         for mark
