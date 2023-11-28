@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from setofmark import mask_non_max_suppression, compute_mask_iou_vectorized
-from setofmark.mask import filter_masks_by_relative_area
+from setofmark.postprocessing.mask import filter_masks_by_relative_area
 
 
 @pytest.mark.parametrize(

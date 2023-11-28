@@ -2,8 +2,8 @@ from typing import List
 
 import pytest
 
-from setofmark.core import Mode
-from setofmark.postprocess import extract_marks_in_brackets
+from setofmark.postprocessing.text import extract_marks_in_brackets
+from setofmark.primitives import Mode
 
 
 @pytest.mark.parametrize(
