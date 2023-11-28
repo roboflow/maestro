@@ -1,12 +1,10 @@
 from contextlib import ExitStack as DoesNotRaise
-
 from typing import Optional
 
 import numpy as np
-
 import pytest
 
-from som import mask_non_max_suppression, compute_iou_vectorized
+from som import mask_non_max_suppression, compute_mask_iou_vectorized
 
 
 @pytest.mark.parametrize(
@@ -316,11 +314,11 @@ def test_mask_non_max_suppression(
         ),  # four masks
     ]
 )
-def test_compute_iou_vectorized(
+def test_compute_mask_iou_vectorized(
     masks: np.ndarray,
     expected_result: Optional[np.ndarray],
     exception: Exception
 ) -> None:
     with exception:
-        result = compute_iou_vectorized(masks)
+        result = compute_mask_iou_vectorized(masks)
         assert np.array_equal(result, expected_result)

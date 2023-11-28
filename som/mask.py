@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def compute_iou_vectorized(masks: np.ndarray) -> np.ndarray:
+def compute_mask_iou_vectorized(masks: np.ndarray) -> np.ndarray:
     """
     Vectorized computation of the Intersection over Union (IoU) for all pairs of masks.
 
@@ -50,7 +50,7 @@ def mask_non_max_suppression(masks: np.ndarray, iou_threshold: float) -> np.ndar
     areas = masks.sum(axis=(1, 2))
     sorted_idx = np.argsort(-areas)
     keep_mask = np.ones(num_masks, dtype=bool)
-    iou_matrix = compute_iou_vectorized(masks)
+    iou_matrix = compute_mask_iou_vectorized(masks)
     for i in range(num_masks):
         if not keep_mask[sorted_idx[i]]:
             continue

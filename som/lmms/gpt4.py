@@ -1,9 +1,8 @@
-import cv2
 import base64
-import requests
 
+import cv2
 import numpy as np
-
+import requests
 
 META_PROMPT = '''
 For any labels or markings on an image that you reference in your response, please 
