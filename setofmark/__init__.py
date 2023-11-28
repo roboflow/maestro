@@ -7,6 +7,7 @@ except importlib_metadata.PackageNotFoundError:
     __version__ = "development"
 
 from setofmark.lmms.gpt4 import prompt_image
+from setofmark.markers.sam import SegmentAnythingMarker
 from setofmark.postprocessing.mask import (
     compute_mask_iou_vectorized,
     mask_non_max_suppression,
