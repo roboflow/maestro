@@ -9,7 +9,8 @@
   [![license](https://img.shields.io/pypi/l/multimodal-maestro)](https://github.com/roboflow/multimodal-maestro/blob/main/LICENSE)
   [![python-version](https://img.shields.io/pypi/pyversions/multimodal-maestro)](https://badge.fury.io/py/multimodal-maestro)
   [![Gradio](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Roboflow/SoM)
-
+  [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/main/cookbooks/multimodal_maestro_gpt_4_vision.ipynb
+)
 
 </div>
 
@@ -23,6 +24,9 @@ HF [space](https://huggingface.co/spaces/Roboflow/SoM)!
 🚧 The project is still under construction and the API is prone to change.
 
 ## 💻 install
+
+Pip install the supervision package in a
+[**3.11>=Python>=3.8**](https://www.python.org/) environment.
 
 ```bash
 pip install multimodal-maestro

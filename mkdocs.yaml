@@ -1,0 +1,48 @@
+site_name: multimodal-maestro
+site_url: https://roboflow.github.io/multimodal-maestro/
+site_author: Roboflow
+site_description: Effective prompting for Large Multimodal Models like GPT-4 Vision or LLaVA. 🔥
+repo_name: roboflow/multimodal-maestro
+repo_url: https://github.com/roboflow/multimodal-maestro
+edit_uri: https://github.com/roboflow/multimodal-maestro/tree/main/docs
+copyright: Roboflow 2023. All rights reserved.
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/roboflow
+    - icon: fontawesome/brands/youtube
+      link: https://www.youtube.com/roboflow
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/company/roboflow-ai/mycompany/
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/roboflow
+
+nav:
+  - Home: index.md
+
+theme:
+  name: 'material'
+  logo: https://media.roboflow.com/open-source/supervision/supervision-lenny.png
+  favicon: https://media.roboflow.com/open-source/supervision/supervision-lenny.png
+  palette:
+    # Palette for light mode
+    - scheme: default
+      primary: 'custom'
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: 'custom'
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+plugins:
+  - mkdocstrings
+  - search

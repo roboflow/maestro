@@ -41,5 +41,12 @@ transformers = "^4.35.2"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.2"
 
+[tool.poetry.group.docs.dependencies]
+mkdocs-material = "^9.1.4"
+mkdocstrings = {extras = ["python"], version = ">=0.20,<0.25"}
+
 [tool.setuptools]
 include-package-data = false
+
+[tool.setuptools.packages.find]
+exclude = ["docs*", "test*","cookbooks*"]
