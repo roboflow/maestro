@@ -5,7 +5,7 @@ import supervision as sv
 from PIL import Image
 from transformers import pipeline, SamModel, SamProcessor, SamImageProcessor
 
-from setofmark.postprocessing.mask import masks_to_marks
+from multimodalmaestro.postprocessing.mask import masks_to_marks
 
 
 class SegmentAnythingMarker:

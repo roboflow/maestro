@@ -4,7 +4,7 @@ from typing import List, Dict
 import numpy as np
 import supervision as sv
 
-from setofmark.primitives import MarkMode
+from multimodalmaestro.primitives import MarkMode
 
 
 def extract_marks_in_brackets(text: str, mode: MarkMode) -> List[str]:

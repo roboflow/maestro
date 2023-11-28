@@ -6,9 +6,9 @@ try:
 except importlib_metadata.PackageNotFoundError:
     __version__ = "development"
 
-from setofmark.lmms.gpt4 import prompt_image
-from setofmark.markers.sam import SegmentAnythingMarker
-from setofmark.postprocessing.mask import (
+from multimodalmaestro.lmms.gpt4 import prompt_image
+from multimodalmaestro.markers.sam import SegmentAnythingMarker
+from multimodalmaestro.postprocessing.mask import (
     compute_mask_iou_vectorized,
     mask_non_max_suppression,
     filter_masks_by_relative_area,
@@ -17,9 +17,9 @@ from setofmark.postprocessing.mask import (
     masks_to_marks,
     refine_masks
 )
-from setofmark.postprocessing.text import (
+from multimodalmaestro.postprocessing.text import (
     extract_marks_in_brackets,
     extract_relevant_masks
 )
-from setofmark.visualizers import MarkVisualizer
-from setofmark.primitives import MarkMode
+from multimodalmaestro.visualizers import MarkVisualizer
+from multimodalmaestro.primitives import MarkMode

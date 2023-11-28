@@ -4,8 +4,8 @@ from typing import Optional
 import numpy as np
 import pytest
 
-from setofmark import mask_non_max_suppression, compute_mask_iou_vectorized
-from setofmark.postprocessing.mask import (
+from multimodalmaestro import mask_non_max_suppression, compute_mask_iou_vectorized
+from multimodalmaestro.postprocessing.mask import (
     filter_masks_by_relative_area,
     adjust_mask_features_by_relative_area,
     FeatureType

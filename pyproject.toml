@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "setofmark"
-version = "0.1.0rc7"
+name = "multimodal-maestro"
+version = "0.1.0rc1"
 description = "Visual Prompting for Large Multimodal Models (LMMs)"
 authors = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
 maintainers = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
 readme = "README.md"
 license = "MIT"
-packages = [{include = "setofmark"}]
+packages = [{include = "multimodalmaestro"}]
 homepage = "https://github.com/roboflow/set-of-mark"
 repository = "https://github.com/roboflow/set-of-mark"
 documentation = "https://github.com/roboflow/set-of-mark/blob/main/README.md"
