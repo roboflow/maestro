@@ -15,7 +15,7 @@ from multimodalmaestro.postprocessing.mask import (
     adjust_mask_features_by_relative_area,
     FeatureType,
     masks_to_marks,
-    refine_masks
+    refine_marks
 )
 from multimodalmaestro.postprocessing.text import (
     extract_marks_in_brackets,

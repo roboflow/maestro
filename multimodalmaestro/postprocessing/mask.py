@@ -190,20 +190,20 @@ def masks_to_marks(masks: np.ndarray) -> sv.Detections:
     )
 
 
-def refine_masks(
-    masks: np.ndarray,
+def refine_marks(
+    marks: sv.Detections,
     maximum_hole_area: float = 0.01,
     maximum_island_area: float = 0.01,
     minimum_mask_area: float = 0.02,
     maximum_mask_area: float = 1.0
-) -> np.ndarray:
+) -> sv.Detections:
     """
     Refines a set of masks by removing small islands and holes, and filtering by mask
     area.
 
     Parameters:
-        masks (np.ndarray): A 3D numpy array with shape `(N, H, W)`, where `N` is the
-            number of masks, `H` is the height, and `W` is the width.
+        marks (sv.Detections): An object containing the masks and their bounding box
+            coordinates.
         maximum_hole_area (float): The maximum relative area of holes to be filled in
             each mask.
         maximum_island_area (float): The maximum relative area of islands to be removed
@@ -212,10 +212,11 @@ def refine_masks(
         maximum_mask_area (float): The maximum relative area for a mask to be retained.
 
     Returns:
-        np.ndarray: A 3D numpy array of filtered masks.
+        sv.Detections: An object containing the masks and their bounding box
+            coordinates.
     """
-    refined_masks = []
-    for mask in masks:
+    result_masks = []
+    for mask in marks.mask:
         mask = adjust_mask_features_by_relative_area(
             mask=mask,
             area_threshold=maximum_island_area,
@@ -225,9 +226,13 @@ def refine_masks(
             area_threshold=maximum_hole_area,
             feature_type=FeatureType.HOLE)
         if np.any(mask):
-            refined_masks.append(mask)
-    refined_masks = np.array(refined_masks)
-    return filter_masks_by_relative_area(
-        masks=refined_masks,
+            result_masks.append(mask)
+    result_masks = np.array(result_masks)
+    result_masks = filter_masks_by_relative_area(
+        masks=result_masks,
         minimum_area=minimum_mask_area,
         maximum_area=maximum_mask_area)
+    return sv.Detections(
+        mask=result_masks,
+        xyxy=sv.mask_to_xyxy(masks=result_masks)
+    )

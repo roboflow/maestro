@@ -40,6 +40,8 @@ Find dog.
 <details close>
 <summary>👉 read more</summary>
 
+<br>
+
 - **load image**
 
 ```python
@@ -51,14 +53,20 @@ image = cv2.imread("...")
 - **create marks**
 
 ```python
+import multimodalmaestro as mm
 
+generator = mm.SegmentAnythingMarkGenerator(device='cuda')
+marks = generator.generate(image=image)
 ```
 
 - **visualize marks**
 
 ```python
-
+mark_visualizer = mm.MarkVisualizer()
+marked_image = mark_visualizer.visualize(image=image, marks=marks)
 ```
+
+![sam-raw-marks](https://github.com/roboflow/multimodal-maestro/assets/26109316/51e36334-2571-4932-8f5f-7992b46ded43)
 
 - **refine marks**
 
@@ -74,7 +82,7 @@ image = cv2.imread("...")
 
 </details>
 
-![multimodal-maestro-2](https://github.com/roboflow/multimodal-maestro/assets/26109316/c04f2b18-2a1d-4535-9582-e5d3ec0a926e)
+![multimodal-maestro](https://github.com/roboflow/multimodal-maestro/assets/26109316/c04f2b18-2a1d-4535-9582-e5d3ec0a926e)
 
 ## 🚧 roadmap
 
