@@ -25,7 +25,7 @@ class SegmentAnythingMarker:
             image_processor=self.image_processor,
             device=device)
 
-    def mark(self, image: Union[np.ndarray, Image]) -> sv.Detections:
+    def mark(self, image: Union[np.ndarray, Image.Image]) -> sv.Detections:
         """
         Marks an image for segmentation.
 
