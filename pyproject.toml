@@ -6,7 +6,7 @@ authors = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
 maintainers = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
 readme = "README.md"
 license = "MIT"
-packages = [{include = "som"}]
+packages = [{include = "setofmark"}]
 homepage = "https://github.com/roboflow/set-of-mark"
 repository = "https://github.com/roboflow/set-of-mark"
 documentation = "https://github.com/roboflow/set-of-mark/blob/main/README.md"
