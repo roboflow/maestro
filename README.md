@@ -15,9 +15,9 @@
 
 ## 👋 hello
 
-Visual Prompting for Large Multimodal Models (LMMs).
-
-https://github.com/roboflow/set-of-mark/assets/26109316/4b8a2eab-0f3d-454b-8649-61f6c2f78119
+Multimodal-Maestro gives you more control over large multimodal models to get the 
+outputs you want. With more effective prompting tactics, you can get multimodal models 
+to do tasks you didn't know (or think!) were possible.
 
 ## 💻 install
 
@@ -25,12 +25,28 @@ https://github.com/roboflow/set-of-mark/assets/26109316/4b8a2eab-0f3d-454b-8649-
 pip install multimodal-maestro
 ```
 
+## 🚀 examples
+
+### GPT-4 Vision prompting
+
+```
+prompt: Find dog.
+
+>>> The dog is prominently featured in the center of the image with the label [9] close to its mouth.
+```
+
+![multimodal-maestro-2](https://github.com/roboflow/multimodal-maestro/assets/26109316/c04f2b18-2a1d-4535-9582-e5d3ec0a926e)
+
+<details close>
+<summary>👉 read more</summary>
+
+</details>
+
 ## 💜 acknowledgement
 
-This project is based on [Set-of-Mark Prompting Unleashes Extraordinary Visual Grounding
+- [Set-of-Mark Prompting Unleashes Extraordinary Visual Grounding
 in GPT-4V](https://arxiv.org/abs/2310.11441) by Jianwei Yang, Hao Zhang, Feng Li, Xueyan
-Zou, Chunyuan Li, Jianfeng Gao. We thank the authors for their work and for releasing 
-their [code](https://github.com/microsoft/SoM).
+Zou, Chunyuan Li, Jianfeng Gao.
 
 ## 🦸 contribution
 
