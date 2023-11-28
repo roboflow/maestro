@@ -17,7 +17,8 @@
 
 Multimodal-Maestro gives you more control over large multimodal models to get the 
 outputs you want. With more effective prompting tactics, you can get multimodal models 
-to do tasks you didn't know (or think!) were possible.
+to do tasks you didn't know (or think!) were possible. Curious how it works? Try our 
+HF [space](https://huggingface.co/spaces/Roboflow/SoM)!
 
 🚧 The project is still under construction and the API is prone to change.
 
@@ -44,41 +45,59 @@ Find dog.
 
 - **load image**
 
-```python
-import cv2
+  ```python
+  import cv2
+  
+  image = cv2.imread("...")
+  ```
 
-image = cv2.imread("...")
-```
+- **create and refine marks**
 
-- **create marks**
-
-```python
-import multimodalmaestro as mm
-
-generator = mm.SegmentAnythingMarkGenerator(device='cuda')
-marks = generator.generate(image=image)
-```
+  ```python
+  import multimodalmaestro as mm
+  
+  generator = mm.SegmentAnythingMarkGenerator(device='cuda')
+  marks = generator.generate(image=image)
+  marks = mm.refine_marks(marks=marks)
+  ```
 
 - **visualize marks**
 
-```python
-mark_visualizer = mm.MarkVisualizer()
-marked_image = mark_visualizer.visualize(image=image, marks=marks)
-```
+  ```python
+  mark_visualizer = mm.MarkVisualizer()
+  marked_image = mark_visualizer.visualize(image=image, marks=marks)
+  ```
+  ![image-vs-marked-image](https://github.com/roboflow/multimodal-maestro/assets/26109316/92951ed2-65c0-475a-9279-6fd344757092)
 
-![sam-raw-marks](https://github.com/roboflow/multimodal-maestro/assets/26109316/51e36334-2571-4932-8f5f-7992b46ded43)
+- **prompt**
 
-- **refine marks**
-
-```python
-
-```
+  ```python
+  prompt = "Find dog."
+  
+  response = mm.prompt_image(api_key=api_key, image=marked_image, prompt=prompt)
+  ```
+  
+  ```
+  >>> "The dog is prominently featured in the center of the image with the label [9]."
+  ```
 
 - **extract related marks**
 
-```python
-
-```
+  ```python
+  masks = mm.extract_relevant_masks(text=response, detections=refined_marks)
+  ```
+  
+  ```
+  >>> {'6': array([
+  ...     [False, False, False, ..., False, False, False],
+  ...     [False, False, False, ..., False, False, False],
+  ...     [False, False, False, ..., False, False, False],
+  ...     ...,
+  ...     [ True,  True,  True, ..., False, False, False],
+  ...     [ True,  True,  True, ..., False, False, False],
+  ...     [ True,  True,  True, ..., False, False, False]])
+  ... }
+  ```
 
 </details>
 
