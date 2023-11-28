@@ -19,6 +19,8 @@ Multimodal-Maestro gives you more control over large multimodal models to get th
 outputs you want. With more effective prompting tactics, you can get multimodal models 
 to do tasks you didn't know (or think!) were possible.
 
+🚧 The project is still under construction and the API is prone to change.
+
 ## 💻 install
 
 ```bash
@@ -27,20 +29,44 @@ pip install multimodal-maestro
 
 ## 🚀 examples
 
-### GPT-4 Vision prompting
+### GPT-4 Vision
 
 ```
-prompt: Find dog.
+Find dog.
 
->>> The dog is prominently featured in the center of the image with the label [9] close to its mouth.
+>>> The dog is prominently featured in the center of the image with the label [9].
 ```
-
-![multimodal-maestro-2](https://github.com/roboflow/multimodal-maestro/assets/26109316/c04f2b18-2a1d-4535-9582-e5d3ec0a926e)
 
 <details close>
 <summary>👉 read more</summary>
 
+- **create marks**
+
+```python
+
+```
+
+- **visualize marks**
+
+```python
+
+```
+
+- **refine marks**
+
+```python
+
+```
+
+- **extract related marks**
+
+```python
+
+```
+
 </details>
+
+![multimodal-maestro-2](https://github.com/roboflow/multimodal-maestro/assets/26109316/c04f2b18-2a1d-4535-9582-e5d3ec0a926e)
 
 ## 💜 acknowledgement
 

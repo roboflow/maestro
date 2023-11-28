@@ -7,7 +7,7 @@ except importlib_metadata.PackageNotFoundError:
     __version__ = "development"
 
 from multimodalmaestro.lmms.gpt4 import prompt_image
-from multimodalmaestro.markers.sam import SegmentAnythingMarker
+from multimodalmaestro.markers.sam import SegmentAnythingMarkGenerator
 from multimodalmaestro.postprocessing.mask import (
     compute_mask_iou_vectorized,
     mask_non_max_suppression,
