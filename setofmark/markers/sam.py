@@ -46,34 +46,34 @@ class SegmentAnythingMarker:
             xyxy=sv.mask_to_xyxy(masks=masks)
         )
 
-    def guided_mark(
-        self,
-        image: Union[np.ndarray, Image],
-        mask: np.ndarray
-    ) -> sv.Detections:
-        """
-        Performs guided marking on an image for segmentation.
-
-        Returns:
-            sv.Detections: An object containing the segmentation masks and their
-                corresponding bounding box coordinates.
-        """
-        masks = []
-        for polygon in sv.mask_to_polygons(mask.astype(bool)):
-            random_point_indexes = np.random.choice(
-                polygon.shape[0],
-                size=5,
-                replace=True)
-            input_point = polygon[random_point_indexes]
-            input_label = np.ones(5)
-            # mask = predictor.predict(
-            #     point_coords=input_point,
-            #     point_labels=input_label,
-            #     multimask_output=False,
-            # )[0][0]
-            # masks.append(mask)
-        masks = np.array(masks, dtype=bool)
-        return sv.Detections(
-            xyxy=sv.mask_to_xyxy(masks),
-            mask=masks
-        )
+    # def guided_mark(
+    #     self,
+    #     image: Union[np.ndarray, Image],
+    #     mask: np.ndarray
+    # ) -> sv.Detections:
+    #     """
+    #     Performs guided marking on an image for segmentation.
+    #
+    #     Returns:
+    #         sv.Detections: An object containing the segmentation masks and their
+    #             corresponding bounding box coordinates.
+    #     """
+    #     masks = []
+    #     for polygon in sv.mask_to_polygons(mask.astype(bool)):
+    #         random_point_indexes = np.random.choice(
+    #             polygon.shape[0],
+    #             size=5,
+    #             replace=True)
+    #         input_point = polygon[random_point_indexes]
+    #         input_label = np.ones(5)
+    #         mask = predictor.predict(
+    #             point_coords=input_point,
+    #             point_labels=input_label,
+    #             multimask_output=False,
+    #         )[0][0]
+    #         masks.append(mask)
+    #     masks = np.array(masks, dtype=bool)
+    #     return sv.Detections(
+    #         xyxy=sv.mask_to_xyxy(masks),
+    #         mask=masks
+    #     )

@@ -9,8 +9,8 @@ class FeatureType(Enum):
     An enumeration to represent the types of features for mask adjustment in image
     segmentation.
     """
-    ISLANDS = 'ISLANDS'
-    HOLES = 'HOLES'
+    ISLAND = 'ISLAND'
+    HOLE = 'HOLE'
 
     @classmethod
     def list(cls):
@@ -123,34 +123,36 @@ def filter_masks_by_relative_area(
 def adjust_mask_features_by_relative_area(
     mask: np.ndarray,
     area_threshold: float,
-    feature_type: FeatureType = FeatureType.ISLANDS
+    feature_type: FeatureType = FeatureType.ISLAND
 ) -> np.ndarray:
     """
     Adjusts a mask by removing small islands or filling small holes based on a relative
     area threshold.
 
+    !!! warning
+
+        Running this function on a mask with small islands may result in empty masks.
+
     Parameters:
         mask (np.ndarray): A 2D numpy array with shape `(H, W)`, where `H` is the
             height, and `W` is the width.
         area_threshold (float): Threshold for relative area to remove or fill features.
-        feature_type (FeatureType): Type of feature to adjust (`ISLANDS` for removing
-            islands, `HOLES` for filling holes).
+        feature_type (FeatureType): Type of feature to adjust (`ISLAND` for removing
+            islands, `HOLE` for filling holes).
 
     Returns:
         np.ndarray: A 2D numpy array containing mask.
     """
+    height, width = mask.shape
+    total_area = width * height
+
     mask = np.uint8(mask * 255)
     operation = (
         cv2.RETR_EXTERNAL
-        if feature_type == FeatureType.ISLANDS
+        if feature_type == FeatureType.ISLAND
         else cv2.RETR_CCOMP
     )
     contours, _ = cv2.findContours(mask, operation, cv2.CHAIN_APPROX_SIMPLE)
-    total_area = (
-        cv2.countNonZero(mask)
-        if feature_type == FeatureType.ISLANDS
-        else mask.size
-    )
 
     for contour in contours:
         area = cv2.contourArea(contour)
@@ -160,7 +162,7 @@ def adjust_mask_features_by_relative_area(
                 image=mask,
                 contours=[contour],
                 contourIdx=-1,
-                color=(0 if feature_type == FeatureType.ISLANDS else 255),
+                color=(0 if feature_type == FeatureType.ISLAND else 255),
                 thickness=-1
             )
     return np.where(mask > 0, 1, 0).astype(bool)

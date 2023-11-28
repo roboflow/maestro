@@ -11,7 +11,8 @@ from setofmark.postprocessing.mask import (
     compute_mask_iou_vectorized,
     mask_non_max_suppression,
     filter_masks_by_relative_area,
-    adjust_mask_features_by_relative_area
+    adjust_mask_features_by_relative_area,
+    FeatureType
 )
 from setofmark.postprocessing.text import (
     extract_marks_in_brackets,
