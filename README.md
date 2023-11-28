@@ -22,7 +22,7 @@ https://github.com/roboflow/set-of-mark/assets/26109316/4b8a2eab-0f3d-454b-8649-
 ## 💻 install
 
 ```bash
-pip install setofmark
+pip install multimodal-maestro
 ```
 
 ## 💜 acknowledgement
