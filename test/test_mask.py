@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 
 from som import mask_non_max_suppression, compute_mask_iou_vectorized
+from som.mask import filter_masks_by_relative_area
 
 
 @pytest.mark.parametrize(
@@ -321,4 +322,105 @@ def test_compute_mask_iou_vectorized(
 ) -> None:
     with exception:
         result = compute_mask_iou_vectorized(masks)
+        assert np.array_equal(result, expected_result)
+
+
+@pytest.mark.parametrize(
+    "masks, minimum_area, maximum_area, expected_result, exception",
+    [
+        (
+            np.array([
+                [
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1]
+                ],
+                [
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1]
+                ]
+            ], dtype=bool),
+            0.0,
+            1.0,
+            np.array([
+                [
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1]
+                ],
+                [
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1]
+                ]
+            ], dtype=bool),
+            DoesNotRaise()
+        ),  # two masks, both filled with ones, minimum_area = 0, maximum_area = 1
+        (
+            np.array([
+                [
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1]
+                ],
+                [
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1]
+                ]
+            ], dtype=bool),
+            0.0,
+            0.5,
+            np.empty((0, 4, 4), dtype=bool),
+            DoesNotRaise()
+        ),  # two masks, both filled with ones, minimum_area = 0, maximum_area = 0.5
+        (
+            np.array([
+                [
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1]
+                ],
+                [
+                    [1, 1, 0, 0],
+                    [1, 1, 0, 0],
+                    [1, 1, 0, 0],
+                    [1, 1, 0, 0]
+                ]
+            ], dtype=bool),
+            0.6,
+            1.0,
+            np.array([
+                [
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1],
+                    [1, 1, 1, 1]
+                ]
+            ], dtype=bool),
+            DoesNotRaise()
+        ),  # two masks, one filled with ones, the other filled 50% with ones,
+            # minimum_area = 0.6, maximum_area = 1
+    ]
+)
+def test_filter_masks_by_relative_area(
+    masks: np.ndarray,
+    minimum_area: float,
+    maximum_area: float,
+    expected_result: Optional[np.ndarray],
+    exception: Exception
+) -> None:
+    with exception:
+        result = filter_masks_by_relative_area(
+            masks=masks,
+            minimum_area=minimum_area,
+            maximum_area=maximum_area)
         assert np.array_equal(result, expected_result)
