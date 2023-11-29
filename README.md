@@ -25,7 +25,7 @@ HF [space](https://huggingface.co/spaces/Roboflow/SoM)!
 
 ## 💻 install
 
-Pip install the supervision package in a
+Pip install the multimodal-maestro package in a
 [**3.11>=Python>=3.8**](https://www.python.org/) environment.
 
 ```bash
