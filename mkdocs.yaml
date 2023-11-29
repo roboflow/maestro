@@ -20,6 +20,12 @@ extra:
 
 nav:
   - Home: index.md
+  - Get Started: get_started.md
+  - API:
+    - LMMs: lmms.md
+    - Markers: markers.md
+    - Visualizers: visualizers.md
+
 
 theme:
   name: 'material'
