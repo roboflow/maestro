@@ -70,7 +70,7 @@ All new functions and classes in `multimodal-maestro` should include docstrings.
 
 `multimodal-maestro` adheres to the [Google Python docstring style](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods). Please refer to the style guide while writing docstrings for your contribution.
 
-Then, go back to your fork of the `supervision` repository, click "Pull Requests", and click "New Pull Request".
+Then, go back to your fork of the `multimodal-maestro` repository, click "Pull Requests", and click "New Pull Request".
 
 ![Opening a pull request](https://media.roboflow.com/open_pr.png)
 
