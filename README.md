@@ -5,9 +5,9 @@
 
   <br>
 
-  [![version](https://badge.fury.io/py/multimodal-maestro.svg)](https://badge.fury.io/py/multimodal-maestro)
-  [![license](https://img.shields.io/pypi/l/multimodal-maestro)](https://github.com/roboflow/multimodal-maestro/blob/main/LICENSE)
-  [![python-version](https://img.shields.io/pypi/pyversions/multimodal-maestro)](https://badge.fury.io/py/multimodal-maestro)
+  [![version](https://badge.fury.io/py/maestro.svg)](https://badge.fury.io/py/maestro)
+  [![license](https://img.shields.io/pypi/l/maestro)](https://github.com/roboflow/multimodal-maestro/blob/main/LICENSE)
+  [![python-version](https://img.shields.io/pypi/pyversions/maestro)](https://badge.fury.io/py/maestro)
   [![Gradio](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Roboflow/SoM)
   [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/main/cookbooks/multimodal_maestro_gpt_4_vision.ipynb
 )
@@ -25,11 +25,11 @@ HF [space](https://huggingface.co/spaces/Roboflow/SoM)!
 
 ## 💻 install
 
-Pip install the multimodal-maestro package in a
+⚠️ Our package has been renamed to `maestro`. Install package in a
 [**3.11>=Python>=3.8**](https://www.python.org/) environment.
 
 ```bash
-pip install multimodal-maestro
+pip install maestro
 ```
 
 ## 🚀 examples
@@ -58,17 +58,17 @@ Find dog.
 - **create and refine marks**
 
   ```python
-  import multimodalmaestro as mm
+  import maestro
   
-  generator = mm.SegmentAnythingMarkGenerator(device='cuda')
+  generator = maestro.SegmentAnythingMarkGenerator(device='cuda')
   marks = generator.generate(image=image)
-  marks = mm.refine_marks(marks=marks)
+  marks = maestro.refine_marks(marks=marks)
   ```
 
 - **visualize marks**
 
   ```python
-  mark_visualizer = mm.MarkVisualizer()
+  mark_visualizer = maestro.MarkVisualizer()
   marked_image = mark_visualizer.visualize(image=image, marks=marks)
   ```
   ![image-vs-marked-image](https://github.com/roboflow/multimodal-maestro/assets/26109316/92951ed2-65c0-475a-9279-6fd344757092)
@@ -78,7 +78,7 @@ Find dog.
   ```python
   prompt = "Find dog."
   
-  response = mm.prompt_image(api_key=api_key, image=marked_image, prompt=prompt)
+  response = maestro.prompt_image(api_key=api_key, image=marked_image, prompt=prompt)
   ```
   
   ```
@@ -88,7 +88,7 @@ Find dog.
 - **extract related marks**
 
   ```python
-  masks = mm.extract_relevant_masks(text=response, detections=refined_marks)
+  masks = maestro.extract_relevant_masks(text=response, detections=refined_marks)
   ```
   
   ```

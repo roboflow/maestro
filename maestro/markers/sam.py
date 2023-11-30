@@ -5,7 +5,7 @@ from PIL import Image
 from transformers import pipeline, SamModel, SamProcessor, SamImageProcessor
 from typing import Union
 
-from multimodalmaestro.postprocessing.mask import masks_to_marks
+from maestro.postprocessing.mask import masks_to_marks
 
 
 class SegmentAnythingMarkGenerator:

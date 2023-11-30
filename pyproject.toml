@@ -1,15 +1,15 @@
 [tool.poetry]
-name = "multimodal-maestro"
+name = "maestro"
 version = "0.1.0"
 description = "Visual Prompting for Large Multimodal Models (LMMs)"
 authors = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
 maintainers = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
 readme = "README.md"
 license = "MIT"
-packages = [{include = "multimodalmaestro"}]
-homepage = "https://github.com/roboflow/set-of-mark"
-repository = "https://github.com/roboflow/set-of-mark"
-documentation = "https://github.com/roboflow/set-of-mark/blob/main/README.md"
+packages = [{include = "maestro"}]
+homepage = "https://github.com/roboflow/multimodal-maestro"
+repository = "https://github.com/roboflow/multimodal-maestro"
+documentation = "https://roboflow.github.io/multimodal-maestro"
 
 classifiers=[
     'Development Status :: 3 - Alpha',
