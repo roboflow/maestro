@@ -124,5 +124,5 @@ Zou, Chunyuan Li, Jianfeng Gao.
 
 We would love your help in making this repository even better! If you noticed any bug, 
 or if you have any suggestions for improvement, feel free to open an 
-[issue](https://github.com/roboflow/set-of-mark/issues) or submit a 
-[pull request](https://github.com/roboflow/set-of-mark/pulls).
+[issue](https://github.com/roboflow/multimodal-maestro/issues) or submit a 
+[pull request](https://github.com/roboflow/multimodal-maestro/pulls).
