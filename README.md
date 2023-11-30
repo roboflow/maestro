@@ -108,16 +108,22 @@ Find dog.
 
 ## 🚧 roadmap
 
+- [ ] Rewriting the `maestro` API.
 - [ ] Documentation page.
+- [ ] Add GroundingDINO prompting strategy.
 - [ ] Segment Anything guided marks generation.
 - [ ] Non-Max Suppression marks refinement.
-- [ ] LLaVA demo.
+- [ ] CovVLM demo.
+- [ ] Qwen-VL demo.
 
 ## 💜 acknowledgement
 
 - [Set-of-Mark Prompting Unleashes Extraordinary Visual Grounding
 in GPT-4V](https://arxiv.org/abs/2310.11441) by Jianwei Yang, Hao Zhang, Feng Li, Xueyan
 Zou, Chunyuan Li, Jianfeng Gao.
+- [The Dawn of LMMs: Preliminary Explorations with GPT-4V(ision)](https://arxiv.org/abs/2309.17421)
+by Zhengyuan Yang, Linjie Li, Kevin Lin, Jianfeng Wang, Chung-Ching Lin, Zicheng Liu, 
+Lijuan Wang
 
 ## 🦸 contribution
 
