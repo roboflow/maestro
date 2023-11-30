@@ -9,8 +9,7 @@
   [![license](https://img.shields.io/pypi/l/maestro)](https://github.com/roboflow/multimodal-maestro/blob/main/LICENSE)
   [![python-version](https://img.shields.io/pypi/pyversions/maestro)](https://badge.fury.io/py/maestro)
   [![Gradio](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Roboflow/SoM)
-  [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/main/cookbooks/multimodal_maestro_gpt_4_vision.ipynb
-)
+  [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/develop/cookbooks/multimodal_maestro_gpt_4_vision.ipynb)
 
 </div>
 
@@ -21,11 +20,11 @@ outputs you want. With more effective prompting tactics, you can get multimodal 
 to do tasks you didn't know (or think!) were possible. Curious how it works? Try our 
 HF [space](https://huggingface.co/spaces/Roboflow/SoM)!
 
-🚧 The project is still under construction and the API is prone to change.
+🚧 The project is still under construction, and the API is prone to change.
 
 ## 💻 install
 
-⚠️ Our package has been renamed to `maestro`. Install package in a
+⚠️ Our package has been renamed to `maestro`. Install the package in a
 [**3.11>=Python>=3.8**](https://www.python.org/) environment.
 
 ```bash
