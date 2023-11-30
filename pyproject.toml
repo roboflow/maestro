@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "maestro"
-version = "0.1.0rc1"
+version = "0.1.0"
 description = "Visual Prompting for Large Multimodal Models (LMMs)"
 authors = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
 maintainers = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
