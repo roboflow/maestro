@@ -5,9 +5,9 @@
 
   <br>
 
-  [![version](https://badge.fury.io/py/multimodal-maestro.svg)](https://badge.fury.io/py/multimodal-maestro)
-  [![license](https://img.shields.io/pypi/l/multimodal-maestro)](https://github.com/roboflow/multimodal-maestro/blob/main/LICENSE)
-  [![python-version](https://img.shields.io/pypi/pyversions/multimodal-maestro)](https://badge.fury.io/py/multimodal-maestro)
+  [![version](https://badge.fury.io/py/maestro.svg)](https://badge.fury.io/py/maestro)
+  [![license](https://img.shields.io/pypi/l/maestro)](https://github.com/roboflow/multimodal-maestro/blob/main/LICENSE)
+  [![python-version](https://img.shields.io/pypi/pyversions/maestro)](https://badge.fury.io/py/maestro)
   [![Gradio](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Roboflow/SoM)
   [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/main/cookbooks/multimodal_maestro_gpt_4_vision.ipynb
 )
@@ -25,11 +25,11 @@ HF [space](https://huggingface.co/spaces/Roboflow/SoM)!
 
 ## 💻 install
 
-Pip install the multimodal-maestro package in a
+⚠️ Our package has been renamed to `maestro`. Install package in a
 [**3.11>=Python>=3.8**](https://www.python.org/) environment.
 
 ```bash
-pip install multimodal-maestro
+pip install maestro
 ```
 
 ## 🚀 examples
@@ -58,7 +58,7 @@ Find dog.
 - **create and refine marks**
 
   ```python
-  import multimodalmaestro as mm
+  import maestro as mm
   
   generator = mm.SegmentAnythingMarkGenerator(device='cuda')
   marks = generator.generate(image=image)
