@@ -1,3 +1,3 @@
 ## Segment Anything
 
-:::multimodalmaestro.markers.sam.SegmentAnythingMarkGenerator
+:::maestro.markers.sam.SegmentAnythingMarkGenerator
