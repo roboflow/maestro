@@ -62,6 +62,7 @@ class SegmentAnythingMarkGenerator:
                     input_points=[[input_points]],
                     return_tensors="pt"
                 ).to(self.device)
+                del inputs["pixel_values"]
                 outputs = self.model(image_embeddings=image_embeddings, **inputs)
                 mask = self.processor.image_processor.post_process_masks(
                     masks=outputs.pred_masks.cpu().detach(),
