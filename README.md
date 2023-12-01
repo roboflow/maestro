@@ -20,8 +20,6 @@ outputs you want. With more effective prompting tactics, you can get multimodal 
 to do tasks you didn't know (or think!) were possible. Curious how it works? Try our 
 [HF space](https://huggingface.co/spaces/Roboflow/SoM)!
 
-🚧 The project is still under construction, and the API is prone to change.
-
 ## 💻 install
 
 ⚠️ Our package has been renamed to `maestro`. Install the package in a
@@ -30,6 +28,12 @@ to do tasks you didn't know (or think!) were possible. Curious how it works? Try
 ```bash
 pip install maestro
 ```
+
+## 🔌 API
+
+🚧 The project is still under construction. The redesigned API is coming soon.
+
+![maestro-docs-Snap](https://github.com/roboflow/multimodal-maestro/assets/26109316/a787b7c0-527e-465a-9ca9-d46f4d63ea53)
 
 ## 🚀 examples
 
