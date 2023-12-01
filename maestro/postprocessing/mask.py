@@ -78,9 +78,8 @@ def mask_non_max_suppression(
 
         overlapping_masks = iou_matrix[sorted_idx[i]] > iou_threshold
         overlapping_masks[sorted_idx[i]] = False
-        keep_mask[sorted_idx] = np.logical_and(
-            keep_mask[sorted_idx],
-            ~overlapping_masks)
+        overlapping_indices = np.where(overlapping_masks)[0]
+        keep_mask[sorted_idx[overlapping_indices]] = False
 
     return masks[keep_mask]
 

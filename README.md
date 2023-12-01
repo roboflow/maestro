@@ -18,7 +18,7 @@
 Multimodal-Maestro gives you more control over large multimodal models to get the 
 outputs you want. With more effective prompting tactics, you can get multimodal models 
 to do tasks you didn't know (or think!) were possible. Curious how it works? Try our 
-HF [space](https://huggingface.co/spaces/Roboflow/SoM)!
+[HF space](https://huggingface.co/spaces/Roboflow/SoM)!
 
 🚧 The project is still under construction, and the API is prone to change.
 
@@ -109,10 +109,9 @@ Find dog.
 ## 🚧 roadmap
 
 - [ ] Rewriting the `maestro` API.
+- [ ] Update [HF space](https://huggingface.co/spaces/Roboflow/SoM).
 - [ ] Documentation page.
 - [ ] Add GroundingDINO prompting strategy.
-- [ ] Segment Anything guided marks generation.
-- [ ] Non-Max Suppression marks refinement.
 - [ ] CovVLM demo.
 - [ ] Qwen-VL demo.
 
