@@ -1,63 +1,69 @@
 import base64
+
 import cv2
 import numpy as np
 import requests
 
-# Constants
-META_PROMPT = "For any labels or markings on an image that you reference in your response, please enclose them in square brackets ([]) and list them explicitly. Do not use ranges; for example, instead of '1 - 4', list as '[1], [2], [3], [4]'. These labels could be numbers or letters and typically correspond to specific segments or parts of the image."
-OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
+META_PROMPT = (
+    "For any labels or markings on an image that you reference in your response, please "
+    "enclose them in square brackets ([]) and list them explicitly. Do not use ranges; for "
+    "example, instead of '1 - 4', list as '[1], [2], [3], [4]'. These labels could be "
+    "numbers or letters and typically correspond to specific segments or parts of the image."
+)
 
-def encode_image_to_base64(image: np.ndarray, format: str = '.jpg') -> str:
+API_URL = "https://api.openai.com/v1/chat/completions"
+
+
+def encode_image_to_base64(image: np.ndarray) -> str:
     """
-    Encodes an image into a base64-encoded string.
+    Encodes an image into a base64-encoded string in JPEG format.
 
     Parameters:
-        image (np.ndarray): The image to be encoded.
-        format (str): The format to use for encoding ('.jpg' or '.png').
+        image (np.ndarray): The image to be encoded. This should be a numpy array as
+            typically used in OpenCV.
 
     Returns:
-        str: A base64-encoded string representing the image.
+        str: A base64-encoded string representing the image in JPEG format.
     """
-    success, buffer = cv2.imencode(format, image)
+    success, buffer = cv2.imencode('.jpg', image)
     if not success:
-        raise ValueError(f"Could not encode image to {format} format.")
-    return base64.b64encode(buffer).decode('utf-8')
+        raise ValueError("Could not encode image to JPEG format.")
+
+    encoded_image = base64.b64encode(buffer).decode('utf-8')
+    return encoded_image
+
 
 def compose_headers(api_key: str) -> dict:
-    """
-    Composes the headers needed for an API request.
-
-    Parameters:
-        api_key (str): The API key for authenticating requests.
-
-    Returns:
-        dict: A dictionary of headers.
-    """
     return {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}"
     }
 
-def compose_openai_payload(image_base64: str, prompt: str) -> dict:
-    """
-    Composes the payload for a request to the OpenAI API.
 
-    Parameters:
-        image_base64 (str): The base64-encoded string of the image.
-        prompt (str): The textual prompt to accompany the image.
-
-    Returns:
-        dict: A dictionary representing the payload for the API request.
-    """
+def compose_payload(image: np.ndarray, prompt: str) -> dict:
+    base64_image = encode_image_to_base64(image)
     return {
         "model": "gpt-4-vision-preview",
         "messages": [
-            {"role": "system", "content": [META_PROMPT]},
+            {
+                "role": "system",
+                "content": [
+                    META_PROMPT
+                ]
+            },
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": prompt},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}}
+                    {
+                        "type": "text",
+                        "text": prompt
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image}"
+                        }
+                    }
                 ]
             }
         ],
@@ -84,20 +90,30 @@ def prompt_image_local(image: np.ndarray, prompt: str, server_url: str, custom_p
 
 def prompt_image(api_key: str, image: np.ndarray, prompt: str) -> str:
     """
-    Sends an image and a textual prompt to the OpenAI API.
+    Sends an image and a textual prompt to the OpenAI API and returns the API's textual
+    response.
+
+    This function integrates an image with a user-defined prompt to generate a response
+    using OpenAI's API.
 
     Parameters:
-        api_key (str): The API key.
+        api_key (str): The API key for authenticating requests to the OpenAI API.
         image (np.ndarray): The image to be sent to the API.
-        prompt (str): The textual prompt to accompany the image.
+            used in OpenCV.
+        prompt (str): The textual prompt to accompany the image in the API request.
 
     Returns:
-        str: The response from the OpenAI API.
+        str: The textual response from the OpenAI API based on the input image and
+            prompt.
+
+    Raises:
+        ValueError: If there is an error in encoding the image or if the API response
+            contains an error.
     """
-    image_base64 = encode_image_to_base64(image)
-    payload = compose_openai_payload(image_base64, prompt)
-    headers = compose_headers(api_key)
-    response = requests.post(OPENAI_API_URL, headers=headers, json=payload).json()
+    headers = compose_headers(api_key=api_key)
+    payload = compose_payload(image=image, prompt=prompt)
+    response = requests.post(url=API_URL, headers=headers, json=payload).json()
+
     if 'error' in response:
         raise ValueError(response['error']['message'])
     return response['choices'][0]['message']['content']
