@@ -8,7 +8,7 @@ from typing import Optional
 from maestro.postprocessing.mask import masks_to_marks
 
 
-class SegmentAnythingMarkGenerator:
+class SegmentAnything:
     """
     A class for performing image segmentation using a specified model.
 
@@ -28,7 +28,7 @@ class SegmentAnythingMarkGenerator:
             image_processor=self.image_processor,
             device=self.device)
 
-    def generate(
+    def predict(
         self,
         image: np.ndarray,
         mask: Optional[np.ndarray] = None

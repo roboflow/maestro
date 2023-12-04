@@ -1,9 +1,15 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
 class BasePromptCreator(ABC):
-    pass
+
+    @abstractmethod
+    def create(self, *args, **kwargs):
+        pass
 
 
 class BaseResponseProcessor(ABC):
-    pass
+
+    @abstractmethod
+    def process(self, *args, **kwargs):
+        pass

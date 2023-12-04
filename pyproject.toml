@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "maestro"
-version = "0.1.1rc1"
+version = "0.2.0rc1"
 description = "Visual Prompting for Large Multimodal Models (LMMs)"
 authors = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
 maintainers = ["Piotr Skalski <piotr.skalski92@gmail.com>"]
@@ -34,7 +34,7 @@ classifiers=[
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.12.0"
-supervision = "^0.17.0rc4"
+supervision = "^0.17.0rc6"
 requests = "^2.31.0"
 transformers = "^4.35.2"
 

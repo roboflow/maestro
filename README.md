@@ -31,8 +31,6 @@ pip install maestro
 
 ## 🔌 API
 
-🚧 The project is still under construction. The redesigned API is coming soon.
-
 ![maestro-docs-Snap](https://github.com/roboflow/multimodal-maestro/assets/26109316/a787b7c0-527e-465a-9ca9-d46f4d63ea53)
 
 ## 🚀 examples
@@ -50,61 +48,7 @@ Find dog.
 
 <br>
 
-- **load image**
-
-  ```python
-  import cv2
-  
-  image = cv2.imread("...")
-  ```
-
-- **create and refine marks**
-
-  ```python
-  import maestro
-  
-  generator = maestro.SegmentAnythingMarkGenerator(device='cuda')
-  marks = generator.generate(image=image)
-  marks = maestro.refine_marks(marks=marks)
-  ```
-
-- **visualize marks**
-
-  ```python
-  mark_visualizer = maestro.MarkVisualizer()
-  marked_image = mark_visualizer.visualize(image=image, marks=marks)
-  ```
-  ![image-vs-marked-image](https://github.com/roboflow/multimodal-maestro/assets/26109316/92951ed2-65c0-475a-9279-6fd344757092)
-
-- **prompt**
-
-  ```python
-  prompt = "Find dog."
-  
-  response = maestro.prompt_image(api_key=api_key, image=marked_image, prompt=prompt)
-  ```
-  
-  ```
-  >>> "The dog is prominently featured in the center of the image with the label [9]."
-  ```
-
-- **extract related marks**
-
-  ```python
-  masks = maestro.extract_relevant_masks(text=response, detections=refined_marks)
-  ```
-  
-  ```
-  >>> {'6': array([
-  ...     [False, False, False, ..., False, False, False],
-  ...     [False, False, False, ..., False, False, False],
-  ...     [False, False, False, ..., False, False, False],
-  ...     ...,
-  ...     [ True,  True,  True, ..., False, False, False],
-  ...     [ True,  True,  True, ..., False, False, False],
-  ...     [ True,  True,  True, ..., False, False, False]])
-  ... }
-  ```
+TODO: Add new API example.
 
 </details>
 
@@ -112,7 +56,6 @@ Find dog.
 
 ## 🚧 roadmap
 
-- [ ] Rewriting the `maestro` API.
 - [ ] Update [HF space](https://huggingface.co/spaces/Roboflow/SoM).
 - [ ] Documentation page.
 - [ ] Add GroundingDINO prompting strategy.
