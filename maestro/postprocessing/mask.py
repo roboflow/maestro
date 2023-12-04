@@ -183,6 +183,10 @@ def masks_to_marks(masks: np.ndarray) -> sv.Detections:
         sv.Detections: An object containing the masks and their bounding box
             coordinates.
     """
+    if len(masks) == 0:
+        marks = sv.Detections.empty()
+        marks.mask = np.empty((0, 0, 0), dtype=bool)
+        return marks
     return sv.Detections(
         mask=masks,
         xyxy=sv.mask_to_xyxy(masks=masks)
