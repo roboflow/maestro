@@ -35,9 +35,15 @@ pip install maestro
 
 ![maestro-docs-Snap](https://github.com/roboflow/multimodal-maestro/assets/26109316/a787b7c0-527e-465a-9ca9-d46f4d63ea53)
 
-## 🚀 examples
+## 🧑‍🍳 prompting cookbooks
 
-### GPT-4 Vision
+| Name                                                                                                                                       | Description                                                     | Colab                                                                                                                                               |
+|:-------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Multimodal Maestro + GPT-4V](https://github.com/roboflow/multimodal-maestro/blob/develop/cookbooks/multimodal_maestro_gpt_4_vision.ipynb) | Prompt LMMs with Multimodal Maestro                             | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/develop/cookbooks/multimodal_maestro_gpt_4_vision.ipynb)  |
+| [GroundingDINO + GPT-4V](https://github.com/roboflow/multimodal-maestro/blob/develop/cookbooks/grounding_dino_and_gpt4_vision.ipynb)       | Manually annotate ONE image and let GPT-4V annotate ALL of them | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/develop/cookbooks/grounding_dino_and_gpt4_vision.ipynb)   |
+
+
+## 🚀 example
 
 ```
 Find dog.
