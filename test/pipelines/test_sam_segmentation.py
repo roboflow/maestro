@@ -2,7 +2,7 @@ from typing import List
 
 import pytest
 
-from maestro.pipelines.sam_segmentation import extract_mark_ids
+from maestro.pipelines.sam_segmentation import SamResponseProcessor
 
 
 @pytest.mark.parametrize(
@@ -16,5 +16,5 @@ from maestro.pipelines.sam_segmentation import extract_mark_ids
     ]
 )
 def test_extract_marks_in_brackets(text: str, expected_result: List[str]) -> None:
-    result = extract_mark_ids(text=text)
+    result = SamResponseProcessor.extract_mark_ids(text=text)
     assert result == expected_result

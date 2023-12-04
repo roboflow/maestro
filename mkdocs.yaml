@@ -1,7 +1,7 @@
 site_name: multimodal-maestro
 site_url: https://roboflow.github.io/multimodal-maestro/
 site_author: Roboflow
-site_description: Effective prompting for Large Multimodal Models like GPT-4 Vision or LLaVA. 🔥
+site_description: Effective prompting for Large Multimodal Models like GPT-4 Vision or CogVLM. 🔥
 repo_name: roboflow/multimodal-maestro
 repo_url: https://github.com/roboflow/multimodal-maestro
 edit_uri: https://github.com/roboflow/multimodal-maestro/tree/main/docs
@@ -20,7 +20,6 @@ extra:
 
 nav:
   - Home: index.md
-  - Get Started: get_started.md
   - API:
       - Pipelines:
           - SAM Segmentation: pipelines/sam_segmentation.md

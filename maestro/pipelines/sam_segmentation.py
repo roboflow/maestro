@@ -14,6 +14,19 @@ from maestro.wrappers.sam import SegmentAnything
 
 
 class SamPromptCreator(BasePromptCreator):
+    """
+    A class for creating prompts using the SegmentAnything model.
+
+    Args:
+        device (str): Device to run the model on, e.g., 'cpu' or 'gpu'.
+        model_name (str): Name of the pre-trained model to use.
+        maximum_hole_area (float): Maximum relative area for holes in the mask.
+        maximum_island_area (float): Maximum relative area for islands in the mask.
+        minimum_mask_area (float): Minimum relative area to consider a mask valid.
+        maximum_mask_area (float): Maximum relative area to consider a mask valid.
+        iou_threshold (float): Intersection over Union threshold used for mask
+            selection.
+    """
     def __init__(
         self,
         device: str = 'cpu',
@@ -21,17 +34,28 @@ class SamPromptCreator(BasePromptCreator):
         maximum_hole_area: float = 0.01,
         maximum_island_area: float = 0.01,
         minimum_mask_area: float = 0.02,
-        maximum_mask_area: float = 1.0
+        maximum_mask_area: float = 1.0,
+        iou_threshold: float = 0.5
     ) -> None:
         self.model = SegmentAnything(device=device, model_name=model_name)
         self.maximum_hole_area = maximum_hole_area
         self.maximum_island_area = maximum_island_area
         self.minimum_mask_area = minimum_mask_area
         self.maximum_mask_area = maximum_mask_area
-        self.iou_threshold = 0.5
+        self.iou_threshold = iou_threshold
 
     @staticmethod
     def annotate(image: np.ndarray, marks: sv.Detections) -> np.ndarray:
+        """
+        Annotates an image with labels and polygons based on detection marks.
+
+        Args:
+            image (np.ndarray): The image to be annotated.
+            marks (sv.Detections): Detection marks to be annotated on the image.
+
+        Returns:
+            np.ndarray: Annotated image.
+        """
         h, w, _ = image.shape
         text_scale = sv.calculate_dynamic_text_scale(resolution_wh=(w, h))
         line_thickness = sv.calculate_dynamic_line_thickness(resolution_wh=(w, h))
@@ -54,6 +78,15 @@ class SamPromptCreator(BasePromptCreator):
             scene=annotated_image, detections=marks, labels=labels)
 
     def refine(self, marks: sv.Detections) -> sv.Detections:
+        """
+        Refines detection marks.
+
+        Args:
+            marks (sv.Detections): Initial detection marks to be refined.
+
+        Returns:
+            sv.Detections: Refined detection marks.
+        """
         total_area = marks.mask.shape[1] * marks.mask.shape[2]
         masks = []
         for mask in marks.mask:
@@ -82,6 +115,18 @@ class SamPromptCreator(BasePromptCreator):
         image: np.ndarray,
         mask: Optional[np.ndarray] = None
     ) -> Tuple[str, np.ndarray, sv.Detections]:
+        """
+        Creates a prompt by predicting, refining, and annotating marks on an image.
+
+        Args:
+            text (str): Textual input for the prompt.
+            image (np.ndarray): Image input for the prompt.
+            mask (Optional[np.ndarray]): Optional mask for segmentation.
+
+        Returns:
+            Tuple[str, np.ndarray, sv.Detections]: Tuple containing the text, annotated
+                image, and detection marks.
+        """
         marks = self.model.predict(image=image, mask=mask)
         marks = self.refine(marks)
         annotated_image = self.annotate(image=image, marks=marks)
@@ -89,6 +134,9 @@ class SamPromptCreator(BasePromptCreator):
 
 
 class SamResponseProcessor(BaseResponseProcessor):
+    """
+    A class to process responses using the detection marks.
+    """
 
     @staticmethod
     def extract_mark_ids(text: str) -> List[str]:
@@ -109,12 +157,32 @@ class SamResponseProcessor(BaseResponseProcessor):
         return sorted(unique_marks, key=int, reverse=False)
 
     def process(self, text: str, marks: sv.Detections) -> sv.Detections:
+        """
+        Processes the given text to filter and select relevant detection marks.
+
+        Args:
+            text (str): Text containing specific marks to be processed.
+            marks (sv.Detections): Detection marks to be filtered.
+
+        Returns:
+            sv.Detections: Filtered detection marks based on the text.
+        """
         mark_ids = self.extract_mark_ids(text=text)
         mark_ids = np.array(mark_ids, dtype=int)
         return marks[mark_ids]
 
     @staticmethod
     def annotate(image: np.ndarray, marks: sv.Detections) -> np.ndarray:
+        """
+        Annotates an image with masks and polygons based on detection marks.
+
+        Args:
+            image (np.ndarray): The image to be annotated.
+            marks (sv.Detections): Detection marks to be annotated on the image.
+
+        Returns:
+            np.ndarray: Annotated image.
+        """
         h, w, _ = image.shape
         line_thickness = sv.calculate_dynamic_line_thickness(resolution_wh=(w, h))
         mask_annotator = sv.MaskAnnotator(
@@ -136,5 +204,17 @@ class SamResponseProcessor(BaseResponseProcessor):
         image: np.ndarray,
         marks: sv.Detections
     ) -> np.ndarray:
+        """
+        Visualizes the processed detection marks on the given image.
+
+        Args:
+            text (str): Text for selecting specific marks.
+            image (np.ndarray): Image to be annotated.
+            marks (sv.Detections): Initial detection marks to be processed and
+                visualized.
+
+        Returns:
+            np.ndarray: Annotated image after visualizing the selected marks.
+        """
         marks = self.process(text=text, marks=marks)
         return self.annotate(image=image, marks=marks)
