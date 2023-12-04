@@ -37,10 +37,10 @@ pip install maestro
 
 ## 🧑‍🍳 prompting cookbooks
 
-| Name                                                                                                                                       | Description                                                     | Colab                                                                                                                                               |
-|:-------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Multimodal Maestro + GPT-4V](https://github.com/roboflow/multimodal-maestro/blob/develop/cookbooks/multimodal_maestro_gpt_4_vision.ipynb) | Prompt LMMs with Multimodal Maestro                             | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/develop/cookbooks/multimodal_maestro_gpt_4_vision.ipynb)  |
-| [GroundingDINO + GPT-4V](https://github.com/roboflow/multimodal-maestro/blob/develop/cookbooks/grounding_dino_and_gpt4_vision.ipynb)       | Manually annotate ONE image and let GPT-4V annotate ALL of them | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/develop/cookbooks/grounding_dino_and_gpt4_vision.ipynb)   |
+| Description                                                     | Colab                                                                                                                                                                                                   |
+|:----------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| Prompt LMMs with Multimodal Maestro                             | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/develop/cookbooks/multimodal_maestro_gpt_4_vision.ipynb) |
+| Manually annotate ONE image and let GPT-4V annotate ALL of them | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/develop/cookbooks/grounding_dino_and_gpt4_vision.ipynb)  |
 
 
 ## 🚀 example
