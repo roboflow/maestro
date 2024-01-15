@@ -195,10 +195,10 @@ def masks_to_marks(masks: np.ndarray) -> sv.Detections:
 
 def refine_marks(
     marks: sv.Detections,
-    maximum_hole_area: float = 0.01,
-    maximum_island_area: float = 0.01,
-    minimum_mask_area: float = 0.02,
-    maximum_mask_area: float = 1.0
+    maximum_hole_area: float = 0,
+    maximum_island_area: float = 0,
+    minimum_mask_area: float = 0,
+    maximum_mask_area: float = 0
 ) -> sv.Detections:
     """
     Refines a set of masks by removing small islands and holes, and filtering by mask
