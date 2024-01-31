@@ -70,6 +70,23 @@ def compose_payload(image: np.ndarray, prompt: str) -> dict:
         "max_tokens": 800
     }
 
+def prompt_image_local(image: np.ndarray, prompt: str, server_url: str, custom_payload: dict) -> str:
+    """
+    Sends an image and a textual prompt to a local LLM server.
+
+    Parameters:
+        image (np.ndarray): The image to be sent to the API.
+        prompt (str): The textual prompt to accompany the image.
+        server_url (str): The URL of the local server.
+        custom_payload (dict): The custom payload for the local server.
+
+    Returns:
+        str: The response from the local API.
+    """
+    image_base64 = encode_image_to_base64(image)
+    payload = custom_payload(image_base64, prompt, META_PROMPT)
+    response = requests.post(server_url, headers={"Content-Type": "application/json"}, json=payload).json()
+    return response.get("content", "Error-- No content found.")
 
 def prompt_image(api_key: str, image: np.ndarray, prompt: str) -> str:
     """

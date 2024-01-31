@@ -6,7 +6,7 @@ try:
 except importlib_metadata.PackageNotFoundError:
     __version__ = "development"
 
-from maestro.lmms.gpt4 import prompt_image
+from maestro.llms.llm import prompt_image, prompt_image_local
 from maestro.markers.sam import SegmentAnythingMarkGenerator
 from maestro.postprocessing.mask import (
     compute_mask_iou_vectorized,
