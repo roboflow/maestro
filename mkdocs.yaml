@@ -31,6 +31,7 @@ theme:
   name: 'material'
   logo: https://media.roboflow.com/open-source/supervision/supervision-lenny.png
   favicon: https://media.roboflow.com/open-source/supervision/supervision-lenny.png
+  custom_dir: docs/theme
   palette:
     # Palette for light mode
     - scheme: default
