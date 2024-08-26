@@ -1,0 +1,2 @@
+SEED_ENV = "SEED"
+DEFAULT_SEED = "42"
