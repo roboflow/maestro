@@ -8,12 +8,12 @@ from torch.utils.data import Dataset
 from maestro.trainer.common.utils.file_system import read_jsonl
 
 
-class Data(Dataset):
+class JSONLDataset(Dataset):
     # TODO: implementation could be better - avoiding loading
     #  whole files to memory
 
     @classmethod
-    def from_jsonl_file(cls, path: str) -> Data:
+    def from_jsonl_file(cls, path: str) -> JSONLDataset:
         file_content = read_jsonl(path=path)
         random.shuffle(file_content)
         return cls(jsons=file_content)
