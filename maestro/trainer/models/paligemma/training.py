@@ -17,6 +17,7 @@ from maestro.trainer.common.configuration.env import (
 )
 from maestro.trainer.common.data_loaders.jsonl import JSONLDataset
 from maestro.trainer.common.utils.metrics_tracing import MetricsTracker
+from maestro.trainer.common.utils.reproducibility import set_random_generators_seeds
 
 DEFAULT_PALIGEMMA_MODEL_ID = "google/paligemma-3b-pt-224"
 DEVICE = torch.device("cpu") if not torch.cuda.is_available() else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
@@ -34,6 +35,7 @@ def train(
     learning_rate: float,
     device: torch.device = DEVICE,
 ) -> MetricsTracker:
+    set_random_generators_seeds()
     if device.type == "cup":
         raise RuntimeError("PaliGemma training process requires GPU")
     metrics_tracker = MetricsTracker.init(metrics=["loss"])
