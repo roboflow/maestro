@@ -104,7 +104,7 @@ def run_training_steps(
     optimizer: Optimizer,
     scheduler: LRScheduler,
     metrics_tracker: MetricsTracker,
-    progress_bar: tqdm[int],
+    progress_bar,
 ) -> None:
     for step in range(1, train_steps + 1):
         batch = collect_batch(
