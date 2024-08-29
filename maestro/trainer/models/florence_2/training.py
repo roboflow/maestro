@@ -194,7 +194,7 @@ def prepare_detection_data_loader(
 ) -> Optional[DataLoader]:
     image_directory_path = os.path.join(dataset_location, split_name)
     jsonl_file_path = os.path.join(dataset_location, split_name, "annotations.jsonl")
-    if os.path.exists(image_directory_path):
+    if not os.path.exists(image_directory_path):
         logging.warning(f"Could not data directory: {image_directory_path}")
         return None
     if not os.path.exists(jsonl_file_path):
