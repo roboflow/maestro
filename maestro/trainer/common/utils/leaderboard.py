@@ -25,6 +25,7 @@ class CheckpointsLeaderboard:
         if loss >= max_loss_in_leaderboard:  # type: ignore
             return False, None
         to_be_removed, _ = self._leaderboard.pop(max_loss_key)  # type: ignore
+        self._leaderboard[epoch] = (path, loss)
         return True, to_be_removed
 
     def get_best_model(self) -> str:
