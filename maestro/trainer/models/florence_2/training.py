@@ -39,7 +39,7 @@ def caption_image(
 ) -> str:
     prompt = _pre_process_prompt(image=image, task=task, prompt=prompt)
     model_device = model.device
-    inputs = processor(text=task, images=image, return_tensors="pt").to(model_device)
+    inputs = processor(text=prompt, images=image, return_tensors="pt").to(model_device)
     generated_ids = model.generate(
         input_ids=inputs["input_ids"],
         pixel_values=inputs["pixel_values"],
