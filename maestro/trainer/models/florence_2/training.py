@@ -31,11 +31,13 @@ def caption_image(
     image: Image.Image,
     processor: AutoProcessor,
     model: AutoModelForCausalLM,
-    task: Literal["<CAPTION>", "<DETAILED_CAPTION>", "<MORE_DETAILED_CAPTION>"],
+    task: Literal["<CAPTION>", "<DETAILED_CAPTION>", "<MORE_DETAILED_CAPTION>", "<VQA>"],
+    prompt: Optional[str] = None,
     max_new_tokens: int = 1024,
     do_sample: bool = False,
     num_beams: int = 3,
 ) -> str:
+    prompt = _pre_process_prompt(image=image, task=task, prompt=prompt)
     model_device = model.device
     inputs = processor(text=task, images=image, return_tensors="pt").to(model_device)
     generated_ids = model.generate(
@@ -56,6 +58,7 @@ TASKS_THAT_REQUIRE_PROMPT = {
     "<REGION_TO_SEGMENTATION>",
     "<REGION_TO_CATEGORY>",
     "<REGION_TO_DESCRIPTION>",
+    "<VQA>",
 }
 
 
@@ -134,19 +137,7 @@ def _prompt_and_retrieve_detections(
     do_sample: bool = False,
     num_beams: int = 3,
 ) -> sv.Detections:
-    if prompt is None:
-        if task in TASKS_THAT_REQUIRE_PROMPT:
-            raise ValueError(f"Task {task} requires prompt")
-        prompt = task
-    elif isinstance(prompt, tuple) or isinstance(prompt, list) or isinstance(prompt, np.ndarray):
-        if len(prompt) != 4:
-            raise ValueError("Expected sequence of 4 elements describing (x_min, y_min, x_max, y_max)")
-        x_min, y_min, x_max, y_max = prompt
-        x_min, x_max = round((x_min / image.width) * 1000), round((x_max / image.width) * 1000)
-        y_min, y_max = round((y_min / image.height) * 1000), round((y_max / image.height) * 1000)
-        prompt = f"{task} <loc_{x_min}><loc_{y_min}><loc_{x_max}><loc_{y_max}>"
-    else:
-        prompt = f"{task} {prompt}"
+    prompt = _pre_process_prompt(image=image, task=task, prompt=prompt)
     model_device = model.device
     inputs = processor(text=prompt, images=image, return_tensors="pt").to(model_device)
     generated_ids = model.generate(
@@ -162,9 +153,27 @@ def _prompt_and_retrieve_detections(
         task=task,
         image_size=(image.width, image.height),
     )
-    print("DEBUG:", prompt, response)
     return sv.Detections.from_lmm(
         lmm=sv.LMM.FLORENCE_2,
         result=response,
         resolution_wh=image.size,
     )
+
+
+def _pre_process_prompt(
+    image: Image.Image,
+    task: str,
+    prompt: Optional[Union[str, tuple, list, np.ndarray]] = None,
+) -> str:
+    if prompt is None:
+        if task in TASKS_THAT_REQUIRE_PROMPT:
+            raise ValueError(f"Task {task} requires prompt")
+        return task
+    if isinstance(prompt, tuple) or isinstance(prompt, list) or isinstance(prompt, np.ndarray):
+        if len(prompt) != 4:
+            raise ValueError("Expected sequence of 4 elements describing (x_min, y_min, x_max, y_max)")
+        x_min, y_min, x_max, y_max = prompt
+        x_min, x_max = round((x_min / image.width) * 1000), round((x_max / image.width) * 1000)
+        y_min, y_max = round((y_min / image.height) * 1000), round((y_max / image.height) * 1000)
+        return f"{task} <loc_{x_min}><loc_{y_min}><loc_{x_max}><loc_{y_max}>"
+    return f"{task} {prompt}"
