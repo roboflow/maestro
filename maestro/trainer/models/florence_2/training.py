@@ -47,7 +47,7 @@ class TrainingConfiguration:
     bias: Literal["none", "all", "lora_only"] = "none"
     use_rslora: bool = True
     init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian"
-    training_dir = "./training/florence-2"
+    training_dir: str = "./training/florence-2"
     max_checkpoints_to_keep: int = 3
 
 
@@ -58,7 +58,7 @@ def train(configuration: TrainingConfiguration) -> None:
     )
     configuration = replace(
         configuration,
-        training_dir=training_run_dir,  # type: ignore
+        training_dir=training_run_dir,
     )
     checkpoints_leaderboard = CheckpointsLeaderboard(
         max_checkpoints=configuration.max_checkpoints_to_keep,
