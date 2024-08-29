@@ -166,8 +166,8 @@ def dump_visualised_samples(
             label_annotator.annotate(
                 prediction_image,
                 predictions[idx],
-            ).convert("BGR")
-        )
+            )
+        )[:, :, ::-1]
         target_image = boxes_annotator.annotate(
             image.copy(),
             targets[idx],
@@ -176,8 +176,8 @@ def dump_visualised_samples(
             label_annotator.annotate(
                 target_image,
                 targets[idx],
-            ).convert("BGR")
-        )
+            )
+        )[:, :, ::-1]
         concatenated = cv2.hconcat([target_image, prediction_image])
         target_image_path = os.path.join(target_dir, image_name)
         cv2.imwrite(target_image_path, concatenated)
