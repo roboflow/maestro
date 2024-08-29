@@ -8,7 +8,7 @@ import numpy as np
 from maestro.trainer.common.configuration.env import SEED_ENV, DEFAULT_SEED
 
 
-def set_random_generators_seeds(
+def make_it_reproducible(
     seed: Optional[int] = None,
     disable_cudnn_benchmark: bool = True,
     avoid_non_deterministic_algorithms: bool = True,
