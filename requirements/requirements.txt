@@ -5,3 +5,5 @@ torch~=2.4.0
 accelerate~=0.33.0
 sentencepiece~=0.2.0
 peft~=0.12.0
+flash-attn~=2.6.3
+einops~=0.8.0
