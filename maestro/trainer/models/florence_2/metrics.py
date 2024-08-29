@@ -138,7 +138,12 @@ def dump_post_processed_outputs(
     result_dict = {
         dataset.dataset.entries[idx]["image"]: output for idx, output in enumerate(post_processed_text_outputs)
     }
-    target_path = os.path.join(training_dir, split_name, f"post_processed_text_predictions_{split_name}.json")
+    target_path = os.path.join(
+        training_dir,
+        "model_debug",
+        split_name,
+        f"post_processed_text_predictions_{split_name}.json",
+    )
     save_json(path=target_path, content=result_dict)
 
 
