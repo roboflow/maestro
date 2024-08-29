@@ -38,4 +38,4 @@ class CheckpointsLeaderboard:
                 min_loss_in_leaderboard = loss
         if min_loss_key is None:
             raise RuntimeError("Could not retrieve best model")
-        return min_loss_key  # type: ignore
+        return self._leaderboard[min_loss_key][0]
