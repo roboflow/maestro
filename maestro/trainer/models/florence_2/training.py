@@ -52,7 +52,7 @@ class TrainingConfiguration:
 
 
 def train(configuration: TrainingConfiguration) -> None:
-    make_it_reproducible()
+    make_it_reproducible(avoid_non_deterministic_algorithms=False)
     training_run_dir = _establish_training_run_dir(
         training_dir=configuration.training_dir,
     )
