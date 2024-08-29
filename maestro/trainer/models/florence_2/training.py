@@ -14,9 +14,10 @@ from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
 from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
 from maestro.trainer.common.utils.leaderboard import CheckpointsLeaderboard
+from maestro.trainer.common.utils.metrics_tracing import MetricsTracker
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
-from maestro.trainer.models.florence_2.metrics import prepare_detection_training_summary
+from maestro.trainer.models.florence_2.metrics import prepare_detection_training_summary, summarise_training_metrics
 from maestro.trainer.models.paligemma.training import LoraInitLiteral
 
 
@@ -89,12 +90,16 @@ def train(configuration: TrainingConfiguration) -> None:
         init_lora_weights=configuration.init_lora_weights,
         revision=configuration.revision,
     )
+    training_metrics_tracker = MetricsTracker.init(metrics=["loss"])
+    validation_metrics_tracker = MetricsTracker.init(metrics=["loss"])
     run_training_loop(
         processor=processor,
         model=peft_model,
         data_loaders=(train_loader, val_loader),
         configuration=configuration,
         checkpoints_leaderboard=checkpoints_leaderboard,
+        training_metrics_tracker=training_metrics_tracker,
+        validation_metrics_tracker=validation_metrics_tracker,
     )
     best_model_path = checkpoints_leaderboard.get_best_model()
     print(f"Loading best model from {best_model_path}")
@@ -114,6 +119,11 @@ def train(configuration: TrainingConfiguration) -> None:
     print(f"Saving best model: {best_model_dir}")
     model.save_pretrained(best_model_dir)
     processor.save_pretrained(best_model_dir)
+    summarise_training_metrics(
+        training_metrics_tracker=training_metrics_tracker,
+        validation_metrics_tracker=validation_metrics_tracker,
+        training_dir=configuration.training_dir,
+    )
     for split_name in ["valid", "test"]:
         prepare_detection_training_summary(
             processor=processor,
@@ -180,6 +190,8 @@ def run_training_loop(
     data_loaders: Tuple[DataLoader, Optional[DataLoader]],
     configuration: TrainingConfiguration,
     checkpoints_leaderboard: CheckpointsLeaderboard,
+    training_metrics_tracker: MetricsTracker,
+    validation_metrics_tracker: MetricsTracker,
 ) -> None:
     train_loader, val_loader = data_loaders
     optimizer = _get_optimizer(model=model, configuration=configuration)
@@ -201,6 +213,8 @@ def run_training_loop(
             optimizer=optimizer,
             lr_scheduler=lr_scheduler,
             checkpoints_leaderboard=checkpoints_leaderboard,
+            training_metrics_tracker=training_metrics_tracker,
+            validation_metrics_tracker=validation_metrics_tracker,
         )
 
 
@@ -214,11 +228,13 @@ def run_training_epoch(
     optimizer: Optimizer,
     lr_scheduler: LRScheduler,
     checkpoints_leaderboard: CheckpointsLeaderboard,
+    training_metrics_tracker: MetricsTracker,
+    validation_metrics_tracker: MetricsTracker,
 ) -> None:
     model.train()
     training_losses: List[float] = []
     training_iterator = tqdm(train_loader, desc=f"Epoch {epoch_number + 1}/{configuration.training_epochs}")
-    for inputs, answers in training_iterator:
+    for step_id, (inputs, answers) in enumerate(training_iterator):
         input_ids = inputs["input_ids"]
         pixel_values = inputs["pixel_values"]
         labels = processor.tokenizer(
@@ -230,7 +246,14 @@ def run_training_epoch(
         optimizer.step()
         lr_scheduler.step()
         optimizer.zero_grad()
-        training_losses.append(loss.item())
+        loss = loss.item()
+        training_metrics_tracker.register(
+            metric="loss",
+            epoch=epoch_number,
+            step=step_id + 1,
+            value=loss,
+        )
+        training_losses.append(loss)
         last_100_losses = training_losses[-100:]
         loss_moving_average = sum(last_100_losses) / len(last_100_losses) if len(last_100_losses) > 0 else 0.0
         training_iterator.set_description(
@@ -247,6 +270,12 @@ def run_training_epoch(
         loader=val_loader,
         epoch_number=epoch_number,
         configuration=configuration,
+    )
+    validation_metrics_tracker.register(
+        metric="loss",
+        epoch=epoch_number,
+        step=1,
+        value=validation_loss,
     )
     checkpoint_dir = os.path.join(configuration.training_dir, "checkpoints", str(epoch_number))
     should_save, to_remove = checkpoints_leaderboard.register_checkpoint(

@@ -3,6 +3,7 @@ import random
 import re
 from typing import List, Tuple
 
+import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 import torch
@@ -12,6 +13,7 @@ from transformers import AutoProcessor, AutoModelForCausalLM
 
 from maestro.trainer.common.data_loaders.datasets import DetectionDataset
 from maestro.trainer.common.utils.file_system import save_json
+from maestro.trainer.common.utils.metrics_tracing import MetricsTracker
 from maestro.trainer.models.florence_2.data_loading import prepare_detection_dataset
 
 
@@ -46,7 +48,7 @@ def prepare_detection_training_summary(
     )
     print(f"{split_name} | map50_95: {mean_average_precision.map50_95:.2f}")
     print(f"{split_name} | map50: {mean_average_precision.map50:.2f}")
-    print(f"{split_name} |map75: {mean_average_precision.map75:.2f}")
+    print(f"{split_name} | map75: {mean_average_precision.map75:.2f}")
     dump_metrics(
         training_dir=training_dir,
         split_name=split_name,
@@ -118,7 +120,7 @@ def dump_metrics(
     split_name: str,
     metrics: sv.MeanAveragePrecision,
 ) -> None:
-    target_path = os.path.join(training_dir, split_name, f"metrics_{split_name}.json")
+    target_path = os.path.join(training_dir, "metrics", split_name, f"metrics_{split_name}.json")
     content = {
         "map50_95": metrics.map50_95,
         "map50": metrics.map50,
@@ -181,3 +183,43 @@ def dump_visualised_samples(
         concatenated = cv2.hconcat([target_image, prediction_image])
         target_image_path = os.path.join(target_dir, image_name)
         cv2.imwrite(target_image_path, concatenated)
+
+
+def summarise_training_metrics(
+    training_metrics_tracker: MetricsTracker,
+    validation_metrics_tracker: MetricsTracker,
+    training_dir: str,
+) -> None:
+    summarise_metrics(metrics_tracker=training_metrics_tracker, training_dir=training_dir, split_name="train")
+    summarise_metrics(metrics_tracker=validation_metrics_tracker, training_dir=training_dir, split_name="valid")
+
+
+def summarise_metrics(
+    metrics_tracker: MetricsTracker,
+    training_dir: str,
+    split_name: str,
+) -> None:
+    plots_dir_path = os.path.join(training_dir, "metrics", split_name)
+    for metric_name in metrics_tracker.describe_metrics():
+        plot_path = os.path.join(plots_dir_path, f"metric_{metric_name}_plot.png")
+        plt.clf()
+        metric_values_with_index = metrics_tracker.get_metric_values(
+            metric=metric_name,
+            with_index=True,
+        )
+        xs = np.arange(0, len(metric_values_with_index))
+        xticks_xs, xticks_labels = [], []
+        previous = None
+        for v, x in zip(metric_values_with_index, xs):
+            if v[0] != previous:
+                xticks_xs.append(x)
+                xticks_labels.append(v[0])
+            previous = v[0]
+        ys = [e[2] for e in metric_values_with_index]
+        plt.scatter(xs, ys, marker="x")
+        plt.plot(xs, ys, linestyle="dashed", linewidth=0.3)
+        plt.title(f"Value of {metric_name} for {split_name} set")
+        plt.xticks(xticks_xs, labels=xticks_labels)
+        plt.xlabel("Epochs")
+        plt.savefig(plot_path, dpi=120)
+        plt.clf()
