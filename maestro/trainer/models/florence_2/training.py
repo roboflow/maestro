@@ -162,6 +162,7 @@ def _prompt_and_retrieve_detections(
         task=task,
         image_size=(image.width, image.height),
     )
+    print("DEBUG:", prompt, response)
     return sv.Detections.from_lmm(
         lmm=sv.LMM.FLORENCE_2,
         result=response,
