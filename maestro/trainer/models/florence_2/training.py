@@ -284,12 +284,8 @@ def run_training_epoch(
 ) -> None:
     model.train()
     training_losses: List[float] = []
-    last_100_losses = training_losses[-100:]
-    loss_moving_average = sum(last_100_losses) / len(last_100_losses) if len(last_100_losses) > 0 else 0.0
-    for inputs, answers in tqdm(
-        train_loader,
-        desc=f"Epoch {epoch_number + 1}/{configuration.training_epochs}. " f"Loss: {round(loss_moving_average, 4)}",
-    ):
+    training_iterator = tqdm(train_loader, desc=f"Epoch {epoch_number + 1}/{configuration.training_epochs}")
+    for inputs, answers in training_iterator:
         input_ids = inputs["input_ids"]
         pixel_values = inputs["pixel_values"]
         labels = processor.tokenizer(
@@ -302,6 +298,11 @@ def run_training_epoch(
         lr_scheduler.step()
         optimizer.zero_grad()
         training_losses.append(loss.item())
+        last_100_losses = training_losses[-100:]
+        loss_moving_average = sum(last_100_losses) / len(last_100_losses) if len(last_100_losses) > 0 else 0.0
+        training_iterator.set_description(
+            f"Epoch {epoch_number + 1}/{configuration.training_epochs}. Loss: {round(loss_moving_average, 4)}"
+        )
     if len(training_losses) > 0:
         avg_train_loss = sum(training_losses) / len(training_losses)
         print(f"Average Training Loss: {avg_train_loss}")
