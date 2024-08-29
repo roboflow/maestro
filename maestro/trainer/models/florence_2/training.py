@@ -1,6 +1,7 @@
 import os
 from typing import Optional, Tuple, Literal, Union
 
+import numpy as np
 import torch
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoProcessor
@@ -53,6 +54,8 @@ TASKS_THAT_REQUIRE_PROMPT = {
     "<CAPTION_TO_PHRASE_GROUNDING>",
     "<REFERRING_EXPRESSION_SEGMENTATION>",
     "<REGION_TO_SEGMENTATION>",
+    "<REGION_TO_CATEGORY>",
+    "<REGION_TO_DESCRIPTION>",
 }
 
 
@@ -64,7 +67,7 @@ def segment_objects(
         "<REFERRING_EXPRESSION_SEGMENTATION>",
         "<REGION_TO_SEGMENTATION>",
     ],
-    prompt: Optional[Union[str, tuple]] = None,
+    prompt: Optional[Union[str, tuple, list, np.ndarray]] = None,
     max_new_tokens: int = 1024,
     do_sample: bool = False,
     num_beams: int = 3,
@@ -94,7 +97,7 @@ def detect_objects(
         "<REGION_TO_CATEGORY>",
         "<REGION_TO_DESCRIPTION>",
     ],
-    prompt: Optional[Union[str, tuple]] = None,
+    prompt: Optional[Union[str, tuple, list, np.ndarray]] = None,
     max_new_tokens: int = 1024,
     do_sample: bool = False,
     num_beams: int = 3,
@@ -126,7 +129,7 @@ def _prompt_and_retrieve_detections(
         "<REFERRING_EXPRESSION_SEGMENTATION>",
         "<REGION_TO_SEGMENTATION>",
     ],
-    prompt: Optional[Union[str, tuple]] = None,
+    prompt: Optional[Union[str, tuple, list, np.ndarray]] = None,
     max_new_tokens: int = 1024,
     do_sample: bool = False,
     num_beams: int = 3,
@@ -135,11 +138,12 @@ def _prompt_and_retrieve_detections(
         if task in TASKS_THAT_REQUIRE_PROMPT:
             raise ValueError(f"Task {task} requires prompt")
         prompt = task
-    elif isinstance(prompt, tuple):
+    elif isinstance(prompt, tuple) or isinstance(prompt, list) or isinstance(prompt, np.ndarray):
+        if len(prompt) != 4:
+            raise ValueError("Expected sequence of 4 elements describing (x_min, y_min, x_max, y_max)")
         x_min, y_min, x_max, y_max = prompt
-        x_min, x_max = round(x_min / image.width), round(x_max / image.width)
-        y_min, y_max = round(y_min / image.height), round(y_max / image.height)
-        prompt = f"{task} <loc_{x_min}><loc_{y_min}><loc_{x_max}><loc_{y_max}>"
+        x_min, x_max = round((x_min / image.width) * 1000), round((x_max / image.width) * 1000)
+        y_min, y_max = round((y_min / image.height) * 1000), round((y_max / image.height) * 1000)
     else:
         prompt = f"{task} {prompt}"
     model_device = model.device
