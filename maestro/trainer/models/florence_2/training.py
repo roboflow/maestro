@@ -144,7 +144,7 @@ def _prompt_and_retrieve_detections(
         x_min, y_min, x_max, y_max = prompt
         x_min, x_max = round((x_min / image.width) * 1000), round((x_max / image.width) * 1000)
         y_min, y_max = round((y_min / image.height) * 1000), round((y_max / image.height) * 1000)
-        prompt = f"<loc_{x_min}><loc_{y_min}><loc_{x_max}><loc_{y_max}>"
+        prompt = f"{task} <loc_{x_min}><loc_{y_min}><loc_{x_max}><loc_{y_max}>"
     else:
         prompt = f"{task} {prompt}"
     model_device = model.device
