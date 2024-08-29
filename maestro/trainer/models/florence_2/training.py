@@ -275,9 +275,9 @@ def run_validation_epoch(
     val_loss = 0.0
     epoch_marker = ""
     if epoch_number is not None:
-        epoch_marker = f"Epoch {epoch_number + 1}/{configuration.training_epochs}"
+        epoch_marker = f"| Epoch {epoch_number + 1}/{configuration.training_epochs}"
     with torch.no_grad():
-        for inputs, answers in tqdm(loader, desc=f"{title} | {epoch_marker}"):
+        for inputs, answers in tqdm(loader, desc=f"{title} {epoch_marker}"):
             input_ids = inputs["input_ids"]
             pixel_values = inputs["pixel_values"]
             labels = processor.tokenizer(
