@@ -1,12 +1,9 @@
-import logging
 import os
 import shutil
-from dataclasses import dataclass, replace
-from functools import partial
+from dataclasses import replace, dataclass
 from glob import glob
 from typing import Optional, Tuple, List, Literal, Union
 
-from PIL import Image
 import torch
 from peft import PeftModel, LoraConfig, get_peft_model
 from torch.optim import Optimizer, AdamW, Adam, SGD
@@ -16,10 +13,12 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
 from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
-from maestro.trainer.common.data_loaders.datasets import DetectionDataset
 from maestro.trainer.common.utils.leaderboard import CheckpointsLeaderboard
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
+from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
+from maestro.trainer.models.florence_2.metrics import prepare_detection_training_summary
 from maestro.trainer.models.paligemma.training import LoraInitLiteral
+
 
 DEFAULT_FLORENCE2_MODEL_ID = "microsoft/Florence-2-base-ft"
 DEFAULT_FLORENCE2_MODEL_REVISION = "refs/pr/20"
@@ -49,6 +48,7 @@ class TrainingConfiguration:
     init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian"
     training_dir: str = "./training/florence-2"
     max_checkpoints_to_keep: int = 3
+    num_samples_to_visualise: int = 64
 
 
 def train(configuration: TrainingConfiguration) -> None:
@@ -114,6 +114,16 @@ def train(configuration: TrainingConfiguration) -> None:
     print(f"Saving best model: {best_model_dir}")
     model.save_pretrained(best_model_dir)
     processor.save_pretrained(best_model_dir)
+    for split_name in ["valid", "test"]:
+        prepare_detection_training_summary(
+            processor=processor,
+            model=model,
+            dataset_location=configuration.dataset_location,
+            split_name=split_name,
+            training_dir=configuration.training_dir,
+            num_samples_to_visualise=configuration.num_samples_to_visualise,
+            device=configuration.device,
+        )
 
 
 def load_model(
@@ -134,83 +144,6 @@ def load_model(
         cache_dir=cache_dir,
     ).to(device)
     return processor, model
-
-
-def prepare_data_loaders(
-    dataset_location: str,
-    train_batch_size: int,
-    processor: AutoProcessor,
-    device: torch.device,
-    num_workers: int = 0,
-    test_batch_size: Optional[int] = None,
-    test_loaders_workers: Optional[int] = None,
-) -> Tuple[
-    DataLoader,
-    Optional[DataLoader],
-    Optional[DataLoader],
-]:
-    test_batch_size = test_batch_size or train_batch_size
-    test_loaders_workers = test_loaders_workers or num_workers
-    train_data_loader = prepare_detection_data_loader(
-        dataset_location=dataset_location,
-        split_name="train",
-        batch_size=train_batch_size,
-        processor=processor,
-        device=device,
-        num_workers=num_workers,
-        shuffle=True,
-    )
-    if train_data_loader is None:
-        raise RuntimeError("Could not initialise train data loader")
-    valid_data_loader = prepare_detection_data_loader(
-        dataset_location=dataset_location,
-        split_name="valid",
-        batch_size=test_batch_size,
-        processor=processor,
-        device=device,
-        num_workers=test_loaders_workers,
-        shuffle=False,
-    )
-    test_data_loader = prepare_detection_data_loader(
-        dataset_location=dataset_location,
-        split_name="test",
-        batch_size=test_batch_size,
-        processor=processor,
-        device=device,
-        num_workers=test_loaders_workers,
-        shuffle=False,
-    )
-    return train_data_loader, valid_data_loader, test_data_loader
-
-
-def prepare_detection_data_loader(
-    dataset_location: str,
-    split_name: str,
-    batch_size: int,
-    processor: AutoProcessor,
-    device: torch.device,
-    num_workers: int = 0,
-    shuffle: bool = True,
-) -> Optional[DataLoader]:
-    image_directory_path = os.path.join(dataset_location, split_name)
-    jsonl_file_path = os.path.join(dataset_location, split_name, "annotations.jsonl")
-    if not os.path.exists(image_directory_path):
-        logging.warning(f"Could not data directory: {image_directory_path}")
-        return None
-    if not os.path.exists(jsonl_file_path):
-        logging.warning(f"Could not find JSONL file: {jsonl_file_path}")
-        return None
-    dataset = DetectionDataset(
-        jsonl_file_path=jsonl_file_path,
-        image_directory_path=image_directory_path,
-    )
-    return DataLoader(
-        dataset,
-        batch_size=batch_size,
-        collate_fn=partial(_collate_fn, processor=processor, device=device),
-        num_workers=num_workers,
-        shuffle=shuffle,
-    )
 
 
 def prepare_peft_model(
@@ -384,13 +317,3 @@ def _get_optimizer(model: PeftModel, configuration: TrainingConfiguration) -> Op
     if configuration.optimiser == "adam":
         return Adam(model.parameters(), lr=configuration.learning_rate)
     return SGD(model.parameters(), lr=configuration.learning_rate)
-
-
-def _collate_fn(
-    batch: Tuple[List[str], List[str], List[Image.Image]],
-    processor: AutoProcessor,
-    device: torch.device,
-) -> Tuple[torch.Tensor, torch.Tensor]:
-    questions, answers, images = zip(*batch)
-    inputs = processor(text=list(questions), images=list(images), return_tensors="pt", padding=True).to(device)
-    return inputs, answers

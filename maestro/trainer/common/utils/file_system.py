@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Union, List
 
 
@@ -26,3 +27,14 @@ def read_file(
     if not strip_white_spaces:
         return lines
     return [line.strip() for line in lines]
+
+
+def save_json(path: str, content: dict) -> None:
+    ensure_parent_dir_exists(path=path)
+    with open(path, "w") as f:
+        json.dump(content, f, indent=4)
+
+
+def ensure_parent_dir_exists(path: str) -> None:
+    parent_dir = os.path.dirname(os.path.abspath(path))
+    os.makedirs(parent_dir, exist_ok=True)
