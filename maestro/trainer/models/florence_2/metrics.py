@@ -200,6 +200,7 @@ def summarise_metrics(
     split_name: str,
 ) -> None:
     plots_dir_path = os.path.join(training_dir, "metrics", split_name)
+    os.makedirs(plots_dir_path, exist_ok=True)
     for metric_name in metrics_tracker.describe_metrics():
         plot_path = os.path.join(plots_dir_path, f"metric_{metric_name}_plot.png")
         plt.clf()
