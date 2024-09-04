@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import os
 from collections import defaultdict
 from typing import Dict, Tuple, List
 
@@ -30,6 +32,28 @@ class MetricsTracker:
             return self._metrics[metric]
         return [value[2] for value in self._metrics[metric]]
 
+    def as_json(
+        self,
+        output_dir: str = None,
+        filename: str = None
+    ) -> Dict[str, List[Dict[str, float]]]:
+        metrics_data = {}
+        for metric, values in self._metrics.items():
+            metrics_data[metric] = [
+                {'epoch': epoch, 'step': step, 'value': value}
+                for epoch, step, value
+                in values
+            ]
+
+        if output_dir and filename:
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            filepath = os.path.join(output_dir, filename)
+            with open(filepath, 'w') as file:
+                json.dump(metrics_data, file, indent=4)
+
+        return metrics_data
+
 
 def aggregate_by_epoch(metric_values: List[Tuple[int, int, float]]) -> Dict[int, float]:
     epoch_data = defaultdict(list)
@@ -48,6 +72,9 @@ def save_metric_plots(
     validation_tracker: MetricsTracker,
     output_dir: str
 ):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     training_metrics = training_tracker.describe_metrics()
     validation_metrics = validation_tracker.describe_metrics()
     all_metrics = set(training_metrics + validation_metrics)

@@ -125,8 +125,15 @@ def train(configuration: TrainingConfiguration) -> None:
     save_metric_plots(
         training_tracker=training_metrics_tracker,
         validation_tracker=validation_metrics_tracker,
-        output_dir=configuration.training_dir,
+        output_dir=os.path.join(configuration.training_dir, "metrics"),
     )
+    training_metrics_tracker.as_json(
+        output_dir=os.path.join(configuration.training_dir, "metrics"),
+        filename="training.json")
+    validation_metrics_tracker.as_json(
+        output_dir=os.path.join(configuration.training_dir, "metrics"),
+        filename="validation.json")
+
     for split_name in ["valid", "test"]:
         prepare_detection_training_summary(
             processor=processor,
