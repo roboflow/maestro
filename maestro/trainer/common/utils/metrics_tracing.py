@@ -62,8 +62,8 @@ def save_metric_plots(
             training_epochs = sorted(training_avg_values.keys())
             training_vals = [training_avg_values[epoch] for epoch in training_epochs]
             plt.plot(
-                x=training_epochs,
-                y=training_vals,
+                training_epochs,
+                training_vals,
                 label=f'Training {metric}',
                 marker='o',
                 linestyle='-',
@@ -81,8 +81,8 @@ def save_metric_plots(
                 in validation_epochs
             ]
             plt.plot(
-                x=validation_epochs,
-                y=validation_vals,
+                validation_epochs,
+                validation_vals,
                 label=f'Validation {metric}',
                 marker='o',
                 linestyle='--',
