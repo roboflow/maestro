@@ -101,39 +101,42 @@ def train(configuration: TrainingConfiguration) -> None:
         training_metrics_tracker=training_metrics_tracker,
         validation_metrics_tracker=validation_metrics_tracker,
     )
-    best_model_path = checkpoints_leaderboard.get_best_model()
-    print(f"Loading best model from {best_model_path}")
-    processor, model = load_model(
-        model_id_or_path=best_model_path,
-    )
-    if test_loader is not None:
-        run_validation_epoch(
-            processor=processor,
-            model=model,
-            loader=test_loader,
-            epoch_number=None,
-            configuration=configuration,
-            title="Test",
-        )
-    best_model_dir = os.path.join(configuration.training_dir, "best_model")
-    print(f"Saving best model: {best_model_dir}")
-    model.save_pretrained(best_model_dir)
-    processor.save_pretrained(best_model_dir)
-    summarise_training_metrics(
-        training_metrics_tracker=training_metrics_tracker,
-        validation_metrics_tracker=validation_metrics_tracker,
-        training_dir=configuration.training_dir,
-    )
-    for split_name in ["valid", "test"]:
-        prepare_detection_training_summary(
-            processor=processor,
-            model=model,
-            dataset_location=configuration.dataset_location,
-            split_name=split_name,
-            training_dir=configuration.training_dir,
-            num_samples_to_visualise=configuration.num_samples_to_visualise,
-            device=configuration.device,
-        )
+
+    return training_metrics_tracker, validation_metrics_tracker
+
+    # best_model_path = checkpoints_leaderboard.get_best_model()
+    # print(f"Loading best model from {best_model_path}")
+    # processor, model = load_model(
+    #     model_id_or_path=best_model_path,
+    # )
+    # if test_loader is not None:
+    #     run_validation_epoch(
+    #         processor=processor,
+    #         model=model,
+    #         loader=test_loader,
+    #         epoch_number=None,
+    #         configuration=configuration,
+    #         title="Test",
+    #     )
+    # best_model_dir = os.path.join(configuration.training_dir, "best_model")
+    # print(f"Saving best model: {best_model_dir}")
+    # model.save_pretrained(best_model_dir)
+    # processor.save_pretrained(best_model_dir)
+    # summarise_training_metrics(
+    #     training_metrics_tracker=training_metrics_tracker,
+    #     validation_metrics_tracker=validation_metrics_tracker,
+    #     training_dir=configuration.training_dir,
+    # )
+    # for split_name in ["valid", "test"]:
+    #     prepare_detection_training_summary(
+    #         processor=processor,
+    #         model=model,
+    #         dataset_location=configuration.dataset_location,
+    #         split_name=split_name,
+    #         training_dir=configuration.training_dir,
+    #         num_samples_to_visualise=configuration.num_samples_to_visualise,
+    #         device=configuration.device,
+    #     )
 
 
 def load_model(
