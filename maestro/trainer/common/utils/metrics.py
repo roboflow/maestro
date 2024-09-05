@@ -2,10 +2,43 @@ from __future__ import annotations
 
 import json
 import os
+from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Any
 
 import matplotlib.pyplot as plt
+
+
+class BaseMetric(ABC):
+    """
+    Abstract base class for custom metrics. Subclasses must implement
+    the 'describe' and 'compute' methods.
+    """
+
+    @abstractmethod
+    def describe(self) -> List[str]:
+        """
+        Describe the names of the metrics that this class will compute.
+
+        Returns:
+            List[str]: A list of metric names that will be computed.
+        """
+        pass
+
+    @abstractmethod
+    def compute(self, targets: List[Any], predictions: List[Any]) -> Dict[str, float]:
+        """
+        Compute the metric based on the targets and predictions.
+
+        Args:
+            targets (List[Any]): The ground truth.
+            predictions (List[Any]): The prediction result.
+
+        Returns:
+            Dict[str, float]: A dictionary of computed metrics with metric names as
+                keys and their values.
+        """
+        pass
 
 
 class MetricsTracker:

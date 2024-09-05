@@ -1,21 +1,41 @@
 import os
 import random
 import re
-from typing import List, Tuple
+from typing import List, Dict
+from typing import Tuple
 
 import cv2
 import numpy as np
-import torch
 import supervision as sv
+import torch
+from supervision.metrics.mean_average_precision import MeanAveragePrecision
 from tqdm import tqdm
 from transformers import AutoProcessor, AutoModelForCausalLM
 
 from maestro.trainer.common.data_loaders.datasets import DetectionDataset
 from maestro.trainer.common.utils.file_system import save_json
+from maestro.trainer.common.utils.metrics import BaseMetric
 from maestro.trainer.models.florence_2.data_loading import prepare_detection_dataset
 
-
 DETECTION_CLASS_PATTERN = r"([a-zA-Z0-9 ]+ of [a-zA-Z0-9 ]+)<loc_\d+>"
+
+
+class MeanAveragePrecisionMetric(BaseMetric):
+
+    def describe(self) -> List[str]:
+        return ["map50:95", "map50", "map75"]
+
+    def compute(
+        self,
+        targets: List[sv.Detections],
+        predictions: List[sv.Detections]
+    ) -> Dict[str, float]:
+        result = MeanAveragePrecision().update(targets, predictions).compute()
+        return {
+            "map50:95": result.map50_95,
+            "map50": result.map50,
+            "map75": result.map75
+        }
 
 
 def prepare_detection_training_summary(

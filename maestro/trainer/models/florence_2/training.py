@@ -1,6 +1,6 @@
 import os
 import shutil
-from dataclasses import replace, dataclass
+from dataclasses import replace, dataclass, field
 from glob import glob
 from typing import Optional, Tuple, List, Literal, Union
 
@@ -15,17 +15,17 @@ from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, \
     DEFAULT_CUDA_DEVICE
 from maestro.trainer.common.utils.leaderboard import CheckpointsLeaderboard
-from maestro.trainer.common.utils.metrics_tracing import MetricsTracker, \
-    save_metric_plots
+from maestro.trainer.common.utils.metrics import MetricsTracker, \
+    save_metric_plots, BaseMetric
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
-from maestro.trainer.models.florence_2.metrics import prepare_detection_training_summary
 from maestro.trainer.models.paligemma.training import LoraInitLiteral
-
 
 DEFAULT_FLORENCE2_MODEL_ID = "microsoft/Florence-2-base-ft"
 DEFAULT_FLORENCE2_MODEL_REVISION = "refs/pr/20"
-DEVICE = torch.device("cpu") if not torch.cuda.is_available() else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
+DEVICE = torch.device("cpu") \
+    if not torch.cuda.is_available() \
+    else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
 
 
 @dataclass(frozen=True)
@@ -52,6 +52,7 @@ class TrainingConfiguration:
     training_dir: str = "./training/florence-2"
     max_checkpoints_to_keep: int = 3
     num_samples_to_visualise: int = 64
+    metrics: List[BaseMetric] = field(default_factory=list)
 
 
 def train(configuration: TrainingConfiguration) -> None:
@@ -80,8 +81,8 @@ def train(configuration: TrainingConfiguration) -> None:
         num_workers=configuration.loaders_workers,
         test_loaders_workers=configuration.test_loaders_workers,
     )
-    if test_loader is None:
-        test_loader = val_loader
+    # if test_loader is None:
+    #     test_loader = val_loader
     peft_model = prepare_peft_model(
         model=model,
         r=configuration.lora_r,
@@ -93,7 +94,11 @@ def train(configuration: TrainingConfiguration) -> None:
         revision=configuration.revision,
     )
     training_metrics_tracker = MetricsTracker.init(metrics=["loss"])
-    validation_metrics_tracker = MetricsTracker.init(metrics=["loss"])
+    metrics = ["loss"]
+    for metric in configuration.metrics:
+        metrics += metric.describe()
+    validation_metrics_tracker = MetricsTracker.init(metrics=metrics)
+
     run_training_loop(
         processor=processor,
         model=peft_model,
@@ -109,15 +114,15 @@ def train(configuration: TrainingConfiguration) -> None:
     processor, model = load_model(
         model_id_or_path=best_model_path,
     )
-    if test_loader is not None:
-        run_validation_epoch(
-            processor=processor,
-            model=model,
-            loader=test_loader,
-            epoch_number=None,
-            configuration=configuration,
-            title="Test",
-        )
+    # if test_loader is not None:
+    #     run_validation_epoch(
+    #         processor=processor,
+    #         model=model,
+    #         loader=test_loader,
+    #         epoch_number=None,
+    #         configuration=configuration,
+    #         title="Test",
+    #     )
     best_model_dir = os.path.join(configuration.training_dir, "best_model")
     print(f"Saving best model: {best_model_dir}")
     model.save_pretrained(best_model_dir)
@@ -134,16 +139,16 @@ def train(configuration: TrainingConfiguration) -> None:
         output_dir=os.path.join(configuration.training_dir, "metrics"),
         filename="validation.json")
 
-    for split_name in ["valid", "test"]:
-        prepare_detection_training_summary(
-            processor=processor,
-            model=model,
-            dataset_location=configuration.dataset_location,
-            split_name=split_name,
-            training_dir=configuration.training_dir,
-            num_samples_to_visualise=configuration.num_samples_to_visualise,
-            device=configuration.device,
-        )
+    # for split_name in ["valid", "test"]:
+    #     prepare_detection_training_summary(
+    #         processor=processor,
+    #         model=model,
+    #         dataset_location=configuration.dataset_location,
+    #         split_name=split_name,
+    #         training_dir=configuration.training_dir,
+    #         num_samples_to_visualise=configuration.num_samples_to_visualise,
+    #         device=configuration.device,
+    #     )
 
 
 def load_model(
@@ -274,19 +279,16 @@ def run_training_epoch(
         print(f"Average Training Loss: {avg_train_loss}")
     if val_loader is None or len(val_loader) == 0:
         return None
-    validation_loss = run_validation_epoch(
+
+    run_validation_epoch(
         processor=processor,
         model=model,
         loader=val_loader,
         epoch_number=epoch_number,
         configuration=configuration,
+        metrics_tracker=validation_metrics_tracker,
     )
-    validation_metrics_tracker.register(
-        metric="loss",
-        epoch=epoch_number,
-        step=1,
-        value=validation_loss,
-    )
+    validation_loss = validation_metrics_tracker.get_metric_values("loss")[-1][2]
     checkpoint_dir = os.path.join(configuration.training_dir, "checkpoints", str(epoch_number))
     should_save, to_remove = checkpoints_leaderboard.register_checkpoint(
         epoch=epoch_number,
@@ -307,27 +309,35 @@ def run_validation_epoch(
     processor: AutoProcessor,
     model: Union[PeftModel, AutoModelForCausalLM],
     loader: DataLoader,
-    epoch_number: Optional[int],
     configuration: TrainingConfiguration,
-    title: str = "Validation",
-) -> float:
+    metrics_tracker: MetricsTracker,
+    epoch_number: int
+) -> None:
     val_loss = 0.0
-    epoch_marker = ""
-    if epoch_number is not None:
-        epoch_marker = f"| Epoch {epoch_number}/{configuration.training_epochs}"
     with torch.no_grad():
-        for inputs, answers in tqdm(loader, desc=f"{title} {epoch_marker}"):
+        for inputs, targets in loader:
             input_ids = inputs["input_ids"]
             pixel_values = inputs["pixel_values"]
             labels = processor.tokenizer(
-                text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
+                text=targets,
+                return_tensors="pt",
+                padding=True,
+                return_token_type_ids=False
             ).input_ids.to(configuration.device)
-            outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
+            outputs = model(
+                input_ids=input_ids,
+                pixel_values=pixel_values,
+                labels=labels
+            )
             loss = outputs.loss
             val_loss += loss.item()
         avg_val_loss = val_loss / len(loader)
-        print(f"Average {title} Loss: {avg_val_loss}")
-        return avg_val_loss
+        metrics_tracker.register(
+            metric="loss",
+            epoch=epoch_number,
+            step=1,
+            value=avg_val_loss,
+        )
 
 
 def save_model(
