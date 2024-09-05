@@ -12,12 +12,14 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
-from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
+from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, \
+    DEFAULT_CUDA_DEVICE
 from maestro.trainer.common.utils.leaderboard import CheckpointsLeaderboard
-from maestro.trainer.common.utils.metrics_tracing import MetricsTracker
+from maestro.trainer.common.utils.metrics_tracing import MetricsTracker, \
+    save_metric_plots
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
-from maestro.trainer.models.florence_2.metrics import prepare_detection_training_summary, summarise_training_metrics
+from maestro.trainer.models.florence_2.metrics import prepare_detection_training_summary
 from maestro.trainer.models.paligemma.training import LoraInitLiteral
 
 
@@ -101,6 +103,7 @@ def train(configuration: TrainingConfiguration) -> None:
         training_metrics_tracker=training_metrics_tracker,
         validation_metrics_tracker=validation_metrics_tracker,
     )
+
     best_model_path = checkpoints_leaderboard.get_best_model()
     print(f"Loading best model from {best_model_path}")
     processor, model = load_model(
@@ -119,11 +122,18 @@ def train(configuration: TrainingConfiguration) -> None:
     print(f"Saving best model: {best_model_dir}")
     model.save_pretrained(best_model_dir)
     processor.save_pretrained(best_model_dir)
-    summarise_training_metrics(
-        training_metrics_tracker=training_metrics_tracker,
-        validation_metrics_tracker=validation_metrics_tracker,
-        training_dir=configuration.training_dir,
+    save_metric_plots(
+        training_tracker=training_metrics_tracker,
+        validation_tracker=validation_metrics_tracker,
+        output_dir=os.path.join(configuration.training_dir, "metrics"),
     )
+    training_metrics_tracker.as_json(
+        output_dir=os.path.join(configuration.training_dir, "metrics"),
+        filename="training.json")
+    validation_metrics_tracker.as_json(
+        output_dir=os.path.join(configuration.training_dir, "metrics"),
+        filename="validation.json")
+
     for split_name in ["valid", "test"]:
         prepare_detection_training_summary(
             processor=processor,
@@ -304,7 +314,7 @@ def run_validation_epoch(
     val_loss = 0.0
     epoch_marker = ""
     if epoch_number is not None:
-        epoch_marker = f"| Epoch {epoch_number + 1}/{configuration.training_epochs}"
+        epoch_marker = f"| Epoch {epoch_number}/{configuration.training_epochs}"
     with torch.no_grad():
         for inputs, answers in tqdm(loader, desc=f"{title} {epoch_marker}"):
             input_ids = inputs["input_ids"]
