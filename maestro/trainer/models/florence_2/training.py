@@ -1,6 +1,6 @@
 import os
 import shutil
-from dataclasses import replace, dataclass
+from dataclasses import replace
 from glob import glob
 from typing import Optional, Tuple, List, Literal, Union
 
@@ -12,46 +12,18 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
-from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, \
-    DEFAULT_CUDA_DEVICE
 from maestro.trainer.common.utils.leaderboard import CheckpointsLeaderboard
-from maestro.trainer.common.utils.metrics_tracing import MetricsTracker, \
-    save_metric_plots
+from maestro.trainer.common.utils.metrics_tracing import MetricsTracker, save_metric_plots
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
+from maestro.trainer.models.florence_2.entities import (
+    DEFAULT_FLORENCE2_MODEL_ID,
+    DEFAULT_FLORENCE2_MODEL_REVISION,
+    DEVICE,
+    TrainingConfiguration,
+)
 from maestro.trainer.models.florence_2.metrics import prepare_detection_training_summary
 from maestro.trainer.models.paligemma.training import LoraInitLiteral
-
-
-DEFAULT_FLORENCE2_MODEL_ID = "microsoft/Florence-2-base-ft"
-DEFAULT_FLORENCE2_MODEL_REVISION = "refs/pr/20"
-DEVICE = torch.device("cpu") if not torch.cuda.is_available() else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
-
-
-@dataclass(frozen=True)
-class TrainingConfiguration:
-    dataset_location: str
-    model_id_or_path: str = DEFAULT_FLORENCE2_MODEL_ID
-    revision: str = DEFAULT_FLORENCE2_MODEL_REVISION
-    device: torch.device = DEVICE
-    transformers_cache_dir: Optional[str] = None
-    training_epochs: int = 10
-    optimiser: Literal["SGD", "adamw", "adam"] = "adamw"
-    learning_rate: float = 1e-5
-    lr_scheduler: Literal["linear", "cosine", "polynomial"] = "linear"
-    train_batch_size: int = 4
-    test_batch_size: Optional[int] = None
-    loaders_workers: int = 0
-    test_loaders_workers: Optional[int] = None
-    lora_r: int = 8
-    lora_alpha: int = 8
-    lora_dropout: float = 0.05
-    bias: Literal["none", "all", "lora_only"] = "none"
-    use_rslora: bool = True
-    init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian"
-    training_dir: str = "./training/florence-2"
-    max_checkpoints_to_keep: int = 3
-    num_samples_to_visualise: int = 64
 
 
 def train(configuration: TrainingConfiguration) -> None:
@@ -128,11 +100,11 @@ def train(configuration: TrainingConfiguration) -> None:
         output_dir=os.path.join(configuration.training_dir, "metrics"),
     )
     training_metrics_tracker.as_json(
-        output_dir=os.path.join(configuration.training_dir, "metrics"),
-        filename="training.json")
+        output_dir=os.path.join(configuration.training_dir, "metrics"), filename="training.json"
+    )
     validation_metrics_tracker.as_json(
-        output_dir=os.path.join(configuration.training_dir, "metrics"),
-        filename="validation.json")
+        output_dir=os.path.join(configuration.training_dir, "metrics"), filename="validation.json"
+    )
 
     for split_name in ["valid", "test"]:
         prepare_detection_training_summary(

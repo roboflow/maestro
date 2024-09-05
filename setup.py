@@ -42,6 +42,11 @@ setuptools.setup(
         "dev": read_requirements("requirements/requirements.test.txt"),
         "docs": read_requirements("requirements/requirements.docs.txt"),
     },
+    entry_points={
+        "console_scripts": [
+            "maestro=maestro.cli.main:app",
+        ],
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
