@@ -156,10 +156,11 @@ def run_predictions(
 
 def extract_unique_detection_dataset_classes(dataset: DetectionDataset) -> List[str]:
     class_set = set()
-    for i in range(len(dataset.dataset)):
-        image, data = dataset.dataset[i]
+    for i in range(len(dataset)):
+        _, data = dataset[i]
         suffix = data["suffix"]
         classes = re.findall(DETECTION_CLASS_PATTERN, suffix)
+        print(suffix, classes)
         class_set.update(classes)
     return sorted(class_set)
 
