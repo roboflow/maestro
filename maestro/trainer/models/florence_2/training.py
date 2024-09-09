@@ -338,6 +338,7 @@ def run_validation_epoch(
             step=1,
             value=avg_val_loss,
         )
+        print(f"Average Validation Loss: {avg_val_loss}")
 
 
 def save_model(
