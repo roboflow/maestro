@@ -20,7 +20,6 @@ from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
 from maestro.trainer.models.florence_2.metrics import (
     MeanAveragePrecisionMetric,
     extract_unique_detection_dataset_classes,
-    get_ground_truths_and_predictions,
     postprocess_florence2_output_for_mean_average_precision,
     run_predictions,
 )
