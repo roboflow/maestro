@@ -14,7 +14,7 @@ from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
 from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
 from maestro.trainer.common.utils.leaderboard import CheckpointsLeaderboard
-from maestro.trainer.common.utils.metrics import BaseMetric, MetricsTracker, save_metric_plots
+from maestro.trainer.common.utils.metrics import BaseMetric, MetricsTracker, display_results, save_metric_plots
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
 from maestro.trainer.models.florence_2.metrics import (
@@ -375,47 +375,7 @@ def run_validation_epoch(
         print("Validation Metrics:", ", ".join([f"{k}: {v:.4f}" for k, v in metrics_results.items()]))
 
         # Display inference results in IPython environments
-        try:
-            import IPython
-            if IPython.get_ipython() is not None:
-                import io
-                import base64
-                import html
-                import json
-                from PIL import Image
-                import supervision as sv
-                from IPython.display import display, HTML
-
-                def render_inline(image: Image.Image, resize=(128, 128)):
-                    """Convert image into inline html."""
-                    image = image.resize(resize)
-                    with io.BytesIO() as buffer:
-                        image.save(buffer, format='jpeg')
-                        image_b64 = str(base64.b64encode(buffer.getvalue()), "utf-8")
-                        return f"data:image/jpeg;base64,{image_b64}"
-
-                def render_example(image: Image.Image, response):
-                    # try:
-                    #     detections = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, response, resolution_wh=image.size)
-                    #     image = sv.BoundingBoxAnnotator(color_lookup=sv.ColorLookup.INDEX).annotate(image.copy(), detections)
-                    #     image = sv.LabelAnnotator(color_lookup=sv.ColorLookup.INDEX).annotate(image, detections)
-                    # except:
-                    #     print('failed to render model response')
-                    return f"""
-                <div style="display: inline-flex; align-items: center; justify-content: center;">
-                    <img style="width:256px; height:256px;" src="{render_inline(image, resize=(128, 128))}" />
-                    <p style="width:512px; margin:10px; font-size:small;">{html.escape(json.dumps(response))}</p>
-                </div>
-                """
-
-                html_out = ""
-                count = min(8, len(images))  # Display up to 8 examples
-                for i in range(count):
-                    html_out += render_example(images[i], generated_texts[i])
-
-                display(HTML(html_out))
-        except ImportError:
-            pass  # Skip visualization if required libraries are not available
+        display_results(prompts, expected_responses, generated_texts, images)
 
 
 def save_model(
