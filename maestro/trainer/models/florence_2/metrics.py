@@ -1,22 +1,16 @@
-import os
-import random
 import re
 from typing import List, Dict
 from typing import Tuple
 
-import cv2
 import numpy as np
 import supervision as sv
 import torch
-from supervision.metrics.mean_average_precision import MeanAveragePrecision
-from tqdm import tqdm
-from transformers import AutoProcessor, AutoModelForCausalLM
 from PIL import Image
+from supervision.metrics.mean_average_precision import MeanAveragePrecision
+from transformers import AutoProcessor, AutoModelForCausalLM
 
 from maestro.trainer.common.data_loaders.datasets import DetectionDataset
-from maestro.trainer.common.utils.file_system import save_json
 from maestro.trainer.common.utils.metrics import BaseMetric
-from maestro.trainer.models.florence_2.data_loading import prepare_detection_dataset
 
 DETECTION_CLASS_PATTERN = r"([a-zA-Z0-9 -]+)<loc_\d+>"
 
@@ -128,7 +122,7 @@ def run_predictions(
     generated_texts = []
     images = []
     
-    for idx in tqdm(list(range(len(dataset))), desc="Generating predictions..."):
+    for idx in list(range(len(dataset))):
         image, data = dataset.dataset[idx]
         prefix = data["prefix"]
         suffix = data["suffix"]

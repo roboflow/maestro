@@ -110,11 +110,12 @@ class MetricsDisplay:
 
     def display_metrics(self):
         data = {}
-        all_metrics = {}
+        all_metrics = set()
 
         for tracker_name, tracker in self.trackers.items():
             metrics = tracker.describe_metrics()
             for metric in metrics:
+                all_metrics.add(f"{tracker_name}_{metric}")
                 values = tracker.get_metric_values(metric, with_index=True)
                 if values:
                     avg_values = aggregate_by_epoch(values)
@@ -122,15 +123,14 @@ class MetricsDisplay:
                         if epoch not in data:
                             data[epoch] = {"epoch": epoch}
                         data[epoch][f"{tracker_name}_{metric}"] = f"{value:.4f}"
-                    all_metrics[f"{tracker_name}_{metric}"] = True
 
-        headers = ["epoch"] + list(all_metrics.keys())
+        headers = ["epoch"] + sorted(list(all_metrics))
         table_data = []
         for epoch in sorted(data.keys()):
             row = [epoch]
             for header in headers[1:]:
-                value = data[epoch].get(header, "")
-                row.append(value if value else "-")
+                value = data[epoch].get(header, "-")
+                row.append(value)
             table_data.append(row)
 
         if self.is_ipython:
@@ -156,7 +156,7 @@ class MetricsDisplay:
                 text-align: center;
             }}
             th {{
-                background-color: #f2f2f2;
+                background-color: #ffffff;
                 color: #333;
             }}
             tr:nth-child(even) {{
@@ -164,6 +164,7 @@ class MetricsDisplay:
             }}
             tr:hover {{
                 background-color: #f5f5f5;
+                color: #000;
             }}
         </style>
         {table}

@@ -9,7 +9,6 @@ from peft import LoraConfig, PeftModel, get_peft_model
 from torch.optim import Adam, AdamW, Optimizer, SGD
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
-from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
 from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, \
@@ -241,8 +240,7 @@ def run_training_epoch(
 ) -> None:
     model.train()
     training_losses: List[float] = []
-    training_iterator = tqdm(train_loader, desc=f"Epoch {epoch_number}/{configuration.training_epochs}")
-    for step_id, (inputs, answers) in enumerate(training_iterator):
+    for step_id, (inputs, answers) in enumerate(train_loader):
         input_ids = inputs["input_ids"]
         pixel_values = inputs["pixel_values"]
         labels = processor.tokenizer(
@@ -262,11 +260,6 @@ def run_training_epoch(
             value=loss,
         )
         training_losses.append(loss)
-        last_100_losses = training_losses[-100:]
-        loss_moving_average = sum(last_100_losses) / len(last_100_losses) if len(last_100_losses) > 0 else 0.0
-        training_iterator.set_description(
-            f"Epoch {epoch_number}/{configuration.training_epochs}. Loss: {round(loss_moving_average, 4)}"
-        )
         metrics_display.update_display()  # Update display after each training step
   
     if val_loader is None or len(val_loader) == 0:
@@ -362,8 +355,6 @@ def run_validation_epoch(
                     )
                     metrics_results[key] = value
         
-        print("Validation Metrics:", ", ".join([f"{k}: {v:.4f}" for k, v in metrics_results.items()]))
-
         # Display inference results in IPython environments
         metrics_display.update_display()
 
