@@ -104,8 +104,8 @@ def train(configuration: TrainingConfiguration) -> None:
     validation_metrics_tracker = MetricsTracker.init(metrics=metrics)
 
     metrics_display = MetricsDisplay({
-        "Training": training_metrics_tracker,
-        "Validation": validation_metrics_tracker
+        "train": training_metrics_tracker,
+        "valid": validation_metrics_tracker
     })
 
     run_training_loop(
@@ -268,9 +268,7 @@ def run_training_epoch(
             f"Epoch {epoch_number}/{configuration.training_epochs}. Loss: {round(loss_moving_average, 4)}"
         )
         metrics_display.update_display()  # Update display after each training step
-    if len(training_losses) > 0:
-        avg_train_loss = sum(training_losses) / len(training_losses)
-        print(f"Average Training Loss: {avg_train_loss}")
+  
     if val_loader is None or len(val_loader) == 0:
         return None
 

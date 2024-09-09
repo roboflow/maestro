@@ -110,28 +110,26 @@ class MetricsDisplay:
 
     def display_metrics(self):
         data = {}
-        all_metrics = set()
-        all_epochs = set()
+        all_metrics = {}
 
         for tracker_name, tracker in self.trackers.items():
             metrics = tracker.describe_metrics()
-            all_metrics.update(metrics)
             for metric in metrics:
                 values = tracker.get_metric_values(metric, with_index=True)
                 if values:
                     avg_values = aggregate_by_epoch(values)
-                    all_epochs.update(avg_values.keys())
                     for epoch, value in avg_values.items():
                         if epoch not in data:
-                            data[epoch] = {"Epoch": epoch}
+                            data[epoch] = {"epoch": epoch}
                         data[epoch][f"{tracker_name}_{metric}"] = f"{value:.4f}"
+                    all_metrics[f"{tracker_name}_{metric}"] = True
 
-        headers = ["Epoch"] + [f"{tracker_name}_{metric}" for tracker_name in self.trackers for metric in all_metrics]
+        headers = ["epoch"] + list(all_metrics.keys())
         table_data = []
-        for epoch in sorted(all_epochs, reverse=True):
+        for epoch in sorted(data.keys()):
             row = [epoch]
             for header in headers[1:]:
-                value = data.get(epoch, {}).get(header, "")
+                value = data[epoch].get(header, "")
                 row.append(value if value else "-")
             table_data.append(row)
 
@@ -144,8 +142,33 @@ class MetricsDisplay:
         from IPython.display import display, HTML, clear_output
         
         clear_output(wait=True)
-        table = tabulate(data, headers=headers, tablefmt="html")
-        display(HTML(table))
+        table = tabulate(data, headers=headers, tablefmt="html", stralign="center")
+        styled_table = f"""
+        <style>
+            table {{
+                border-collapse: collapse;
+                width: 100%;
+                font-family: Arial, sans-serif;
+            }}
+            th, td {{
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: center;
+            }}
+            th {{
+                background-color: #f2f2f2;
+                color: #333;
+            }}
+            tr:nth-child(even) {{
+                background-color: #f9f9f9;
+            }}
+            tr:hover {{
+                background-color: #f5f5f5;
+            }}
+        </style>
+        {table}
+        """
+        display(HTML(styled_table))
 
     def _display_terminal(self, data, headers):
         print("\033c", end="")  # Clear the terminal screen
