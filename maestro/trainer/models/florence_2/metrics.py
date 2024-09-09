@@ -157,8 +157,7 @@ def run_predictions(
 def extract_unique_detection_dataset_classes(dataset: DetectionDataset) -> List[str]:
     class_set = set()
     for i in range(len(dataset)):
-        _, data = dataset[i]
-        suffix = data["suffix"]
+        _, suffix, _ = dataset[i]
         classes = re.findall(DETECTION_CLASS_PATTERN, suffix)
         print(suffix, classes)
         class_set.update(classes)
