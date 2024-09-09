@@ -31,7 +31,7 @@ class MeanAveragePrecisionMetric(BaseMetric):
         targets: List[sv.Detections],
         predictions: List[sv.Detections]
     ) -> Dict[str, float]:
-        result = MeanAveragePrecision().update(targets, predictions).compute()
+        result = MeanAveragePrecision().update(targets=targets, predictions=predictions).compute()
         return {
             "map50:95": result.map50_95,
             "map50": result.map50,
