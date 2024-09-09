@@ -12,9 +12,11 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
-from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
+from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, \
+    DEFAULT_CUDA_DEVICE
 from maestro.trainer.common.utils.leaderboard import CheckpointsLeaderboard
-from maestro.trainer.common.utils.metrics import BaseMetric, MetricsTracker, display_results, save_metric_plots
+from maestro.trainer.common.utils.metrics import BaseMetric, MetricsTracker, \
+    MetricsDisplay, save_metric_plots
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
 from maestro.trainer.models.florence_2.metrics import (
@@ -85,8 +87,6 @@ def train(configuration: TrainingConfiguration) -> None:
         num_workers=configuration.loaders_workers,
         test_loaders_workers=configuration.test_loaders_workers,
     )
-    # if test_loader is None:
-    #     test_loader = val_loader
     peft_model = prepare_peft_model(
         model=model,
         r=configuration.lora_r,
@@ -103,6 +103,11 @@ def train(configuration: TrainingConfiguration) -> None:
         metrics += metric.describe()
     validation_metrics_tracker = MetricsTracker.init(metrics=metrics)
 
+    metrics_display = MetricsDisplay({
+        "Training": training_metrics_tracker,
+        "Validation": validation_metrics_tracker
+    })
+
     run_training_loop(
         processor=processor,
         model=peft_model,
@@ -111,6 +116,7 @@ def train(configuration: TrainingConfiguration) -> None:
         checkpoints_leaderboard=checkpoints_leaderboard,
         training_metrics_tracker=training_metrics_tracker,
         validation_metrics_tracker=validation_metrics_tracker,
+        metrics_display=metrics_display,
     )
 
     best_model_path = checkpoints_leaderboard.get_best_model()
@@ -118,15 +124,6 @@ def train(configuration: TrainingConfiguration) -> None:
     processor, model = load_model(
         model_id_or_path=best_model_path,
     )
-    # if test_loader is not None:
-    #     run_validation_epoch(
-    #         processor=processor,
-    #         model=model,
-    #         loader=test_loader,
-    #         epoch_number=None,
-    #         configuration=configuration,
-    #         title="Test",
-    #     )
     best_model_dir = os.path.join(configuration.training_dir, "best_model")
     print(f"Saving best model: {best_model_dir}")
     model.save_pretrained(best_model_dir)
@@ -142,17 +139,6 @@ def train(configuration: TrainingConfiguration) -> None:
     validation_metrics_tracker.as_json(
         output_dir=os.path.join(configuration.training_dir, "metrics"),
         filename="validation.json")
-
-    # for split_name in ["valid", "test"]:
-    #     prepare_detection_training_summary(
-    #         processor=processor,
-    #         model=model,
-    #         dataset_location=configuration.dataset_location,
-    #         split_name=split_name,
-    #         training_dir=configuration.training_dir,
-    #         num_samples_to_visualise=configuration.num_samples_to_visualise,
-    #         device=configuration.device,
-    #     )
 
 
 def load_model(
@@ -211,6 +197,7 @@ def run_training_loop(
     checkpoints_leaderboard: CheckpointsLeaderboard,
     training_metrics_tracker: MetricsTracker,
     validation_metrics_tracker: MetricsTracker,
+    metrics_display: MetricsDisplay,
 ) -> None:
     train_loader, val_loader = data_loaders
     optimizer = _get_optimizer(model=model, configuration=configuration)
@@ -234,6 +221,7 @@ def run_training_loop(
             checkpoints_leaderboard=checkpoints_leaderboard,
             training_metrics_tracker=training_metrics_tracker,
             validation_metrics_tracker=validation_metrics_tracker,
+            metrics_display=metrics_display,
         )
 
 
@@ -249,6 +237,7 @@ def run_training_epoch(
     checkpoints_leaderboard: CheckpointsLeaderboard,
     training_metrics_tracker: MetricsTracker,
     validation_metrics_tracker: MetricsTracker,
+    metrics_display: MetricsDisplay,
 ) -> None:
     model.train()
     training_losses: List[float] = []
@@ -278,6 +267,7 @@ def run_training_epoch(
         training_iterator.set_description(
             f"Epoch {epoch_number}/{configuration.training_epochs}. Loss: {round(loss_moving_average, 4)}"
         )
+        metrics_display.update_display()  # Update display after each training step
     if len(training_losses) > 0:
         avg_train_loss = sum(training_losses) / len(training_losses)
         print(f"Average Training Loss: {avg_train_loss}")
@@ -291,6 +281,7 @@ def run_training_epoch(
         epoch_number=epoch_number,
         configuration=configuration,
         metrics_tracker=validation_metrics_tracker,
+        metrics_display=metrics_display,
     )
     validation_loss = validation_metrics_tracker.get_metric_values("loss")[-1][2]
     checkpoint_dir = os.path.join(configuration.training_dir, "checkpoints", str(epoch_number))
@@ -315,6 +306,7 @@ def run_validation_epoch(
     loader: DataLoader,
     configuration: TrainingConfiguration,
     metrics_tracker: MetricsTracker,
+    metrics_display: MetricsDisplay,
     epoch_number: int
 ) -> None:
     val_loss = 0.0
@@ -375,7 +367,7 @@ def run_validation_epoch(
         print("Validation Metrics:", ", ".join([f"{k}: {v:.4f}" for k, v in metrics_results.items()]))
 
         # Display inference results in IPython environments
-        display_results(prompts, expected_responses, generated_texts, images)
+        metrics_display.update_display()
 
 
 def save_model(

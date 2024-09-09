@@ -11,6 +11,8 @@ from typing import Any, Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 from PIL import Image
+from tabulate import tabulate
+import time
 
 
 class BaseMetric(ABC):
@@ -90,6 +92,69 @@ class MetricsTracker:
                 json.dump(metrics_data, file, indent=4)
 
         return metrics_data
+
+
+class MetricsDisplay:
+    def __init__(self, trackers: Dict[str, MetricsTracker]):
+        self.trackers = trackers
+        self.is_ipython = self._check_ipython()
+
+    def _check_ipython(self):
+        try:
+            import IPython
+            if IPython.get_ipython() is not None:
+                return True
+        except ImportError:
+            pass
+        return False
+
+    def display_metrics(self):
+        data = {}
+        all_metrics = set()
+        all_epochs = set()
+
+        for tracker_name, tracker in self.trackers.items():
+            metrics = tracker.describe_metrics()
+            all_metrics.update(metrics)
+            for metric in metrics:
+                values = tracker.get_metric_values(metric, with_index=True)
+                if values:
+                    avg_values = aggregate_by_epoch(values)
+                    all_epochs.update(avg_values.keys())
+                    for epoch, value in avg_values.items():
+                        if epoch not in data:
+                            data[epoch] = {"Epoch": epoch}
+                        data[epoch][f"{tracker_name}_{metric}"] = f"{value:.4f}"
+
+        headers = ["Epoch"] + [f"{tracker_name}_{metric}" for tracker_name in self.trackers for metric in all_metrics]
+        table_data = []
+        for epoch in sorted(all_epochs, reverse=True):
+            row = [epoch]
+            for header in headers[1:]:
+                value = data.get(epoch, {}).get(header, "")
+                row.append(value if value else "-")
+            table_data.append(row)
+
+        if self.is_ipython:
+            self._display_ipython(table_data, headers)
+        else:
+            self._display_terminal(table_data, headers)
+
+    def _display_ipython(self, data, headers):
+        from IPython.display import display, HTML, clear_output
+        
+        clear_output(wait=True)
+        table = tabulate(data, headers=headers, tablefmt="html")
+        display(HTML(table))
+
+    def _display_terminal(self, data, headers):
+        print("\033c", end="")  # Clear the terminal screen
+        print(tabulate(data, headers=headers, tablefmt="pretty"))
+
+    def update_display(self):
+        self.display_metrics()
+        if not self.is_ipython:
+            time.sleep(0.5)  # Add a small delay for terminal display
 
 
 def aggregate_by_epoch(metric_values: List[Tuple[int, int, float]]) -> Dict[int, float]:
