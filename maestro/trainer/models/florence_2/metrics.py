@@ -108,9 +108,15 @@ def postprocess_florence2_output_for_mean_average_precision(
         prediction.confidence = np.ones(len(prediction))  # Set confidence for mean average precision calculation
         
         # Postprocess target for mean average precision calculation
-        target = processor.post_process_generation(suffix, task="<OD>", image_size=image.size)
-        target = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, target, resolution_wh=image.size)
-        target.class_id = np.array([classes.index(class_name) for class_name in target["class_name"]])
+        try:
+            target = processor.post_process_generation(suffix, task="<OD>", image_size=image.size)
+            target = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, target, resolution_wh=image.size)
+            target.class_id = np.array([classes.index(class_name) for class_name in target["class_name"]])
+        except Exception as e:
+            print(f"Error processing target: {e}")
+            print(f"Classes: {classes}")
+            print(f"Suffix: {suffix}")
+            raise e
         
         targets.append(target)
         predictions.append(prediction)
@@ -152,6 +158,7 @@ def extract_unique_detection_dataset_classes(dataset: DetectionDataset) -> List[
     for i in range(len(dataset)):
         _, suffix, _ = dataset[i]
         classes = re.findall(DETECTION_CLASS_PATTERN, suffix)
+        print(suffix, classes)
         class_set.update(classes)
     return sorted(class_set)
 
