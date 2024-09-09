@@ -92,14 +92,13 @@ def get_ground_truths_and_predictions(
     dataset: DetectionDataset,
     processor: AutoProcessor,
     model: AutoModelForCausalLM,
-    split_name: str,
     device: torch.device,
 ) -> Tuple[List[sv.Detections], List[sv.Detections], List[str]]:
     classes = extract_classes(dataset=dataset)
     targets = []
     predictions = []
     post_processed_text_outputs = []
-    for idx in tqdm(list(range(len(dataset))), desc=f"Generating {split_name} predictions..."):
+    for idx in tqdm(list(range(len(dataset))), desc="Generating predictions..."):
         image, data = dataset.dataset[idx]
         prefix = data["prefix"]
         suffix = data["suffix"]

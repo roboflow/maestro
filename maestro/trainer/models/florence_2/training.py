@@ -19,6 +19,7 @@ from maestro.trainer.common.utils.metrics import MetricsTracker, \
     save_metric_plots, BaseMetric
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
+from maestro.trainer.models.florence_2.metrics import MeanAveragePrecisionMetric, get_ground_truths_and_predictions
 from maestro.trainer.models.paligemma.training import LoraInitLiteral
 
 DEFAULT_FLORENCE2_MODEL_ID = "microsoft/Florence-2-base-ft"
@@ -339,6 +340,29 @@ def run_validation_epoch(
             value=avg_val_loss,
         )
         print(f"Average Validation Loss: {avg_val_loss}")
+
+        # TODO: standardize the calculation of metrics input to run inference only once
+
+        for metric in configuration.metrics:
+            if isinstance(metric, MeanAveragePrecisionMetric):
+                targets, predictions, _ = get_ground_truths_and_predictions(
+                    dataset=loader.dataset,
+                    processor=processor,
+                    model=model,
+                    device=configuration.device,
+                )
+                map_result = metric.compute(targets=targets, predictions=predictions)
+                for map_key, map_value in map_result.items():
+                    metrics_tracker.register(
+                        metric=map_key,
+                        epoch=epoch_number,
+                        step=1,
+                        value=map_value,
+                    )
+                    print(f"Validation {map_key}: {map_value:.4f}")
+            else:
+                # Handle other metric types
+                pass
 
 
 def save_model(
