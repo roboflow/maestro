@@ -96,20 +96,6 @@ def postprocess_florence2_output_for_mean_average_precision(
     classes: List[str],
     processor: AutoProcessor
 ) -> Tuple[List[sv.Detections], List[sv.Detections]]:
-    """
-    Postprocess Florence-2 model output for mean average precision calculation.
-
-    Args:
-        expected_responses (List[str]): List of expected responses (ground truth).
-        generated_texts (List[str]): List of generated texts from the model.
-        images (List[Image.Image]): List of input images.
-        classes (List[str]): List of unique class names.
-        processor (AutoProcessor): The processor used for text generation.
-
-    Returns:
-        Tuple[List[sv.Detections], List[sv.Detections]]: A tuple containing two lists of Detections objects,
-        representing the targets (ground truth) and predictions respectively.
-    """
     targets = []
     predictions = []
     
@@ -122,9 +108,16 @@ def postprocess_florence2_output_for_mean_average_precision(
         prediction.confidence = np.ones(len(prediction))  # Set confidence for mean average precision calculation
         
         # Postprocess target for mean average precision calculation
-        target = processor.post_process_generation(suffix, task="<OD>", image_size=image.size)
-        target = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, target, resolution_wh=image.size)
-        target.class_id = np.array([classes.index(class_name) for class_name in target["class_name"]])
+        try:
+            target = processor.post_process_generation(suffix, task="<OD>", image_size=image.size)
+            target = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, target, resolution_wh=image.size)
+            target.class_id = np.array([classes.index(class_name) for class_name in target["class_name"]])
+        except Exception as e:
+            print(f"Exception occurred: {e}")
+            print(f"Classes: {classes}")
+            print(f"Suffix: {suffix}")
+            print(f"Target: {target}")
+            raise
         
         targets.append(target)
         predictions.append(prediction)
@@ -137,19 +130,6 @@ def run_predictions(
     model: AutoModelForCausalLM,
     device: torch.device,
 ) -> Tuple[List[str], List[str], List[str], List[Image.Image]]:
-    """
-    Run predictions on the given dataset using the provided model and processor.
-
-    Args:
-        dataset (DetectionDataset): The dataset to run predictions on.
-        processor (AutoProcessor): The processor used for text generation.
-        model (AutoModelForCausalLM): The model used for text generation.
-        device (torch.device): The device to run the model on.
-
-    Returns:
-        Tuple[List[str], List[str], List[str], List[Image.Image]]: A tuple containing lists of prompts,
-        expected responses, generated texts, and input images.
-    """
     prompts = []
     expected_responses = []
     generated_texts = []
@@ -175,15 +155,6 @@ def run_predictions(
 
 
 def extract_unique_detection_dataset_classes(dataset: DetectionDataset) -> List[str]:
-    """
-    Extract unique class names from the detection dataset.
-
-    Args:
-        dataset (DetectionDataset): The dataset to extract class names from.
-
-    Returns:
-        List[str]: A sorted list of unique class names found in the dataset.
-    """
     class_set = set()
     for i in range(len(dataset.dataset)):
         image, data = dataset.dataset[i]

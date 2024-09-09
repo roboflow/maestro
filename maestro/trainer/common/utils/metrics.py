@@ -89,6 +89,16 @@ class MetricsTracker:
 
 
 def aggregate_by_epoch(metric_values: List[Tuple[int, int, float]]) -> Dict[int, float]:
+    """
+    Aggregates metric values by epoch, calculating the average for each epoch.
+
+    Args:
+        metric_values (List[Tuple[int, int, float]]): A list of tuples containing
+            (epoch, step, value) for each metric measurement.
+
+    Returns:
+        Dict[int, float]: A dictionary with epochs as keys and average metric values as values.
+    """
     epoch_data = defaultdict(list)
     for epoch, step, value in metric_values:
         epoch_data[epoch].append(value)
@@ -105,6 +115,17 @@ def save_metric_plots(
     validation_tracker: MetricsTracker,
     output_dir: str
 ):
+    """
+    Saves plots of training and validation metrics over epochs.
+
+    Args:
+        training_tracker (MetricsTracker): Tracker containing training metrics.
+        validation_tracker (MetricsTracker): Tracker containing validation metrics.
+        output_dir (str): Directory to save the generated plots.
+
+    Returns:
+        None
+    """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
