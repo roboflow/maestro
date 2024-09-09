@@ -11,6 +11,7 @@ import torch
 from supervision.metrics.mean_average_precision import MeanAveragePrecision
 from tqdm import tqdm
 from transformers import AutoProcessor, AutoModelForCausalLM
+from PIL import Image
 
 from maestro.trainer.common.data_loaders.datasets import DetectionDataset
 from maestro.trainer.common.utils.file_system import save_json
@@ -38,66 +39,122 @@ class MeanAveragePrecisionMetric(BaseMetric):
         }
 
 
-def prepare_detection_training_summary(
-    processor: AutoProcessor,
-    model: AutoModelForCausalLM,
-    dataset_location: str,
-    split_name: str,
-    training_dir: str,
-    num_samples_to_visualise: int,
-    device: torch.device,
-) -> None:
-    dataset = prepare_detection_dataset(
-        dataset_location=dataset_location,
-        split_name=split_name,
-    )
-    if dataset is None:
-        return None
-    targets, predictions, post_processed_text_outputs = get_ground_truths_and_predictions(
-        dataset=dataset,
-        processor=processor,
-        model=model,
-        split_name=split_name,
-        device=device,
-    )
-    mean_average_precision = sv.MeanAveragePrecision.from_detections(
-        predictions=predictions,
-        targets=targets,
-    )
-    print(f"{split_name} | map50_95: {mean_average_precision.map50_95:.2f}")
-    print(f"{split_name} | map50: {mean_average_precision.map50:.2f}")
-    print(f"{split_name} | map75: {mean_average_precision.map75:.2f}")
-    dump_metrics(
-        training_dir=training_dir,
-        split_name=split_name,
-        metrics=mean_average_precision,
-    )
-    dump_post_processed_outputs(
-        dataset=dataset,
-        post_processed_text_outputs=post_processed_text_outputs,
-        training_dir=training_dir,
-        split_name=split_name,
-    )
-    dump_visualised_samples(
-        dataset=dataset,
-        targets=targets,
-        predictions=predictions,
-        num_samples_to_visualise=num_samples_to_visualise,
-        training_dir=training_dir,
-        split_name=split_name,
-    )
+# def prepare_detection_training_summary(
+#     processor: AutoProcessor,
+#     model: AutoModelForCausalLM,
+#     dataset_location: str,
+#     split_name: str,
+#     training_dir: str,
+#     num_samples_to_visualise: int,
+#     device: torch.device,
+# ) -> None:
+#     dataset = prepare_detection_dataset(
+#         dataset_location=dataset_location,
+#         split_name=split_name,
+#     )
+#     if dataset is None:
+#         return None
+#     targets, predictions, post_processed_text_outputs = get_ground_truths_and_predictions(
+#         dataset=dataset,
+#         processor=processor,
+#         model=model,
+#         split_name=split_name,
+#         device=device,
+#     )
+#     mean_average_precision = sv.MeanAveragePrecision.from_detections(
+#         predictions=predictions,
+#         targets=targets,
+#     )
+#     print(f"{split_name} | map50_95: {mean_average_precision.map50_95:.2f}")
+#     print(f"{split_name} | map50: {mean_average_precision.map50:.2f}")
+#     print(f"{split_name} | map75: {mean_average_precision.map75:.2f}")
+#     dump_metrics(
+#         training_dir=training_dir,
+#         split_name=split_name,
+#         metrics=mean_average_precision,
+#     )
+#     dump_post_processed_outputs(
+#         dataset=dataset,
+#         post_processed_text_outputs=post_processed_text_outputs,
+#         training_dir=training_dir,
+#         split_name=split_name,
+#     )
+#     dump_visualised_samples(
+#         dataset=dataset,
+#         targets=targets,
+#         predictions=predictions,
+#         num_samples_to_visualise=num_samples_to_visualise,
+#         training_dir=training_dir,
+#         split_name=split_name,
+#     )
 
 
-def get_ground_truths_and_predictions(
+def postprocess_florence2_output_for_mean_average_precision(
+    expected_responses: List[str],
+    generated_texts: List[str],
+    images: List[Image.Image],
+    classes: List[str],
+    processor: AutoProcessor
+) -> Tuple[List[sv.Detections], List[sv.Detections]]:
+    """
+    Postprocess Florence-2 model output for mean average precision calculation.
+
+    Args:
+        expected_responses (List[str]): List of expected responses (ground truth).
+        generated_texts (List[str]): List of generated texts from the model.
+        images (List[Image.Image]): List of input images.
+        classes (List[str]): List of unique class names.
+        processor (AutoProcessor): The processor used for text generation.
+
+    Returns:
+        Tuple[List[sv.Detections], List[sv.Detections]]: A tuple containing two lists of Detections objects,
+        representing the targets (ground truth) and predictions respectively.
+    """
+    targets = []
+    predictions = []
+    
+    for image, suffix, generated_text in zip(images, expected_responses, generated_texts):
+        # Postprocess prediction for mean average precision calculation
+        prediction = processor.post_process_generation(generated_text, task="<OD>", image_size=image.size)
+        prediction = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, prediction, resolution_wh=image.size)
+        prediction = prediction[np.isin(prediction["class_name"], classes)]
+        prediction.class_id = np.array([classes.index(class_name) for class_name in prediction["class_name"]])
+        prediction.confidence = np.ones(len(prediction))  # Set confidence for mean average precision calculation
+        
+        # Postprocess target for mean average precision calculation
+        target = processor.post_process_generation(suffix, task="<OD>", image_size=image.size)
+        target = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, target, resolution_wh=image.size)
+        target.class_id = np.array([classes.index(class_name) for class_name in target["class_name"]])
+        
+        targets.append(target)
+        predictions.append(prediction)
+    
+    return targets, predictions
+
+def run_predictions(
     dataset: DetectionDataset,
     processor: AutoProcessor,
     model: AutoModelForCausalLM,
     device: torch.device,
-) -> Tuple[List[sv.Detections], List[sv.Detections], List[str]]:
-    classes = extract_classes(dataset=dataset)
-    targets = []
-    predictions = []
-    post_processed_text_outputs = []
+) -> Tuple[List[str], List[str], List[str], List[Image.Image]]:
+    """
+    Run predictions on the given dataset using the provided model and processor.
+
+    Args:
+        dataset (DetectionDataset): The dataset to run predictions on.
+        processor (AutoProcessor): The processor used for text generation.
+        model (AutoModelForCausalLM): The model used for text generation.
+        device (torch.device): The device to run the model on.
+
+    Returns:
+        Tuple[List[str], List[str], List[str], List[Image.Image]]: A tuple containing lists of prompts,
+        expected responses, generated texts, and input images.
+    """
+    prompts = []
+    expected_responses = []
+    generated_texts = []
+    images = []
+    
     for idx in tqdm(list(range(len(dataset))), desc="Generating predictions..."):
         image, data = dataset.dataset[idx]
         prefix = data["prefix"]
@@ -108,21 +165,25 @@ def get_ground_truths_and_predictions(
             input_ids=inputs["input_ids"], pixel_values=inputs["pixel_values"], max_new_tokens=1024, num_beams=3
         )
         generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
-        prediction = processor.post_process_generation(generated_text, task="<OD>", image_size=image.size)
-        post_processed_text_outputs.append(prediction)
-        prediction = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, prediction, resolution_wh=image.size)
-        prediction = prediction[np.isin(prediction["class_name"], classes)]
-        prediction.class_id = np.array([class_name.index(class_name) for class_name in prediction["class_name"]])
-        prediction.confidence = np.ones(len(prediction))
-        target = processor.post_process_generation(suffix, task="<OD>", image_size=image.size)
-        target = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, target, resolution_wh=image.size)
-        target.class_id = np.array([class_name.index(class_name) for class_name in target["class_name"]])
-        targets.append(target)
-        predictions.append(prediction)
-    return targets, predictions, post_processed_text_outputs
+        
+        prompts.append(prefix)
+        expected_responses.append(suffix)
+        generated_texts.append(generated_text)
+        images.append(image)
+    
+    return prompts, expected_responses, generated_texts, images
 
 
-def extract_classes(dataset: DetectionDataset) -> List[str]:
+def extract_unique_detection_dataset_classes(dataset: DetectionDataset) -> List[str]:
+    """
+    Extract unique class names from the detection dataset.
+
+    Args:
+        dataset (DetectionDataset): The dataset to extract class names from.
+
+    Returns:
+        List[str]: A sorted list of unique class names found in the dataset.
+    """
     class_set = set()
     for i in range(len(dataset.dataset)):
         image, data = dataset.dataset[i]
@@ -132,18 +193,18 @@ def extract_classes(dataset: DetectionDataset) -> List[str]:
     return sorted(class_set)
 
 
-def dump_metrics(
-    training_dir: str,
-    split_name: str,
-    metrics: sv.MeanAveragePrecision,
-) -> None:
-    target_path = os.path.join(training_dir, "metrics", split_name, f"metrics_{split_name}.json")
-    content = {
-        "map50_95": metrics.map50_95,
-        "map50": metrics.map50,
-        "map75": metrics.map75,
-    }
-    save_json(path=target_path, content=content)
+# def dump_metrics(
+#     training_dir: str,
+#     split_name: str,
+#     metrics: sv.MeanAveragePrecision,
+# ) -> None:
+#     target_path = os.path.join(training_dir, "metrics", split_name, f"metrics_{split_name}.json")
+#     content = {
+#         "map50_95": metrics.map50_95,
+#         "map50": metrics.map50,
+#         "map75": metrics.map75,
+#     }
+#     save_json(path=target_path, content=content)
 
 
 def dump_post_processed_outputs(

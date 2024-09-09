@@ -1,25 +1,29 @@
 import os
 import shutil
-from dataclasses import replace, dataclass, field
+from dataclasses import dataclass, field, replace
 from glob import glob
-from typing import Optional, Tuple, List, Literal, Union
+from typing import List, Literal, Optional, Tuple, Union
 
 import torch
-from peft import PeftModel, LoraConfig, get_peft_model
-from torch.optim import Optimizer, AdamW, Adam, SGD
+from peft import LoraConfig, PeftModel, get_peft_model
+from torch.optim import Adam, AdamW, Optimizer, SGD
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
-from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, \
-    DEFAULT_CUDA_DEVICE
+from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
 from maestro.trainer.common.utils.leaderboard import CheckpointsLeaderboard
-from maestro.trainer.common.utils.metrics import MetricsTracker, \
-    save_metric_plots, BaseMetric
+from maestro.trainer.common.utils.metrics import BaseMetric, MetricsTracker, save_metric_plots
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
-from maestro.trainer.models.florence_2.metrics import MeanAveragePrecisionMetric, get_ground_truths_and_predictions
+from maestro.trainer.models.florence_2.metrics import (
+    MeanAveragePrecisionMetric,
+    extract_unique_detection_dataset_classes,
+    get_ground_truths_and_predictions,
+    postprocess_florence2_output_for_mean_average_precision,
+    run_predictions,
+)
 from maestro.trainer.models.paligemma.training import LoraInitLiteral
 
 DEFAULT_FLORENCE2_MODEL_ID = "microsoft/Florence-2-base-ft"
@@ -339,30 +343,38 @@ def run_validation_epoch(
             step=1,
             value=avg_val_loss,
         )
-        print(f"Average Validation Loss: {avg_val_loss}")
 
-        # TODO: standardize the calculation of metrics input to run inference only once
-
+        # Run inference once for all metrics
+        prompts, expected_responses, generated_texts, images = run_predictions(
+            dataset=loader.dataset,
+            processor=processor,
+            model=model,
+            device=configuration.device,
+        )
+        
+        metrics_results = {"loss": avg_val_loss}
+        
         for metric in configuration.metrics:
             if isinstance(metric, MeanAveragePrecisionMetric):
-                targets, predictions, _ = get_ground_truths_and_predictions(
-                    dataset=loader.dataset,
-                    processor=processor,
-                    model=model,
-                    device=configuration.device,
+                classes = extract_unique_detection_dataset_classes(loader.dataset)
+                targets, predictions = postprocess_florence2_output_for_mean_average_precision(
+                    expected_responses=expected_responses,
+                    generated_texts=generated_texts,
+                    images=images,
+                    classes=classes,
+                    processor=processor
                 )
-                map_result = metric.compute(targets=targets, predictions=predictions)
-                for map_key, map_value in map_result.items():
+                result = metric.compute(targets=targets, predictions=predictions)
+                for key, value in result.items():
                     metrics_tracker.register(
-                        metric=map_key,
+                        metric=key,
                         epoch=epoch_number,
                         step=1,
-                        value=map_value,
+                        value=value,
                     )
-                    print(f"Validation {map_key}: {map_value:.4f}")
-            else:
-                # Handle other metric types
-                pass
+                    metrics_results[key] = value
+        
+        print("Validation Metrics:", ", ".join([f"{k}: {v:.4f}" for k, v in metrics_results.items()]))
 
 
 def save_model(
