@@ -363,6 +363,8 @@ def run_validation_epoch(
                     classes=classes,
                     processor=processor
                 )
+                print(f"Targets: {targets}")
+                print(f"Predictions: {predictions}")
                 result = metric.compute(targets=targets, predictions=predictions)
                 for key, value in result.items():
                     metrics_tracker.register(
