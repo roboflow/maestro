@@ -28,68 +28,95 @@ from maestro.trainer.models.paligemma.training import LoraInitLiteral
 
 @dataclass(frozen=True)
 class TrainingConfiguration:
-    dataset_location: str
-    model_id_or_path: str = DEFAULT_FLORENCE2_MODEL_ID
+    """Configuration for training a Florence-2 model.
+
+    This class encapsulates all the parameters needed for training a Florence-2 model,
+    including dataset paths, model specifications, training hyperparameters, and output settings.
+
+    Attributes:
+        dataset_path (str): Path to the dataset used for training.
+        model_id (str): Identifier for the Florence-2 model. Defaults to DEFAULT_FLORENCE2_MODEL_ID.
+        revision (str): Revision of the model to use. Defaults to DEFAULT_FLORENCE2_MODEL_REVISION.
+        device (torch.device): Device to use for training. Defaults to DEVICE.
+        cache_dir (Optional[str]): Directory to cache the model. Defaults to None.
+        epochs (int): Number of training epochs. Defaults to 10.
+        optimizer (Literal["sgd", "adamw", "adam"]): Optimizer to use for training. Defaults to "adamw".
+        lr (float): Learning rate for the optimizer. Defaults to 1e-5.
+        lr_scheduler (Literal["linear", "cosine", "polynomial"]): Learning rate scheduler. Defaults to "linear".
+        batch_size (int): Batch size for training. Defaults to 4.
+        val_batch_size (Optional[int]): Batch size for validation. Defaults to None.
+        num_workers (int): Number of workers for data loading. Defaults to 0.
+        val_num_workers (Optional[int]): Number of workers for validation data loading. Defaults to None.
+        lora_r (int): Rank of the LoRA update matrices. Defaults to 8.
+        lora_alpha (int): Scaling factor for the LoRA update. Defaults to 8.
+        lora_dropout (float): Dropout probability for LoRA layers. Defaults to 0.05.
+        bias (Literal["none", "all", "lora_only"]): Which bias to train. Defaults to "none".
+        use_rslora (bool): Whether to use RSLoRA. Defaults to True.
+        init_lora_weights (Union[bool, LoraInitLiteral]): How to initialize LoRA weights. Defaults to "gaussian".
+        output_dir (str): Directory to save output files. Defaults to "./training/florence-2".
+        metrics (List[BaseMetric]): List of metrics to track during training. Defaults to an empty list.
+    """
+    dataset_path: str
+    model_id: str = DEFAULT_FLORENCE2_MODEL_ID
     revision: str = DEFAULT_FLORENCE2_MODEL_REVISION
     device: torch.device = DEVICE
-    transformers_cache_dir: Optional[str] = None
-    training_epochs: int = 10
-    optimiser: Literal["SGD", "adamw", "adam"] = "adamw"
-    learning_rate: float = 1e-5
+    cache_dir: Optional[str] = None
+    epochs: int = 10
+    optimizer: Literal["sgd", "adamw", "adam"] = "adamw"
+    lr: float = 1e-5
     lr_scheduler: Literal["linear", "cosine", "polynomial"] = "linear"
-    train_batch_size: int = 4
-    test_batch_size: Optional[int] = None
-    loaders_workers: int = 0
-    test_loaders_workers: Optional[int] = None
+    batch_size: int = 4
+    val_batch_size: Optional[int] = None
+    num_workers: int = 0
+    val_num_workers: Optional[int] = None
     lora_r: int = 8
     lora_alpha: int = 8
     lora_dropout: float = 0.05
     bias: Literal["none", "all", "lora_only"] = "none"
     use_rslora: bool = True
     init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian"
-    training_dir: str = "./training/florence-2"
-    num_samples_to_visualise: int = 64
+    output_dir: str = "./training/florence-2"
     metrics: List[BaseMetric] = field(default_factory=list)
 
 
-def train(configuration: TrainingConfiguration) -> None:
+def train(config: TrainingConfiguration) -> None:
     make_it_reproducible(avoid_non_deterministic_algorithms=False)
-    training_run_dir = _establish_training_run_dir(
-        training_dir=configuration.training_dir,
+    run_dir = _establish_training_run_dir(
+        output_dir=config.output_dir,
     )
-    configuration = replace(
-        configuration,
-        training_dir=training_run_dir,
+    config = replace(
+        config,
+        output_dir=run_dir,
     )
-    checkpoint_manager = CheckpointManager(training_run_dir)
+    checkpoint_manager = CheckpointManager(run_dir)
     
     processor, model = load_model(
-        model_id_or_path=configuration.model_id_or_path,
-        revision=configuration.revision,
-        device=configuration.device,
-        cache_dir=configuration.transformers_cache_dir,
+        model_id_or_path=config.model_id,
+        revision=config.revision,
+        device=config.device,
+        cache_dir=config.cache_dir,
     )
     train_loader, val_loader, test_loader = prepare_data_loaders(
-        dataset_location=configuration.dataset_location,
-        train_batch_size=configuration.train_batch_size,
+        dataset_location=config.dataset_path,
+        train_batch_size=config.batch_size,
         processor=processor,
-        device=configuration.device,
-        num_workers=configuration.loaders_workers,
-        test_loaders_workers=configuration.test_loaders_workers,
+        device=config.device,
+        num_workers=config.num_workers,
+        test_loaders_workers=config.val_num_workers,
     )
     peft_model = prepare_peft_model(
         model=model,
-        r=configuration.lora_r,
-        lora_alpha=configuration.lora_alpha,
-        lora_dropout=configuration.lora_dropout,
-        bias=configuration.bias,
-        use_rslora=configuration.use_rslora,
-        init_lora_weights=configuration.init_lora_weights,
-        revision=configuration.revision,
+        r=config.lora_r,
+        lora_alpha=config.lora_alpha,
+        lora_dropout=config.lora_dropout,
+        bias=config.bias,
+        use_rslora=config.use_rslora,
+        init_lora_weights=config.init_lora_weights,
+        revision=config.revision,
     )
     training_metrics_tracker = MetricsTracker.init(metrics=["loss"])
     metrics = ["loss"]
-    for metric in configuration.metrics:
+    for metric in config.metrics:
         metrics += metric.describe()
     validation_metrics_tracker = MetricsTracker.init(metrics=metrics)
 
@@ -97,7 +124,7 @@ def train(configuration: TrainingConfiguration) -> None:
         processor=processor,
         model=peft_model,
         data_loaders=(train_loader, val_loader),
-        configuration=configuration,
+        config=config,
         training_metrics_tracker=training_metrics_tracker,
         validation_metrics_tracker=validation_metrics_tracker,
         checkpoint_manager=checkpoint_manager
@@ -106,13 +133,13 @@ def train(configuration: TrainingConfiguration) -> None:
     save_metric_plots(
         training_tracker=training_metrics_tracker,
         validation_tracker=validation_metrics_tracker,
-        output_dir=os.path.join(configuration.training_dir, "metrics"),
+        output_dir=os.path.join(config.output_dir, "metrics"),
     )
     training_metrics_tracker.as_json(
-        output_dir=os.path.join(configuration.training_dir, "metrics"),
+        output_dir=os.path.join(config.output_dir, "metrics"),
         filename="training.json")
     validation_metrics_tracker.as_json(
-        output_dir=os.path.join(configuration.training_dir, "metrics"),
+        output_dir=os.path.join(config.output_dir, "metrics"),
         filename="validation.json")
 
 
@@ -148,28 +175,28 @@ def run_training_loop(
     processor: AutoProcessor,
     model: PeftModel,
     data_loaders: Tuple[DataLoader, Optional[DataLoader]],
-    configuration: TrainingConfiguration,
+    config: TrainingConfiguration,
     training_metrics_tracker: MetricsTracker,
     validation_metrics_tracker: MetricsTracker,
     checkpoint_manager: CheckpointManager,
 ) -> None:
     train_loader, val_loader = data_loaders
-    optimizer = _get_optimizer(model=model, configuration=configuration)
-    total_num_training_steps = configuration.training_epochs * len(train_loader)
+    optimizer = _get_optimizer(model=model, config=config)
+    total_steps = config.epochs * len(train_loader)
     lr_scheduler = get_scheduler(
-        name=configuration.lr_scheduler,
+        name=config.lr_scheduler,
         optimizer=optimizer,
         num_warmup_steps=0,
-        num_training_steps=total_num_training_steps,
+        num_training_steps=total_steps,
     )
-    for epoch in range(configuration.training_epochs):
+    for epoch in range(config.epochs):
         run_training_epoch(
             processor=processor,
             model=model,
             train_loader=train_loader,
             val_loader=val_loader,
             epoch_number=epoch + 1,
-            configuration=configuration,
+            config=config,
             optimizer=optimizer,
             lr_scheduler=lr_scheduler,
             training_metrics_tracker=training_metrics_tracker,
@@ -184,7 +211,7 @@ def run_training_epoch(
     train_loader: DataLoader,
     val_loader: Optional[DataLoader],
     epoch_number: int,
-    configuration: TrainingConfiguration,
+    config: TrainingConfiguration,
     optimizer: Optimizer,
     lr_scheduler: LRScheduler,
     training_metrics_tracker: MetricsTracker,
@@ -193,13 +220,13 @@ def run_training_epoch(
 ) -> None:
     model.train()
     training_losses: List[float] = []
-    training_iterator = tqdm(train_loader, desc=f"Epoch {epoch_number}/{configuration.training_epochs}")
+    training_iterator = tqdm(train_loader, desc=f"Epoch {epoch_number}/{config.epochs}")
     for step_id, (inputs, answers) in enumerate(training_iterator):
         input_ids = inputs["input_ids"]
         pixel_values = inputs["pixel_values"]
         labels = processor.tokenizer(
             text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
-        ).input_ids.to(configuration.device)
+        ).input_ids.to(config.device)
         outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
         loss = outputs.loss
         loss.backward()
@@ -217,7 +244,7 @@ def run_training_epoch(
         last_100_losses = training_losses[-100:]
         loss_moving_average = sum(last_100_losses) / len(last_100_losses) if len(last_100_losses) > 0 else 0.0
         training_iterator.set_description(
-            f"Epoch {epoch_number}/{configuration.training_epochs}. Loss: {round(loss_moving_average, 4)}"
+            f"Epoch {epoch_number}/{config.epochs}. Loss: {round(loss_moving_average, 4)}"
         )
     if len(training_losses) > 0:
         avg_train_loss = sum(training_losses) / len(training_losses)
@@ -230,7 +257,7 @@ def run_training_epoch(
         model=model,
         loader=val_loader,
         epoch_number=epoch_number,
-        configuration=configuration,
+        config=config,
         metrics_tracker=validation_metrics_tracker,
     )
     
@@ -243,7 +270,7 @@ def run_validation_epoch(
     processor: AutoProcessor,
     model: Union[PeftModel, AutoModelForCausalLM],
     loader: DataLoader,
-    configuration: TrainingConfiguration,
+    config: TrainingConfiguration,
     metrics_tracker: MetricsTracker,
     epoch_number: int
 ) -> None:
@@ -257,7 +284,7 @@ def run_validation_epoch(
                 return_tensors="pt",
                 padding=True,
                 return_token_type_ids=False
-            ).input_ids.to(configuration.device)
+            ).input_ids.to(config.device)
             outputs = model(
                 input_ids=input_ids,
                 pixel_values=pixel_values,
@@ -277,12 +304,12 @@ def run_validation_epoch(
             dataset=loader.dataset,
             processor=processor,
             model=model,
-            device=configuration.device,
+            device=config.device,
         )
         
         metrics_results = {"loss": avg_val_loss}
         
-        for metric in configuration.metrics:
+        for metric in config.metrics:
             if isinstance(metric, MeanAveragePrecisionMetric):
                 classes = extract_unique_detection_dataset_classes(loader.dataset)
                 targets, predictions = postprocess_florence2_output_for_mean_average_precision(
@@ -308,19 +335,22 @@ def run_validation_epoch(
         display_results(prompts, expected_responses, generated_texts, images)
 
 
-def _establish_training_run_dir(training_dir: str) -> str:
-    training_dir = os.path.abspath(training_dir)
-    existing_directory_entries = glob(os.path.join(training_dir, "*"))
+def _establish_training_run_dir(output_dir: str) -> str:
+    output_dir = os.path.abspath(output_dir)
+    existing_directory_entries = glob(os.path.join(output_dir, "*"))
     subdirectories = [path for path in existing_directory_entries if os.path.isdir(path)]
     run_id = len(subdirectories) + 1
-    training_run_dir = os.path.join(training_dir, str(run_id))
-    os.makedirs(training_run_dir, exist_ok=True)
-    return training_run_dir
+    run_dir = os.path.join(output_dir, str(run_id))
+    os.makedirs(run_dir, exist_ok=True)
+    return run_dir
 
 
-def _get_optimizer(model: PeftModel, configuration: TrainingConfiguration) -> Optimizer:
-    if configuration.optimiser == "adamw":
-        return AdamW(model.parameters(), lr=configuration.learning_rate)
-    if configuration.optimiser == "adam":
-        return Adam(model.parameters(), lr=configuration.learning_rate)
-    return SGD(model.parameters(), lr=configuration.learning_rate)
+def _get_optimizer(model: PeftModel, config: TrainingConfiguration) -> Optimizer:
+    optimizer_type = config.optimizer.lower()
+    if optimizer_type == "adamw":
+        return AdamW(model.parameters(), lr=config.lr)
+    if optimizer_type == "adam":
+        return Adam(model.parameters(), lr=config.lr)
+    if optimizer_type == "sgd":
+        return SGD(model.parameters(), lr=config.lr)
+    raise ValueError(f"Unsupported optimizer: {config.optimizer}")
