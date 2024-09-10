@@ -31,30 +31,33 @@ class TrainingConfiguration:
     """Configuration for training a Florence-2 model.
 
     This class encapsulates all the parameters needed for training a Florence-2 model,
-    including dataset paths, model specifications, training hyperparameters, and output settings.
+    including dataset paths, model specifications, training hyperparameters, and output
+    settings.
 
     Attributes:
         dataset_path (str): Path to the dataset used for training.
-        model_id (str): Identifier for the Florence-2 model. Defaults to DEFAULT_FLORENCE2_MODEL_ID.
-        revision (str): Revision of the model to use. Defaults to DEFAULT_FLORENCE2_MODEL_REVISION.
-        device (torch.device): Device to use for training. Defaults to DEVICE.
-        cache_dir (Optional[str]): Directory to cache the model. Defaults to None.
-        epochs (int): Number of training epochs. Defaults to 10.
-        optimizer (Literal["sgd", "adamw", "adam"]): Optimizer to use for training. Defaults to "adamw".
-        lr (float): Learning rate for the optimizer. Defaults to 1e-5.
-        lr_scheduler (Literal["linear", "cosine", "polynomial"]): Learning rate scheduler. Defaults to "linear".
-        batch_size (int): Batch size for training. Defaults to 4.
-        val_batch_size (Optional[int]): Batch size for validation. Defaults to None.
-        num_workers (int): Number of workers for data loading. Defaults to 0.
-        val_num_workers (Optional[int]): Number of workers for validation data loading. Defaults to None.
-        lora_r (int): Rank of the LoRA update matrices. Defaults to 8.
-        lora_alpha (int): Scaling factor for the LoRA update. Defaults to 8.
-        lora_dropout (float): Dropout probability for LoRA layers. Defaults to 0.05.
-        bias (Literal["none", "all", "lora_only"]): Which bias to train. Defaults to "none".
-        use_rslora (bool): Whether to use RSLoRA. Defaults to True.
-        init_lora_weights (Union[bool, LoraInitLiteral]): How to initialize LoRA weights. Defaults to "gaussian".
-        output_dir (str): Directory to save output files. Defaults to "./training/florence-2".
-        metrics (List[BaseMetric]): List of metrics to track during training. Defaults to an empty list.
+        model_id (str): Identifier for the Florence-2 model.
+        revision (str): Revision of the model to use.
+        device (torch.device): Device to use for training.
+        cache_dir (Optional[str]): Directory to cache the model.
+        epochs (int): Number of training epochs.
+        optimizer (Literal["sgd", "adamw", "adam"]): Optimizer to use for training.
+        lr (float): Learning rate for the optimizer.
+        lr_scheduler (Literal["linear", "cosine", "polynomial"]): Learning rate
+            scheduler.
+        batch_size (int): Batch size for training.
+        val_batch_size (Optional[int]): Batch size for validation.
+        num_workers (int): Number of workers for data loading.
+        val_num_workers (Optional[int]): Number of workers for validation data loading.
+        lora_r (int): Rank of the LoRA update matrices.
+        lora_alpha (int): Scaling factor for the LoRA update.
+        lora_dropout (float): Dropout probability for LoRA layers.
+        bias (Literal["none", "all", "lora_only"]): Which bias to train.
+        use_rslora (bool): Whether to use RSLoRA.
+        init_lora_weights (Union[bool, LoraInitLiteral]): How to initialize LoRA
+            weights.
+        output_dir (str): Directory to save output files.
+        metrics (List[BaseMetric]): List of metrics to track during training.
     """
     dataset_path: str
     model_id: str = DEFAULT_FLORENCE2_MODEL_ID
