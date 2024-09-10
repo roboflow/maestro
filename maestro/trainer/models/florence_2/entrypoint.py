@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Optional, Annotated, Literal, Union
+from typing import Optional, Annotated
 
 import rich
 import torch
@@ -7,8 +7,7 @@ import typer
 
 from maestro.trainer.models.florence_2.checkpoints import DEFAULT_FLORENCE2_MODEL_ID, \
     DEFAULT_FLORENCE2_MODEL_REVISION, DEVICE
-from maestro.trainer.models.florence_2.core import TrainingConfiguration, \
-    LoraInitLiteral
+from maestro.trainer.models.florence_2.core import TrainingConfiguration
 from maestro.trainer.models.florence_2.core import train as train_fun
 
 florence_2_app = typer.Typer(help="Fine-tune and evaluate Florence 2 model")
@@ -92,7 +91,7 @@ def train(
         typer.Option("--use_rslora/--no_use_rslora", help="Whether to use RSLoRA"),
     ] = True,
     init_lora_weights: Annotated[
-        Union[bool, str],
+        str,
         typer.Option("--init_lora_weights", help="How to initialize LoRA weights"),
     ] = "gaussian",
     output_dir: Annotated[
