@@ -1,6 +1,5 @@
 import os
 from dataclasses import dataclass, field, replace
-from glob import glob
 from typing import List, Literal, Optional, Tuple, Union
 
 import torch
@@ -11,6 +10,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
+from maestro.trainer.common.utils.file_system import create_new_run_directory
 from maestro.trainer.common.utils.metrics import BaseMetric, MetricsTracker, \
     display_results, save_metric_plots
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
@@ -81,8 +81,8 @@ class TrainingConfiguration:
 
 def train(config: TrainingConfiguration) -> None:
     make_it_reproducible(avoid_non_deterministic_algorithms=False)
-    run_dir = _establish_training_run_dir(
-        output_dir=config.output_dir,
+    run_dir = create_new_run_directory(
+        base_output_dir=config.output_dir,
     )
     config = replace(
         config,
@@ -181,7 +181,7 @@ def run_training_loop(
     checkpoint_manager: CheckpointManager,
 ) -> None:
     train_loader, val_loader = data_loaders
-    optimizer = _get_optimizer(model=model, config=config)
+    optimizer = get_optimizer(model=model, config=config)
     total_steps = config.epochs * len(train_loader)
     lr_scheduler = get_scheduler(
         name=config.lr_scheduler,
@@ -195,7 +195,7 @@ def run_training_loop(
             model=model,
             train_loader=train_loader,
             val_loader=val_loader,
-            epoch_number=epoch + 1,
+            epoch=epoch + 1,
             config=config,
             optimizer=optimizer,
             lr_scheduler=lr_scheduler,
@@ -210,7 +210,7 @@ def run_training_epoch(
     model: PeftModel,
     train_loader: DataLoader,
     val_loader: Optional[DataLoader],
-    epoch_number: int,
+    epoch: int,
     config: TrainingConfiguration,
     optimizer: Optimizer,
     lr_scheduler: LRScheduler,
@@ -220,43 +220,50 @@ def run_training_epoch(
 ) -> None:
     model.train()
     training_losses: List[float] = []
-    training_iterator = tqdm(train_loader, desc=f"Epoch {epoch_number}/{config.epochs}")
-    for step_id, (inputs, answers) in enumerate(training_iterator):
-        input_ids = inputs["input_ids"]
-        pixel_values = inputs["pixel_values"]
-        labels = processor.tokenizer(
-            text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
-        ).input_ids.to(config.device)
-        outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
-        loss = outputs.loss
-        loss.backward()
-        optimizer.step()
-        lr_scheduler.step()
-        optimizer.zero_grad()
-        loss = loss.item()
-        training_metrics_tracker.register(
-            metric="loss",
-            epoch=epoch_number,
-            step=step_id + 1,
-            value=loss,
-        )
-        training_losses.append(loss)
-        last_100_losses = training_losses[-100:]
-        loss_moving_average = sum(last_100_losses) / len(last_100_losses) if len(last_100_losses) > 0 else 0.0
-        training_iterator.set_description(
-            f"Epoch {epoch_number}/{config.epochs}. Loss: {round(loss_moving_average, 4)}"
-        )
-    if len(training_losses) > 0:
-        avg_train_loss = sum(training_losses) / len(training_losses)
-        print(f"Average Training Loss: {avg_train_loss}")
+    
+    with tqdm(total=len(train_loader), desc=f"Epoch {epoch}/{config.epochs}", unit="batch") as pbar:
+        for step_id, (inputs, answers) in enumerate(train_loader):
+            input_ids = inputs["input_ids"]
+            pixel_values = inputs["pixel_values"]
+            labels = processor.tokenizer(
+                text=answers, 
+                return_tensors="pt", 
+                padding=True, 
+                return_token_type_ids=False
+            ).input_ids.to(config.device)
+            outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
+            loss = outputs.loss
+            loss.backward()
+            optimizer.step()
+            lr_scheduler.step()
+            optimizer.zero_grad()
+            loss = loss.item()
+            training_metrics_tracker.register(
+                metric="loss",
+                epoch=epoch,
+                step=step_id + 1,
+                value=loss,
+            )
+            training_losses.append(loss)
+            
+            # Update progress bar
+            last_100_losses = training_losses[-100:]
+            loss_moving_average = sum(last_100_losses) / len(last_100_losses) if last_100_losses else 0.0
+            pbar.set_postfix({"Loss": f"{loss_moving_average:.4f}"})
+            pbar.update(1)
+        
+    # Save checkpoints based on training loss if no validation loader
     if val_loader is None or len(val_loader) == 0:
-        return None
+        train_loss = sum(training_losses) / len(training_losses)
+        checkpoint_manager.save_latest(processor, model)
+        checkpoint_manager.save_best(processor, model, train_loss)
+        return
 
     run_validation_epoch(
         processor=processor,
         model=model,
         loader=val_loader,
-        epoch_number=epoch_number,
+        epoch_number=epoch,
         config=config,
         metrics_tracker=validation_metrics_tracker,
     )
@@ -335,17 +342,7 @@ def run_validation_epoch(
         display_results(prompts, expected_responses, generated_texts, images)
 
 
-def _establish_training_run_dir(output_dir: str) -> str:
-    output_dir = os.path.abspath(output_dir)
-    existing_directory_entries = glob(os.path.join(output_dir, "*"))
-    subdirectories = [path for path in existing_directory_entries if os.path.isdir(path)]
-    run_id = len(subdirectories) + 1
-    run_dir = os.path.join(output_dir, str(run_id))
-    os.makedirs(run_dir, exist_ok=True)
-    return run_dir
-
-
-def _get_optimizer(model: PeftModel, config: TrainingConfiguration) -> Optimizer:
+def get_optimizer(model: PeftModel, config: TrainingConfiguration) -> Optimizer:
     optimizer_type = config.optimizer.lower()
     if optimizer_type == "adamw":
         return AdamW(model.parameters(), lr=config.lr)

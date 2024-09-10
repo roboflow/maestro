@@ -1,18 +1,14 @@
 import dataclasses
 from typing import Optional, Annotated
 
+import rich
 import torch
 import typer
-import rich
 
-from maestro.trainer.models.florence_2.entities import (
-    TrainingConfiguration,
-    DEFAULT_FLORENCE2_MODEL_ID,
-    DEFAULT_FLORENCE2_MODEL_REVISION,
-    DEVICE,
-)
-
-from maestro.trainer.models.florence_2.training import train as train_fun
+from maestro.trainer.models.florence_2.checkpoints import DEFAULT_FLORENCE2_MODEL_ID, \
+    DEFAULT_FLORENCE2_MODEL_REVISION, DEVICE
+from maestro.trainer.models.florence_2.core import TrainingConfiguration
+from maestro.trainer.models.florence_2.core import train as train_fun
 
 florence_2_app = typer.Typer(help="Fine-tune and evaluate Florence 2 model")
 
