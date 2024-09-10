@@ -35,7 +35,7 @@ class TrainingConfiguration:
     settings.
 
     Attributes:
-        dataset_path (str): Path to the dataset used for training.
+        dataset (str): Path to the dataset used for training.
         model_id (str): Identifier for the Florence-2 model.
         revision (str): Revision of the model to use.
         device (torch.device): Device to use for training.
@@ -59,7 +59,7 @@ class TrainingConfiguration:
         output_dir (str): Directory to save output files.
         metrics (List[BaseMetric]): List of metrics to track during training.
     """
-    dataset_path: str
+    dataset: str
     model_id: str = DEFAULT_FLORENCE2_MODEL_ID
     revision: str = DEFAULT_FLORENCE2_MODEL_REVISION
     device: torch.device = DEVICE
@@ -100,7 +100,7 @@ def train(config: TrainingConfiguration) -> None:
         cache_dir=config.cache_dir,
     )
     train_loader, val_loader, test_loader = prepare_data_loaders(
-        dataset_location=config.dataset_path,
+        dataset_location=config.dataset,
         train_batch_size=config.batch_size,
         processor=processor,
         device=config.device,
