@@ -170,62 +170,62 @@ def extract_unique_detection_dataset_classes(dataset: DetectionDataset) -> List[
 #     save_json(path=target_path, content=content)
 
 
-def dump_post_processed_outputs(
-    dataset: DetectionDataset,
-    post_processed_text_outputs: List[str],
-    training_dir: str,
-    split_name: str,
-) -> None:
-    result_dict = {
-        dataset.dataset.entries[idx]["image"]: output for idx, output in enumerate(post_processed_text_outputs)
-    }
-    target_path = os.path.join(
-        training_dir,
-        "model_debug",
-        split_name,
-        f"post_processed_text_predictions_{split_name}.json",
-    )
-    save_json(path=target_path, content=result_dict)
+# def dump_post_processed_outputs(
+#     dataset: DetectionDataset,
+#     post_processed_text_outputs: List[str],
+#     training_dir: str,
+#     split_name: str,
+# ) -> None:
+#     result_dict = {
+#         dataset.dataset.entries[idx]["image"]: output for idx, output in enumerate(post_processed_text_outputs)
+#     }
+#     target_path = os.path.join(
+#         training_dir,
+#         "model_debug",
+#         split_name,
+#         f"post_processed_text_predictions_{split_name}.json",
+#     )
+#     save_json(path=target_path, content=result_dict)
 
 
-def dump_visualised_samples(
-    dataset: DetectionDataset,
-    targets: List[sv.Detections],
-    predictions: List[sv.Detections],
-    num_samples_to_visualise: int,
-    training_dir: str,
-    split_name: str,
-) -> None:
-    all_indices = list(range(len(dataset)))
-    random.shuffle(all_indices)
-    selected_indices = all_indices[:num_samples_to_visualise]
-    target_dir = os.path.join(training_dir, "predictions_visualised", split_name)
-    os.makedirs(target_dir, exist_ok=True)
-    boxes_annotator = sv.BoxAnnotator(color_lookup=sv.ColorLookup.INDEX)
-    label_annotator = sv.LabelAnnotator(color_lookup=sv.ColorLookup.INDEX)
-    for idx in tqdm(selected_indices, desc="Preparing predictions visualisations..."):
-        image_name = dataset.dataset.entries[idx]["image"]
-        image = dataset.dataset[idx][0]
-        prediction_image = boxes_annotator.annotate(
-            image.copy(),
-            predictions[idx],
-        )
-        prediction_image = np.asarray(
-            label_annotator.annotate(
-                prediction_image,
-                predictions[idx],
-            )
-        )[:, :, ::-1]
-        target_image = boxes_annotator.annotate(
-            image.copy(),
-            targets[idx],
-        )
-        target_image = np.asarray(
-            label_annotator.annotate(
-                target_image,
-                targets[idx],
-            )
-        )[:, :, ::-1]
-        concatenated = cv2.hconcat([target_image, prediction_image])
-        target_image_path = os.path.join(target_dir, image_name)
-        cv2.imwrite(target_image_path, concatenated)
+# def dump_visualised_samples(
+#     dataset: DetectionDataset,
+#     targets: List[sv.Detections],
+#     predictions: List[sv.Detections],
+#     num_samples_to_visualise: int,
+#     training_dir: str,
+#     split_name: str,
+# ) -> None:
+#     all_indices = list(range(len(dataset)))
+#     random.shuffle(all_indices)
+#     selected_indices = all_indices[:num_samples_to_visualise]
+#     target_dir = os.path.join(training_dir, "predictions_visualised", split_name)
+#     os.makedirs(target_dir, exist_ok=True)
+#     boxes_annotator = sv.BoxAnnotator(color_lookup=sv.ColorLookup.INDEX)
+#     label_annotator = sv.LabelAnnotator(color_lookup=sv.ColorLookup.INDEX)
+#     for idx in tqdm(selected_indices, desc="Preparing predictions visualisations..."):
+#         image_name = dataset.dataset.entries[idx]["image"]
+#         image = dataset.dataset[idx][0]
+#         prediction_image = boxes_annotator.annotate(
+#             image.copy(),
+#             predictions[idx],
+#         )
+#         prediction_image = np.asarray(
+#             label_annotator.annotate(
+#                 prediction_image,
+#                 predictions[idx],
+#             )
+#         )[:, :, ::-1]
+#         target_image = boxes_annotator.annotate(
+#             image.copy(),
+#             targets[idx],
+#         )
+#         target_image = np.asarray(
+#             label_annotator.annotate(
+#                 target_image,
+#                 targets[idx],
+#             )
+#         )[:, :, ::-1]
+#         concatenated = cv2.hconcat([target_image, prediction_image])
+#         target_image_path = os.path.join(target_dir, image_name)
+#         cv2.imwrite(target_image_path, concatenated)
