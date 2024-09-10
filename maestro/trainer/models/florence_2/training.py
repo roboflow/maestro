@@ -1,5 +1,4 @@
 import os
-import shutil
 from dataclasses import dataclass, field, replace
 from glob import glob
 from typing import List, Literal, Optional, Tuple, Union
@@ -12,10 +11,11 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
-from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
-from maestro.trainer.common.utils.leaderboard import CheckpointsLeaderboard
-from maestro.trainer.common.utils.metrics import BaseMetric, MetricsTracker, display_results, save_metric_plots
+from maestro.trainer.common.utils.metrics import BaseMetric, MetricsTracker, \
+    display_results, save_metric_plots
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
+from maestro.trainer.models.florence_2.checkpoints import CheckpointManager, load_model, \
+    DEFAULT_FLORENCE2_MODEL_ID, DEFAULT_FLORENCE2_MODEL_REVISION, DEVICE
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
 from maestro.trainer.models.florence_2.metrics import (
     MeanAveragePrecisionMetric,
@@ -24,12 +24,6 @@ from maestro.trainer.models.florence_2.metrics import (
     run_predictions,
 )
 from maestro.trainer.models.paligemma.training import LoraInitLiteral
-
-DEFAULT_FLORENCE2_MODEL_ID = "microsoft/Florence-2-base-ft"
-DEFAULT_FLORENCE2_MODEL_REVISION = "refs/pr/20"
-DEVICE = torch.device("cpu") \
-    if not torch.cuda.is_available() \
-    else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
 
 
 @dataclass(frozen=True)
@@ -54,7 +48,6 @@ class TrainingConfiguration:
     use_rslora: bool = True
     init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian"
     training_dir: str = "./training/florence-2"
-    max_checkpoints_to_keep: int = 3
     num_samples_to_visualise: int = 64
     metrics: List[BaseMetric] = field(default_factory=list)
 
@@ -68,9 +61,8 @@ def train(configuration: TrainingConfiguration) -> None:
         configuration,
         training_dir=training_run_dir,
     )
-    checkpoints_leaderboard = CheckpointsLeaderboard(
-        max_checkpoints=configuration.max_checkpoints_to_keep,
-    )
+    checkpoint_manager = CheckpointManager(training_run_dir)
+    
     processor, model = load_model(
         model_id_or_path=configuration.model_id_or_path,
         revision=configuration.revision,
@@ -85,8 +77,6 @@ def train(configuration: TrainingConfiguration) -> None:
         num_workers=configuration.loaders_workers,
         test_loaders_workers=configuration.test_loaders_workers,
     )
-    # if test_loader is None:
-    #     test_loader = val_loader
     peft_model = prepare_peft_model(
         model=model,
         r=configuration.lora_r,
@@ -108,29 +98,11 @@ def train(configuration: TrainingConfiguration) -> None:
         model=peft_model,
         data_loaders=(train_loader, val_loader),
         configuration=configuration,
-        checkpoints_leaderboard=checkpoints_leaderboard,
         training_metrics_tracker=training_metrics_tracker,
         validation_metrics_tracker=validation_metrics_tracker,
+        checkpoint_manager=checkpoint_manager
     )
 
-    best_model_path = checkpoints_leaderboard.get_best_model()
-    print(f"Loading best model from {best_model_path}")
-    processor, model = load_model(
-        model_id_or_path=best_model_path,
-    )
-    # if test_loader is not None:
-    #     run_validation_epoch(
-    #         processor=processor,
-    #         model=model,
-    #         loader=test_loader,
-    #         epoch_number=None,
-    #         configuration=configuration,
-    #         title="Test",
-    #     )
-    best_model_dir = os.path.join(configuration.training_dir, "best_model")
-    print(f"Saving best model: {best_model_dir}")
-    model.save_pretrained(best_model_dir)
-    processor.save_pretrained(best_model_dir)
     save_metric_plots(
         training_tracker=training_metrics_tracker,
         validation_tracker=validation_metrics_tracker,
@@ -142,37 +114,6 @@ def train(configuration: TrainingConfiguration) -> None:
     validation_metrics_tracker.as_json(
         output_dir=os.path.join(configuration.training_dir, "metrics"),
         filename="validation.json")
-
-    # for split_name in ["valid", "test"]:
-    #     prepare_detection_training_summary(
-    #         processor=processor,
-    #         model=model,
-    #         dataset_location=configuration.dataset_location,
-    #         split_name=split_name,
-    #         training_dir=configuration.training_dir,
-    #         num_samples_to_visualise=configuration.num_samples_to_visualise,
-    #         device=configuration.device,
-    #     )
-
-
-def load_model(
-    model_id_or_path: str = DEFAULT_FLORENCE2_MODEL_ID,
-    revision: str = DEFAULT_FLORENCE2_MODEL_REVISION,
-    device: torch.device = DEVICE,
-    cache_dir: Optional[str] = None,
-) -> Tuple[AutoProcessor, AutoModelForCausalLM]:
-    processor = AutoProcessor.from_pretrained(
-        model_id_or_path,
-        trust_remote_code=True,
-        revision=revision,
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id_or_path,
-        trust_remote_code=True,
-        revision=revision,
-        cache_dir=cache_dir,
-    ).to(device)
-    return processor, model
 
 
 def prepare_peft_model(
@@ -208,9 +149,9 @@ def run_training_loop(
     model: PeftModel,
     data_loaders: Tuple[DataLoader, Optional[DataLoader]],
     configuration: TrainingConfiguration,
-    checkpoints_leaderboard: CheckpointsLeaderboard,
     training_metrics_tracker: MetricsTracker,
     validation_metrics_tracker: MetricsTracker,
+    checkpoint_manager: CheckpointManager,
 ) -> None:
     train_loader, val_loader = data_loaders
     optimizer = _get_optimizer(model=model, configuration=configuration)
@@ -231,9 +172,9 @@ def run_training_loop(
             configuration=configuration,
             optimizer=optimizer,
             lr_scheduler=lr_scheduler,
-            checkpoints_leaderboard=checkpoints_leaderboard,
             training_metrics_tracker=training_metrics_tracker,
             validation_metrics_tracker=validation_metrics_tracker,
+            checkpoint_manager=checkpoint_manager
         )
 
 
@@ -246,9 +187,9 @@ def run_training_epoch(
     configuration: TrainingConfiguration,
     optimizer: Optimizer,
     lr_scheduler: LRScheduler,
-    checkpoints_leaderboard: CheckpointsLeaderboard,
     training_metrics_tracker: MetricsTracker,
     validation_metrics_tracker: MetricsTracker,
+    checkpoint_manager: CheckpointManager,
 ) -> None:
     model.train()
     training_losses: List[float] = []
@@ -292,21 +233,10 @@ def run_training_epoch(
         configuration=configuration,
         metrics_tracker=validation_metrics_tracker,
     )
-    validation_loss = validation_metrics_tracker.get_metric_values("loss")[-1][2]
-    checkpoint_dir = os.path.join(configuration.training_dir, "checkpoints", str(epoch_number))
-    should_save, to_remove = checkpoints_leaderboard.register_checkpoint(
-        epoch=epoch_number,
-        path=checkpoint_dir,
-        loss=validation_loss,
-    )
-    if should_save:
-        print(f"Saving checkpoint under {checkpoint_dir}")
-        os.makedirs(checkpoint_dir, exist_ok=True)
-        model.save_pretrained(checkpoint_dir)
-        processor.save_pretrained(checkpoint_dir)
-    if to_remove is not None:
-        print(f"Removing checkpoint {to_remove}")
-        shutil.rmtree(to_remove, ignore_errors=True)
+    
+    val_loss = validation_metrics_tracker.get_metric_values("loss")[-1][2]
+    checkpoint_manager.save_latest(processor, model)
+    checkpoint_manager.save_best(processor, model, val_loss)
 
 
 def run_validation_epoch(
@@ -376,16 +306,6 @@ def run_validation_epoch(
 
         # Display inference results in IPython environments
         display_results(prompts, expected_responses, generated_texts, images)
-
-
-def save_model(
-    target_dir: str,
-    processor: AutoProcessor,
-    model: AutoModelForCausalLM,
-) -> None:
-    os.makedirs(target_dir, exist_ok=True)
-    processor.save_pretrained(target_dir)
-    model.save_pretrained(target_dir)
 
 
 def _establish_training_run_dir(training_dir: str) -> str:
