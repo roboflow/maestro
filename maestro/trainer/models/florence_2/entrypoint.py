@@ -151,10 +151,10 @@ import typer
 from typing import Optional, List, Union, Literal
 from maestro.trainer.models.florence_2.core import TrainingConfiguration, train as train_florence2
 
-florence2_app = typer.Typer()
+app = typer.Typer()
 
-@florence2_app.command()
-def main(
+@app.command()
+def florence2(
     mode: str = typer.Option(..., help="Mode to run: train or evaluate"),
     dataset_path: str = typer.Option(..., help="Path to the dataset used for training"),
     model_id: str = typer.Option(None, help="Identifier for the Florence-2 model"),
@@ -222,3 +222,6 @@ def train(**kwargs):
 def evaluate():
     """Evaluate a Florence-2 model."""
     typer.echo("Evaluation not implemented yet.")
+
+if __name__ == "__main__":
+    app()

@@ -15,10 +15,12 @@
 #     app()
 
 import typer
-from maestro.trainer.models.florence_2.entrypoint import florence2_app
+from maestro.trainer.models.florence_2.entrypoint import florence2
 
 app = typer.Typer()
-app.add_typer(florence2_app, name="florence2")
+
+# Add the florence2 command to the main app
+app.command()(florence2)
 
 if __name__ == "__main__":
     app()
