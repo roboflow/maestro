@@ -148,55 +148,78 @@
 #     pass
 
 import typer
-from typing import get_type_hints, Union, Literal
+from typing import Optional, List, Union, Literal
 from maestro.trainer.models.florence_2.core import TrainingConfiguration, train as train_florence2
 
 app = typer.Typer()
 
-def create_dynamic_cli_options(config_class):
-    hints = get_type_hints(config_class)
-    options = {}
-    
-    for field_name, field_type in hints.items():
-        if field_name == 'metrics':  # Skip complex types like metrics
-            continue
-        
-        if field_type == bool:
-            options[field_name] = typer.Option(None, help=f"{field_name} parameter")
-        elif field_type in (int, float, str):
-            options[field_name] = typer.Option(None, help=f"{field_name} parameter")
-        elif getattr(field_type, "__origin__", None) == Union:
-            if type(None) in field_type.__args__:
-                options[field_name] = typer.Option(None, help=f"{field_name} parameter")
-        elif getattr(field_type, "__origin__", None) == Literal:
-            options[field_name] = typer.Option(None, help=f"{field_name} parameter")
-    
-    return options
-
-dynamic_options = create_dynamic_cli_options(TrainingConfiguration)
-
 @app.command()
-def main(mode: str, **dynamic_options):
+def main(
+    mode: str = typer.Option(..., help="Mode to run: train or evaluate"),
+    dataset_path: str = typer.Option(..., help="Path to the dataset used for training"),
+    model_id: str = typer.Option(None, help="Identifier for the Florence-2 model"),
+    revision: str = typer.Option(None, help="Revision of the model to use"),
+    device: str = typer.Option(None, help="Device to use for training"),
+    cache_dir: Optional[str] = typer.Option(None, help="Directory to cache the model"),
+    epochs: int = typer.Option(10, help="Number of training epochs"),
+    optimizer: str = typer.Option("adamw", help="Optimizer to use for training"),
+    lr: float = typer.Option(1e-5, help="Learning rate for the optimizer"),
+    lr_scheduler: str = typer.Option("linear", help="Learning rate scheduler"),
+    batch_size: int = typer.Option(4, help="Batch size for training"),
+    val_batch_size: Optional[int] = typer.Option(None, help="Batch size for validation"),
+    num_workers: int = typer.Option(0, help="Number of workers for data loading"),
+    val_num_workers: Optional[int] = typer.Option(None, help="Number of workers for validation data loading"),
+    lora_r: int = typer.Option(8, help="Rank of the LoRA update matrices"),
+    lora_alpha: int = typer.Option(8, help="Scaling factor for the LoRA update"),
+    lora_dropout: float = typer.Option(0.05, help="Dropout probability for LoRA layers"),
+    bias: str = typer.Option("none", help="Which bias to train"),
+    use_rslora: bool = typer.Option(True, help="Whether to use RSLoRA"),
+    init_lora_weights: str = typer.Option("gaussian", help="How to initialize LoRA weights"),
+    output_dir: str = typer.Option("./training/florence-2", help="Directory to save output files"),
+    metrics: List[str] = typer.Option([], help="List of metrics to track during training")
+):
     """Main entry point for Florence-2 model."""
     if mode == "train":
-        train(**dynamic_options)
+        train(
+            dataset_path=dataset_path,
+            model_id=model_id,
+            revision=revision,
+            device=device,
+            cache_dir=cache_dir,
+            epochs=epochs,
+            optimizer=optimizer,
+            lr=lr,
+            lr_scheduler=lr_scheduler,
+            batch_size=batch_size,
+            val_batch_size=val_batch_size,
+            num_workers=num_workers,
+            val_num_workers=val_num_workers,
+            lora_r=lora_r,
+            lora_alpha=lora_alpha,
+            lora_dropout=lora_dropout,
+            bias=bias,
+            use_rslora=use_rslora,
+            init_lora_weights=init_lora_weights,
+            output_dir=output_dir,
+            metrics=metrics
+        )
     elif mode == "evaluate":
-        evaluate(**dynamic_options)
+        evaluate()
     else:
         typer.echo(f"Unknown mode: {mode}")
         raise typer.Exit(code=1)
 
-def train(**dynamic_options):
+def train(**kwargs):
     """Train a Florence-2 model."""
     # Filter out None values
-    config_overrides = {k: v for k, v in dynamic_options.items() if v is not None}
+    config_overrides = {k: v for k, v in kwargs.items() if v is not None}
     
     # Create configuration with overrides
     config = TrainingConfiguration(**config_overrides)
     
     train_florence2(config)
 
-def evaluate(**dynamic_options):
+def evaluate():
     """Evaluate a Florence-2 model."""
     typer.echo("Evaluation not implemented yet.")
 
