@@ -1,29 +1,55 @@
 import os
-import shutil
-from dataclasses import replace
+from dataclasses import dataclass, field, replace
 from glob import glob
-from typing import Optional, Tuple, List, Literal, Union
+from typing import List, Literal, Optional, Tuple, Union
 
 import torch
-from peft import PeftModel, LoraConfig, get_peft_model
-from torch.optim import Optimizer, AdamW, Adam, SGD
+from peft import LoraConfig, PeftModel, get_peft_model
+from torch.optim import Adam, AdamW, Optimizer, SGD
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
-from maestro.trainer.common.utils.leaderboard import CheckpointsLeaderboard
-from maestro.trainer.common.utils.metrics_tracing import MetricsTracker, save_metric_plots
+from maestro.trainer.common.utils.metrics import BaseMetric, MetricsTracker, \
+    display_results, save_metric_plots
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
+from maestro.trainer.models.florence_2.checkpoints import CheckpointManager, load_model, \
+    DEFAULT_FLORENCE2_MODEL_ID, DEFAULT_FLORENCE2_MODEL_REVISION, DEVICE
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
-from maestro.trainer.models.florence_2.entities import (
-    DEFAULT_FLORENCE2_MODEL_ID,
-    DEFAULT_FLORENCE2_MODEL_REVISION,
-    DEVICE,
-    TrainingConfiguration,
+from maestro.trainer.models.florence_2.metrics import (
+    MeanAveragePrecisionMetric,
+    extract_unique_detection_dataset_classes,
+    postprocess_florence2_output_for_mean_average_precision,
+    run_predictions,
 )
-from maestro.trainer.models.florence_2.metrics import prepare_detection_training_summary
 from maestro.trainer.models.paligemma.training import LoraInitLiteral
+
+
+@dataclass(frozen=True)
+class TrainingConfiguration:
+    dataset_location: str
+    model_id_or_path: str = DEFAULT_FLORENCE2_MODEL_ID
+    revision: str = DEFAULT_FLORENCE2_MODEL_REVISION
+    device: torch.device = DEVICE
+    transformers_cache_dir: Optional[str] = None
+    training_epochs: int = 10
+    optimiser: Literal["SGD", "adamw", "adam"] = "adamw"
+    learning_rate: float = 1e-5
+    lr_scheduler: Literal["linear", "cosine", "polynomial"] = "linear"
+    train_batch_size: int = 4
+    test_batch_size: Optional[int] = None
+    loaders_workers: int = 0
+    test_loaders_workers: Optional[int] = None
+    lora_r: int = 8
+    lora_alpha: int = 8
+    lora_dropout: float = 0.05
+    bias: Literal["none", "all", "lora_only"] = "none"
+    use_rslora: bool = True
+    init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian"
+    training_dir: str = "./training/florence-2"
+    num_samples_to_visualise: int = 64
+    metrics: List[BaseMetric] = field(default_factory=list)
 
 
 def train(configuration: TrainingConfiguration) -> None:
@@ -35,9 +61,8 @@ def train(configuration: TrainingConfiguration) -> None:
         configuration,
         training_dir=training_run_dir,
     )
-    checkpoints_leaderboard = CheckpointsLeaderboard(
-        max_checkpoints=configuration.max_checkpoints_to_keep,
-    )
+    checkpoint_manager = CheckpointManager(training_run_dir)
+    
     processor, model = load_model(
         model_id_or_path=configuration.model_id_or_path,
         revision=configuration.revision,
@@ -52,8 +77,6 @@ def train(configuration: TrainingConfiguration) -> None:
         num_workers=configuration.loaders_workers,
         test_loaders_workers=configuration.test_loaders_workers,
     )
-    if test_loader is None:
-        test_loader = val_loader
     peft_model = prepare_peft_model(
         model=model,
         r=configuration.lora_r,
@@ -65,77 +88,32 @@ def train(configuration: TrainingConfiguration) -> None:
         revision=configuration.revision,
     )
     training_metrics_tracker = MetricsTracker.init(metrics=["loss"])
-    validation_metrics_tracker = MetricsTracker.init(metrics=["loss"])
+    metrics = ["loss"]
+    for metric in configuration.metrics:
+        metrics += metric.describe()
+    validation_metrics_tracker = MetricsTracker.init(metrics=metrics)
+
     run_training_loop(
         processor=processor,
         model=peft_model,
         data_loaders=(train_loader, val_loader),
         configuration=configuration,
-        checkpoints_leaderboard=checkpoints_leaderboard,
         training_metrics_tracker=training_metrics_tracker,
         validation_metrics_tracker=validation_metrics_tracker,
+        checkpoint_manager=checkpoint_manager
     )
 
-    best_model_path = checkpoints_leaderboard.get_best_model()
-    print(f"Loading best model from {best_model_path}")
-    processor, model = load_model(
-        model_id_or_path=best_model_path,
-    )
-    if test_loader is not None:
-        run_validation_epoch(
-            processor=processor,
-            model=model,
-            loader=test_loader,
-            epoch_number=None,
-            configuration=configuration,
-            title="Test",
-        )
-    best_model_dir = os.path.join(configuration.training_dir, "best_model")
-    print(f"Saving best model: {best_model_dir}")
-    model.save_pretrained(best_model_dir)
-    processor.save_pretrained(best_model_dir)
     save_metric_plots(
         training_tracker=training_metrics_tracker,
         validation_tracker=validation_metrics_tracker,
         output_dir=os.path.join(configuration.training_dir, "metrics"),
     )
     training_metrics_tracker.as_json(
-        output_dir=os.path.join(configuration.training_dir, "metrics"), filename="training.json"
-    )
+        output_dir=os.path.join(configuration.training_dir, "metrics"),
+        filename="training.json")
     validation_metrics_tracker.as_json(
-        output_dir=os.path.join(configuration.training_dir, "metrics"), filename="validation.json"
-    )
-
-    for split_name in ["valid", "test"]:
-        prepare_detection_training_summary(
-            processor=processor,
-            model=model,
-            dataset_location=configuration.dataset_location,
-            split_name=split_name,
-            training_dir=configuration.training_dir,
-            num_samples_to_visualise=configuration.num_samples_to_visualise,
-            device=configuration.device,
-        )
-
-
-def load_model(
-    model_id_or_path: str = DEFAULT_FLORENCE2_MODEL_ID,
-    revision: str = DEFAULT_FLORENCE2_MODEL_REVISION,
-    device: torch.device = DEVICE,
-    cache_dir: Optional[str] = None,
-) -> Tuple[AutoProcessor, AutoModelForCausalLM]:
-    processor = AutoProcessor.from_pretrained(
-        model_id_or_path,
-        trust_remote_code=True,
-        revision=revision,
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id_or_path,
-        trust_remote_code=True,
-        revision=revision,
-        cache_dir=cache_dir,
-    ).to(device)
-    return processor, model
+        output_dir=os.path.join(configuration.training_dir, "metrics"),
+        filename="validation.json")
 
 
 def prepare_peft_model(
@@ -171,9 +149,9 @@ def run_training_loop(
     model: PeftModel,
     data_loaders: Tuple[DataLoader, Optional[DataLoader]],
     configuration: TrainingConfiguration,
-    checkpoints_leaderboard: CheckpointsLeaderboard,
     training_metrics_tracker: MetricsTracker,
     validation_metrics_tracker: MetricsTracker,
+    checkpoint_manager: CheckpointManager,
 ) -> None:
     train_loader, val_loader = data_loaders
     optimizer = _get_optimizer(model=model, configuration=configuration)
@@ -194,9 +172,9 @@ def run_training_loop(
             configuration=configuration,
             optimizer=optimizer,
             lr_scheduler=lr_scheduler,
-            checkpoints_leaderboard=checkpoints_leaderboard,
             training_metrics_tracker=training_metrics_tracker,
             validation_metrics_tracker=validation_metrics_tracker,
+            checkpoint_manager=checkpoint_manager
         )
 
 
@@ -209,9 +187,9 @@ def run_training_epoch(
     configuration: TrainingConfiguration,
     optimizer: Optimizer,
     lr_scheduler: LRScheduler,
-    checkpoints_leaderboard: CheckpointsLeaderboard,
     training_metrics_tracker: MetricsTracker,
     validation_metrics_tracker: MetricsTracker,
+    checkpoint_manager: CheckpointManager,
 ) -> None:
     model.train()
     training_losses: List[float] = []
@@ -246,70 +224,88 @@ def run_training_epoch(
         print(f"Average Training Loss: {avg_train_loss}")
     if val_loader is None or len(val_loader) == 0:
         return None
-    validation_loss = run_validation_epoch(
+
+    run_validation_epoch(
         processor=processor,
         model=model,
         loader=val_loader,
         epoch_number=epoch_number,
         configuration=configuration,
+        metrics_tracker=validation_metrics_tracker,
     )
-    validation_metrics_tracker.register(
-        metric="loss",
-        epoch=epoch_number,
-        step=1,
-        value=validation_loss,
-    )
-    checkpoint_dir = os.path.join(configuration.training_dir, "checkpoints", str(epoch_number))
-    should_save, to_remove = checkpoints_leaderboard.register_checkpoint(
-        epoch=epoch_number,
-        path=checkpoint_dir,
-        loss=validation_loss,
-    )
-    if should_save:
-        print(f"Saving checkpoint under {checkpoint_dir}")
-        os.makedirs(checkpoint_dir, exist_ok=True)
-        model.save_pretrained(checkpoint_dir)
-        processor.save_pretrained(checkpoint_dir)
-    if to_remove is not None:
-        print(f"Removing checkpoint {to_remove}")
-        shutil.rmtree(to_remove, ignore_errors=True)
+    
+    val_loss = validation_metrics_tracker.get_metric_values("loss")[-1][2]
+    checkpoint_manager.save_latest(processor, model)
+    checkpoint_manager.save_best(processor, model, val_loss)
 
 
 def run_validation_epoch(
     processor: AutoProcessor,
     model: Union[PeftModel, AutoModelForCausalLM],
     loader: DataLoader,
-    epoch_number: Optional[int],
     configuration: TrainingConfiguration,
-    title: str = "Validation",
-) -> float:
+    metrics_tracker: MetricsTracker,
+    epoch_number: int
+) -> None:
     val_loss = 0.0
-    epoch_marker = ""
-    if epoch_number is not None:
-        epoch_marker = f"| Epoch {epoch_number}/{configuration.training_epochs}"
     with torch.no_grad():
-        for inputs, answers in tqdm(loader, desc=f"{title} {epoch_marker}"):
+        for inputs, targets in loader:
             input_ids = inputs["input_ids"]
             pixel_values = inputs["pixel_values"]
             labels = processor.tokenizer(
-                text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
+                text=targets,
+                return_tensors="pt",
+                padding=True,
+                return_token_type_ids=False
             ).input_ids.to(configuration.device)
-            outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
+            outputs = model(
+                input_ids=input_ids,
+                pixel_values=pixel_values,
+                labels=labels
+            )
             loss = outputs.loss
             val_loss += loss.item()
         avg_val_loss = val_loss / len(loader)
-        print(f"Average {title} Loss: {avg_val_loss}")
-        return avg_val_loss
+        metrics_tracker.register(
+            metric="loss",
+            epoch=epoch_number,
+            step=1,
+            value=avg_val_loss,
+        )
+        # Run inference once for all metrics
+        prompts, expected_responses, generated_texts, images = run_predictions(
+            dataset=loader.dataset,
+            processor=processor,
+            model=model,
+            device=configuration.device,
+        )
+        
+        metrics_results = {"loss": avg_val_loss}
+        
+        for metric in configuration.metrics:
+            if isinstance(metric, MeanAveragePrecisionMetric):
+                classes = extract_unique_detection_dataset_classes(loader.dataset)
+                targets, predictions = postprocess_florence2_output_for_mean_average_precision(
+                    expected_responses=expected_responses,
+                    generated_texts=generated_texts,
+                    images=images,
+                    classes=classes,
+                    processor=processor
+                )
+                result = metric.compute(targets=targets, predictions=predictions)
+                for key, value in result.items():
+                    metrics_tracker.register(
+                        metric=key,
+                        epoch=epoch_number,
+                        step=1,
+                        value=value,
+                    )
+                    metrics_results[key] = value
+        
+        print("Validation Metrics:", ", ".join([f"{k}: {v:.4f}" for k, v in metrics_results.items()]))
 
-
-def save_model(
-    target_dir: str,
-    processor: AutoProcessor,
-    model: AutoModelForCausalLM,
-) -> None:
-    os.makedirs(target_dir, exist_ok=True)
-    processor.save_pretrained(target_dir)
-    model.save_pretrained(target_dir)
+        # Display inference results in IPython environments
+        display_results(prompts, expected_responses, generated_texts, images)
 
 
 def _establish_training_run_dir(training_dir: str) -> str:
