@@ -16,7 +16,7 @@ from maestro.trainer.common.configuration.env import (
     HF_TOKEN_ENV,
 )
 from maestro.trainer.common.data_loaders.jsonl import JSONLDataset
-from maestro.trainer.common.utils.metrics_tracing import MetricsTracker
+from maestro.trainer.common.utils.metrics import MetricsTracker
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 
 DEFAULT_PALIGEMMA_MODEL_ID = "google/paligemma-3b-pt-224"

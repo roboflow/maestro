@@ -76,7 +76,7 @@ def prepare_detection_data_loader(
     return DataLoader(
         dataset,
         batch_size=batch_size,
-        collate_fn=partial(_collate_fn, processor=processor, device=device),
+        collate_fn=partial(collate_fn, processor=processor, device=device),
         num_workers=num_workers,
         shuffle=shuffle,
     )
@@ -100,7 +100,7 @@ def prepare_detection_dataset(
     )
 
 
-def _collate_fn(
+def collate_fn(
     batch: Tuple[List[str], List[str], List[Image.Image]],
     processor: AutoProcessor,
     device: torch.device,
