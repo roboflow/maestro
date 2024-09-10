@@ -148,8 +148,8 @@
 #     pass
 
 import typer
-from typing import get_type_hints, Optional, Union, Literal
-from maestro.trainer.models.florence_2.core import TrainingConfiguration, train
+from typing import get_type_hints, Union, Literal
+from maestro.trainer.models.florence_2.core import TrainingConfiguration, train as train_florence2
 
 app = typer.Typer()
 
@@ -179,25 +179,21 @@ dynamic_options = create_dynamic_cli_options(TrainingConfiguration)
 
 
 @app.command()
-def florence2(
-    mode: str = typer.Option(..., help="Mode: 'train' or 'eval'"),
-    **dynamic_options
-):
-    """Train or evaluate a Florence-2 model."""
-    
+def train(**dynamic_options):
+    """Train a Florence-2 model."""
     # Filter out None values
     config_overrides = {k: v for k, v in dynamic_options.items() if v is not None}
     
     # Create configuration with overrides
     config = TrainingConfiguration(**config_overrides)
     
-    if mode == "train":
-        train(config)
-    elif mode == "eval":
-        typer.echo("Evaluation not implemented yet.")
-    else:
-        typer.echo(f"Invalid mode: {mode}. Use 'train' or 'eval'.")
-        raise typer.Exit(code=1)
+    train_florence2(config)
+
+
+@app.command()
+def evaluate(**dynamic_options):
+    """Evaluate a Florence-2 model."""
+    typer.echo("Evaluation not implemented yet.")
 
 
 if __name__ == "__main__":
