@@ -148,12 +148,13 @@
 #     pass
 
 import typer
-from typing import Optional, List, Union, Literal
+from typing import Optional, List
 from maestro.trainer.models.florence_2.core import TrainingConfiguration, train as train_florence2
 
 app = typer.Typer()
 
-@app.command()
+
+@app.callback()
 def main(
     mode: str = typer.Option(..., help="Mode to run: train or evaluate"),
     dataset_path: str = typer.Option(..., help="Path to the dataset used for training"),
@@ -209,6 +210,7 @@ def main(
         typer.echo(f"Unknown mode: {mode}")
         raise typer.Exit(code=1)
 
+
 def train(**kwargs):
     """Train a Florence-2 model."""
     # Filter out None values
@@ -219,9 +221,11 @@ def train(**kwargs):
     
     train_florence2(config)
 
+
 def evaluate():
     """Evaluate a Florence-2 model."""
     typer.echo("Evaluation not implemented yet.")
+
 
 if __name__ == "__main__":
     app()
