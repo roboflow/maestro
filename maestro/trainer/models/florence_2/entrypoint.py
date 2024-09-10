@@ -153,7 +153,6 @@ from maestro.trainer.models.florence_2.core import TrainingConfiguration, train 
 
 app = typer.Typer()
 
-
 def create_dynamic_cli_options(config_class):
     hints = get_type_hints(config_class)
     options = {}
@@ -174,11 +173,19 @@ def create_dynamic_cli_options(config_class):
     
     return options
 
-
 dynamic_options = create_dynamic_cli_options(TrainingConfiguration)
 
-
 @app.command()
+def main(mode: str, **dynamic_options):
+    """Main entry point for Florence-2 model."""
+    if mode == "train":
+        train(**dynamic_options)
+    elif mode == "evaluate":
+        evaluate(**dynamic_options)
+    else:
+        typer.echo(f"Unknown mode: {mode}")
+        raise typer.Exit(code=1)
+
 def train(**dynamic_options):
     """Train a Florence-2 model."""
     # Filter out None values
@@ -189,12 +196,9 @@ def train(**dynamic_options):
     
     train_florence2(config)
 
-
-@app.command()
 def evaluate(**dynamic_options):
     """Evaluate a Florence-2 model."""
     typer.echo("Evaluation not implemented yet.")
-
 
 if __name__ == "__main__":
     app()
