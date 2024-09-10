@@ -43,7 +43,7 @@ def compose_headers(api_key: str) -> dict:
 def compose_payload(image: np.ndarray, prompt: str) -> dict:
     base64_image = encode_image_to_base64(image)
     return {
-        "model": "gpt-4-vision-preview",
+        "model": "gpt-4o",
         "messages": [
             {
                 "role": "system",
