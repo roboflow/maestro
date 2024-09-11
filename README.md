@@ -1,4 +1,3 @@
-
 <div align="center">
 
   <h1>maestro</h1>
@@ -23,13 +22,43 @@ Pip install the supervision package in a
 pip install maestro
 ```
 
-## 🚀 example
+## 🔥 quickstart
 
-Documentation and Florence-2 fine-tuning examples for object detection and VQA coming 
-soon.
+### CLI
 
-## 🚧 roadmap
+VLMs can be fine-tuned on downstream tasks directly from the command line with 
+`maestro` command:
 
-- [ ] Release a CLI for predefined fine-tuning recipes.
-- [ ] Multi-GPU fine-tuning support.
-- [ ] Allow multi-dataset fine-tuning and support multiple tasks at the same time.
+```bash
+maestro florence2 train --dataset='<DATASET_PATH>' --epochs=10 --batch-size=8
+```
+
+### SDK
+
+Alternatively, you can fine-tune VLMs using the Python SDK, which accepts the same 
+arguments as the CLI example above:
+
+```python
+from maestro.trainer.models.florence_2 import (
+    train,
+    TrainingConfiguration,
+    MeanAveragePrecisionMetric
+)
+
+config = TrainingConfiguration(
+    dataset='<DATASET_PATH>',
+    epochs=10,
+    batch_size=8,
+    metrics=[MeanAveragePrecisionMetric()]
+)
+
+train(config)
+```
+
+## 🦸 contribution
+
+We would love your help in making this repository even better! We are especially 
+looking for contributors with experience in fine-tuning vision-language models (VLMs). 
+If you notice any bugs or have suggestions for improvement, feel free to open an 
+[issue](https://github.com/roboflow/multimodal-maestro/issues) or submit a 
+[pull request](https://github.com/roboflow/multimodal-maestro/pulls).

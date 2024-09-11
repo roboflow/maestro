@@ -144,6 +144,10 @@ def train(config: TrainingConfiguration) -> None:
     validation_metrics_tracker.as_json(
         output_dir=os.path.join(config.output_dir, "metrics"),
         filename="validation.json")
+    
+    # Log out paths for latest and best checkpoints
+    print(f"Latest checkpoint saved at: {checkpoint_manager.get_latest_checkpoint_path()}")
+    print(f"Best checkpoint saved at: {checkpoint_manager.get_best_checkpoint_path()}")
 
 
 def prepare_peft_model(
