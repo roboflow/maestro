@@ -11,14 +11,23 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
 from maestro.trainer.common.utils.file_system import create_new_run_directory
-from maestro.trainer.common.utils.metrics import BaseMetric, MetricsTracker, \
-    display_results, save_metric_plots
+from maestro.trainer.common.utils.metrics import (
+    BaseMetric,
+    MetricsTracker,
+    display_results,
+    save_metric_plots,
+    MeanAveragePrecisionMetric
+)
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
-from maestro.trainer.models.florence_2.checkpoints import CheckpointManager, load_model, \
-    DEFAULT_FLORENCE2_MODEL_ID, DEFAULT_FLORENCE2_MODEL_REVISION, DEVICE
+from maestro.trainer.models.florence_2.checkpoints import (
+    CheckpointManager,
+    load_model,
+    DEFAULT_FLORENCE2_MODEL_ID,
+    DEFAULT_FLORENCE2_MODEL_REVISION,
+    DEVICE
+)
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
 from maestro.trainer.models.florence_2.metrics import (
-    MeanAveragePrecisionMetric,
     extract_unique_detection_dataset_classes,
     postprocess_florence2_output_for_mean_average_precision,
     run_predictions,
@@ -144,6 +153,10 @@ def train(config: TrainingConfiguration) -> None:
     validation_metrics_tracker.as_json(
         output_dir=os.path.join(config.output_dir, "metrics"),
         filename="validation.json")
+    
+    # Log out paths for latest and best checkpoints
+    print(f"Latest checkpoint saved at: {checkpoint_manager.latest_checkpoint_dir}")
+    print(f"Best checkpoint saved at: {checkpoint_manager.best_checkpoint_dir}")
 
 
 def prepare_peft_model(
@@ -354,3 +367,57 @@ def get_optimizer(model: PeftModel, config: TrainingConfiguration) -> Optimizer:
     if optimizer_type == "sgd":
         return SGD(model.parameters(), lr=config.lr)
     raise ValueError(f"Unsupported optimizer: {config.optimizer}")
+
+
+def evaluate(config: TrainingConfiguration) -> None:
+    processor, model = load_model(
+        model_id_or_path=config.model_id,
+        revision=config.revision,
+        device=config.device,
+        cache_dir=config.cache_dir,
+    )
+    train_loader, val_loader, test_loader = prepare_data_loaders(
+        dataset_location=config.dataset,
+        train_batch_size=config.batch_size,
+        processor=processor,
+        device=config.device,
+        num_workers=config.num_workers,
+        test_loaders_workers=config.val_num_workers,
+    )
+    evaluation_loader = test_loader if test_loader is not None else val_loader
+    
+    metrics = []
+    for metric in config.metrics:
+        metrics += metric.describe()
+    evaluation_metrics_tracker = MetricsTracker.init(metrics=metrics)
+
+    # Run inference once for all metrics
+    _, expected_responses, generated_texts, images = run_predictions(
+        dataset=evaluation_loader.dataset,
+        processor=processor,
+        model=model,
+        device=config.device,
+    )
+
+    for metric in config.metrics:
+        if isinstance(metric, MeanAveragePrecisionMetric):
+            classes = extract_unique_detection_dataset_classes(train_loader.dataset)
+            targets, predictions = postprocess_florence2_output_for_mean_average_precision(
+                expected_responses=expected_responses,
+                generated_texts=generated_texts,
+                images=images,
+                classes=classes,
+                processor=processor
+            )
+            result = metric.compute(targets=targets, predictions=predictions)
+            for key, value in result.items():
+                evaluation_metrics_tracker.register(
+                    metric=key,
+                    epoch=1,
+                    step=1,
+                    value=value,
+                )
+
+    evaluation_metrics_tracker.as_json(
+        output_dir=os.path.join(config.output_dir, "metrics"),
+        filename="evaluation.json")

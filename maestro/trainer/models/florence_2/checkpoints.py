@@ -91,6 +91,20 @@ def load_model(
     device: torch.device = DEVICE,
     cache_dir: Optional[str] = None,
 ) -> Tuple[AutoProcessor, AutoModelForCausalLM]:
+    """Loads a Florence-2 model and its associated processor.
+
+    Args:
+        model_id_or_path: The identifier or path of the model to load.
+        revision: The specific model revision to use.
+        device: The device to load the model onto.
+        cache_dir: Directory to cache the downloaded model files.
+
+    Returns:
+        A tuple containing the loaded processor and model.
+
+    Raises:
+        ValueError: If the model or processor cannot be loaded.
+    """
     processor = AutoProcessor.from_pretrained(
         model_id_or_path,
         trust_remote_code=True,
