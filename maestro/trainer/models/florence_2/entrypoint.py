@@ -8,7 +8,8 @@ import typer
 from maestro.trainer.models.florence_2.checkpoints import DEFAULT_FLORENCE2_MODEL_ID, \
     DEFAULT_FLORENCE2_MODEL_REVISION, DEVICE
 from maestro.trainer.models.florence_2.core import TrainingConfiguration
-from maestro.trainer.models.florence_2.core import train as train_fun
+from maestro.trainer.models.florence_2.core import train as florence2_train
+from maestro.trainer.models.florence_2.core import evaluate as florence2_evaluate
 
 florence_2_app = typer.Typer(help="Fine-tune and evaluate Florence 2 model")
 
@@ -127,13 +128,63 @@ def train(
         bold=True
     ))
     rich.print(dataclasses.asdict(config))
-    train_fun(config=config)
+    florence2_train(config=config)
 
 
 @florence_2_app.command(help="Evaluate Florence 2 model")
-def evaluate() -> None:
+def evaluate(
+    dataset: Annotated[
+        str,
+        typer.Option("--dataset", help="Path to the dataset used for evaluation"),
+    ],
+    model_id: Annotated[
+        str,
+        typer.Option("--model_id", help="Identifier for the Florence-2 model"),
+    ] = DEFAULT_FLORENCE2_MODEL_ID,
+    revision: Annotated[
+        str,
+        typer.Option("--revision", help="Revision of the model to use"),
+    ] = DEFAULT_FLORENCE2_MODEL_REVISION,
+    device: Annotated[
+        str,
+        typer.Option("--device", help="Device to use for evaluation"),
+    ] = DEVICE,
+    cache_dir: Annotated[
+        Optional[str],
+        typer.Option("--cache_dir", help="Directory to cache the model"),
+    ] = None,
+    batch_size: Annotated[
+        int,
+        typer.Option("--batch_size", help="Batch size for evaluation"),
+    ] = 4,
+    num_workers: Annotated[
+        int,
+        typer.Option("--num_workers", help="Number of workers for data loading"),
+    ] = 0,
+    val_num_workers: Annotated[
+        Optional[int],
+        typer.Option("--val_num_workers", help="Number of workers for validation data loading"),
+    ] = None,
+    output_dir: Annotated[
+        str,
+        typer.Option("--output_dir", help="Directory to save output files"),
+    ] = "./evaluation/florence-2",
+) -> None:
+    config = TrainingConfiguration(
+        dataset=dataset,
+        model_id=model_id,
+        revision=revision,
+        device=torch.device(device),
+        cache_dir=cache_dir,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        val_num_workers=val_num_workers,
+        output_dir=output_dir
+    )
     typer.echo(typer.style(
-        "Evaluation command for Florence 2 is not yet implemented.",
-        fg=typer.colors.YELLOW,
+        text="Evaluation configuration",
+        fg=typer.colors.BRIGHT_GREEN,
         bold=True
     ))
+    rich.print(dataclasses.asdict(config))
+    florence2_evaluate(config=config)
