@@ -39,11 +39,8 @@ Alternatively, you can fine-tune VLMs using the Python SDK, which accepts the sa
 arguments as the CLI example above:
 
 ```python
-from maestro.trainer.models.florence_2 import (
-    train,
-    TrainingConfiguration,
-    MeanAveragePrecisionMetric
-)
+from maestro.trainer.common import MeanAveragePrecisionMetric
+from maestro.trainer.models.florence_2 import train, TrainingConfiguration
 
 config = TrainingConfiguration(
     dataset='<DATASET_PATH>',

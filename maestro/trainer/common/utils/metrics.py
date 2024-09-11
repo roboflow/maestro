@@ -10,7 +10,9 @@ from collections import defaultdict
 from typing import Any, Dict, List, Tuple
 
 import matplotlib.pyplot as plt
+import supervision as sv
 from PIL import Image
+from supervision.metrics.mean_average_precision import MeanAveragePrecision
 
 
 class BaseMetric(ABC):
@@ -43,6 +45,45 @@ class BaseMetric(ABC):
                 keys and their values.
         """
         pass
+
+
+class MeanAveragePrecisionMetric(BaseMetric):
+    """
+    A class used to compute the Mean Average Precision (mAP) metric.
+    """
+
+    def describe(self) -> List[str]:
+        """
+        Returns a list of metric names that this class will compute.
+
+        Returns:
+            List[str]: A list of metric names.
+        """
+        return ["map50:95", "map50", "map75"]
+
+    def compute(
+        self,
+        targets: List[sv.Detections],
+        predictions: List[sv.Detections]
+    ) -> Dict[str, float]:
+        """
+        Computes the mAP metrics based on the targets and predictions.
+
+        Args:
+            targets (List[sv.Detections]): The ground truth detections.
+            predictions (List[sv.Detections]): The predicted detections.
+
+        Returns:
+            Dict[str, float]: A dictionary of computed mAP metrics with metric names as
+                keys and their values.
+        """
+        result = MeanAveragePrecision().update(
+            targets=targets, predictions=predictions).compute()
+        return {
+            "map50:95": result.map50_95,
+            "map50": result.map50,
+            "map75": result.map75
+        }
 
 
 class MetricsTracker:

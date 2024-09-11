@@ -11,14 +11,23 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
 from maestro.trainer.common.utils.file_system import create_new_run_directory
-from maestro.trainer.common.utils.metrics import BaseMetric, MetricsTracker, \
-    display_results, save_metric_plots
+from maestro.trainer.common.utils.metrics import (
+    BaseMetric,
+    MetricsTracker,
+    display_results,
+    save_metric_plots,
+    MeanAveragePrecisionMetric
+)
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
-from maestro.trainer.models.florence_2.checkpoints import CheckpointManager, load_model, \
-    DEFAULT_FLORENCE2_MODEL_ID, DEFAULT_FLORENCE2_MODEL_REVISION, DEVICE
+from maestro.trainer.models.florence_2.checkpoints import (
+    CheckpointManager,
+    load_model,
+    DEFAULT_FLORENCE2_MODEL_ID,
+    DEFAULT_FLORENCE2_MODEL_REVISION,
+    DEVICE
+)
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
 from maestro.trainer.models.florence_2.metrics import (
-    MeanAveragePrecisionMetric,
     extract_unique_detection_dataset_classes,
     postprocess_florence2_output_for_mean_average_precision,
     run_predictions,
@@ -146,8 +155,8 @@ def train(config: TrainingConfiguration) -> None:
         filename="validation.json")
     
     # Log out paths for latest and best checkpoints
-    print(f"Latest checkpoint saved at: {checkpoint_manager.get_latest_checkpoint_path()}")
-    print(f"Best checkpoint saved at: {checkpoint_manager.get_best_checkpoint_path()}")
+    print(f"Latest checkpoint saved at: {checkpoint_manager.latest_checkpoint_dir}")
+    print(f"Best checkpoint saved at: {checkpoint_manager.best_checkpoint_dir}")
 
 
 def prepare_peft_model(

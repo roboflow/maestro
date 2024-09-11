@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Optional, Annotated
+from typing import Optional, Annotated, List, Dict, Type
 
 import rich
 import torch
@@ -10,8 +10,25 @@ from maestro.trainer.models.florence_2.checkpoints import DEFAULT_FLORENCE2_MODE
 from maestro.trainer.models.florence_2.core import TrainingConfiguration
 from maestro.trainer.models.florence_2.core import train as florence2_train
 from maestro.trainer.models.florence_2.core import evaluate as florence2_evaluate
+from maestro.trainer.common.utils.metrics import BaseMetric, MeanAveragePrecisionMetric
 
 florence_2_app = typer.Typer(help="Fine-tune and evaluate Florence 2 model")
+
+
+METRIC_CLASSES: Dict[str, Type[BaseMetric]] = {
+    "mean_average_precision": MeanAveragePrecisionMetric,
+}
+
+
+def parse_metrics(metrics: List[str]) -> List[BaseMetric]:
+    metric_objects = []
+    for metric_name in metrics:
+        metric_class = METRIC_CLASSES.get(metric_name.lower())
+        if metric_class:
+            metric_objects.append(metric_class())
+        else:
+            raise ValueError(f"Unsupported metric: {metric_name}")
+    return metric_objects
 
 
 @florence_2_app.command(
@@ -99,7 +116,12 @@ def train(
         str,
         typer.Option("--output_dir", help="Directory to save output files"),
     ] = "./training/florence-2",
+    metrics: Annotated[
+        List[str],
+        typer.Option("--metrics", help="List of metrics to track during training"),
+    ] = [],
 ) -> None:
+    metric_objects = parse_metrics(metrics)
     config = TrainingConfiguration(
         dataset=dataset,
         model_id=model_id,
@@ -120,7 +142,8 @@ def train(
         bias=bias,
         use_rslora=use_rslora,
         init_lora_weights=init_lora_weights,
-        output_dir=output_dir
+        output_dir=output_dir,
+        metrics=metric_objects
     )
     typer.echo(typer.style(
         text="Training configuration",
@@ -169,7 +192,12 @@ def evaluate(
         str,
         typer.Option("--output_dir", help="Directory to save output files"),
     ] = "./evaluation/florence-2",
+    metrics: Annotated[
+        List[str],
+        typer.Option("--metrics", help="List of metrics to track during evaluation"),
+    ] = [],
 ) -> None:
+    metric_objects = parse_metrics(metrics)
     config = TrainingConfiguration(
         dataset=dataset,
         model_id=model_id,
@@ -179,7 +207,8 @@ def evaluate(
         batch_size=batch_size,
         num_workers=num_workers,
         val_num_workers=val_num_workers,
-        output_dir=output_dir
+        output_dir=output_dir,
+        metrics=metric_objects
     )
     typer.echo(typer.style(
         text="Evaluation configuration",
