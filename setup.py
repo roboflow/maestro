@@ -20,7 +20,7 @@ def read_requirements(path: Union[str, List[str]]) -> List[str]:
 
 setuptools.setup(
     name="maestro",
-    version="0.2.0rc2",
+    version="0.2.0rc3",
     author="Roboflow",
     author_email="help@roboflow.com",
     description="Visual Prompting for Large Multimodal Models (LMMs)",
