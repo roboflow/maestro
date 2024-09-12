@@ -28,6 +28,8 @@ def postprocess_florence2_output_for_mean_average_precision(
         # Postprocess prediction for mean average precision calculation
         prediction = processor.post_process_generation(generated_text, task="<OD>", image_size=image.size)
         prediction = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, prediction, resolution_wh=image.size)
+        if len(prediction) == 0:
+            prediction["class_name"] = []
         prediction = prediction[np.isin(prediction["class_name"], classes)]
         prediction.class_id = np.array([classes.index(class_name) for class_name in prediction["class_name"]])
         # Set confidence for mean average precision calculation
@@ -35,6 +37,8 @@ def postprocess_florence2_output_for_mean_average_precision(
         
         # Postprocess target for mean average precision calculation
         target = processor.post_process_generation(suffix, task="<OD>", image_size=image.size)
+        if len(target) == 0:
+            target["class_name"] = []
         target = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, target, resolution_wh=image.size)
         target.class_id = np.array([classes.index(class_name) for class_name in target["class_name"]])
         
