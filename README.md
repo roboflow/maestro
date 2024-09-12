@@ -52,6 +52,17 @@ config = TrainingConfiguration(
 train(config)
 ```
 
+## 📚 notebooks
+
+Explore our collection of notebooks that demonstrate how to fine-tune various 
+vision-language models using maestro. Each notebook provides step-by-step instructions 
+and code examples to help you get started quickly.
+
+| model and task | colab | video                                                                                  |
+|----------------|-------|----------------------------------------------------------------------------------------|
+| [Fine-tune Florence-2 for object detection](https://github.com/roboflow/multimodal-maestro/blob/develop/cookbooks/maestro_florence2_object_detection.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/develop/cookbooks/maestro_florence2_object_detection.ipynb) | [![YouTube](https://badges.aleen42.com/src/youtube.svg)](https://youtu.be/i3KjYgxNH6w) |
+
+
 ## 🦸 contribution
 
 We would love your help in making this repository even better! We are especially 
