@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "maestro"
+version = "0.2.0rc3"
+description = "Visual Prompting for Large Multimodal Models (LMMs)"
+readme = "README.md"
+authors = [
+    {name = "Roboflow", email = "help@roboflow.com"}
+]
+license = {text = "Apache-2.0"}
+requires-python = ">=3.9,<3.13"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS"
+]
+
+dependencies = [
+    "supervision~=0.24.0rc1",
+    "requests>=2.31.0,<=2.32.3",
+    "transformers~=4.44.2",
+    "torch~=2.4.0",
+    "accelerate~=0.33.0",
+    "sentencepiece~=0.2.0",
+    "peft~=0.12.0",
+    "flash-attn~=2.6.3; sys_platform != 'darwin'",
+    "einops~=0.8.0",
+    "timm~=1.0.9",
+    "typer~=0.12.5"
+]
+
+[project.urls]
+homepage = "https://github.com/roboflow/multimodal-maestro"
+
+[project.optional-dependencies]
+docs = [
+    "mkdocs-material~=9.5.33",
+    "mkdocstrings[python]>=0.20.0,<0.25.2"
+]
+dev = [
+    "pytest~=8.3.2",
+    "black~=24.8.0",
+    "pre-commit~=3.8.0",
+    "mypy~=1.11.2",
+    "flake8~=7.1.1"
+]
+
+[project.scripts]
+maestro = "maestro.cli.main:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["cookbooks", "docs", "tests", "tests.*", "requirements"]
