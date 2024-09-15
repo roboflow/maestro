@@ -54,7 +54,8 @@ dev = [
     "black~=24.8.0",
     "pre-commit~=3.8.0",
     "mypy~=1.11.2",
-    "flake8~=7.1.1"
+    "flake8~=7.1.1",
+    "tox~=4.18.1"   
 ]
 
 [project.scripts]
@@ -62,4 +63,4 @@ maestro = "maestro.cli.main:app"
 
 [tool.setuptools.packages.find]
 where = ["."]
-exclude = ["cookbooks", "docs", "tests", "tests.*", "requirements"]
+exclude = ["cookbooks", "docs", "tests,","test", "tests.*", "requirements"]
