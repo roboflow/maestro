@@ -10,7 +10,8 @@ readme = "README.md"
 authors = [
     {name = "Roboflow", email = "help@roboflow.com"}
 ]
-license = {text = "Apache-2.0"}
+license = {file = "LICENSE"}
+keywords = ["roboflow","maestro","multimodal-maestro","transformers", "torch", "accelerate", "multimodal", "lmm", "vision", "nlp", "prompting"]
 requires-python = ">=3.9,<3.13"
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -47,7 +48,12 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = "https://github.com/roboflow/multimodal-maestro"
+Homepage = "https://roboflow.github.io/multimodal-maestro/"
+Documentation = "https://roboflow.github.io/multimodal-maestro/"
+Repository = "https://github.com/roboflow/multimodal-maestro"
+Issues = "https://github.com/roboflow/multimodal-maestro/issues"
+Changelog = "https://github.com/roboflow/multimodal-maestro/blob/main/CHANGELOG.md"
+
 
 [project.optional-dependencies]
 docs = [
@@ -60,15 +66,15 @@ dev = [
     "pre-commit~=3.8.0",
     "mypy~=1.11.2",
     "flake8~=7.1.1",
-    "tox~=4.18.1"   
+    "tox~=4.18.1"
 ]
 
 [project.scripts]
 maestro = "maestro.cli.main:app"
 
 [tool.setuptools]
-include-package-data = true
+include-package-data = true # include non-python files in the package (default)
 
 [tool.setuptools.packages.find]
 where = ["."]
-exclude = ["cookbooks", "docs", "tests,","test", "tests.*", "mkdocs", "mkdocs.*"]
+exclude = ["cookbooks", "docs", "docs.*", "test", "test.*", "mkdocs", "mkdocs.*"]
