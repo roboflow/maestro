@@ -1,51 +1,24 @@
-import os
-from dataclasses import dataclass, field, replace
-from typing import List, Literal, Optional, Tuple, Union
-
-import torch
-from peft import LoraConfig, PeftModel, get_peft_model
-from torch.optim import Adam, AdamW, Optimizer, SGD
-from torch.optim.lr_scheduler import LRScheduler
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
-
 from maestro.trainer.common.utils.file_system import create_new_run_directory
-from maestro.trainer.common.utils.metrics import (
-    BaseMetric,
-    MetricsTracker,
-    display_results,
-    save_metric_plots,
-    MeanAveragePrecisionMetric
-)
-from maestro.trainer.common.utils.peft import prepare_peft_model, LoraInitLiteral
-from maestro.trainer.common.utils.reproducibility import make_it_reproducible
-from maestro.trainer.models.florence_2.checkpoints import (
+
+from maestro.trainer.models.paligemma.checkpoints import (
     CheckpointManager,
     load_model,
-    DEFAULT_FLORENCE2_MODEL_ID,
-    DEFAULT_FLORENCE2_MODEL_REVISION,
+    DEFAULT_PALIGEMMA_MODEL_ID,
+    DEFAULT_PALIGEMMA_MODEL_REVISION,
     DEVICE
 )
-from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
-from maestro.trainer.models.florence_2.metrics import (
-    extract_unique_detection_dataset_classes,
-    postprocess_florence2_output_for_mean_average_precision,
-    run_predictions,
-)
-
 
 @dataclass(frozen=True)
 class TrainingConfiguration:
-    """Configuration for training a Florence-2 model.
+    """Configuration for training a PaliGemma model.
 
-    This class encapsulates all the parameters needed for training a Florence-2 model,
+    This class encapsulates all the parameters needed for training a PaliGemma model,
     including dataset paths, model specifications, training hyperparameters, and output
     settings.
 
     Attributes:
         dataset (str): Path to the dataset used for training.
-        model_id (str): Identifier for the Florence-2 model.
+        model_id (str): Identifier for the PaliGemma model.
         revision (str): Revision of the model to use.
         device (torch.device): Device to use for training.
         cache_dir (Optional[str]): Directory to cache the model.
@@ -69,7 +42,7 @@ class TrainingConfiguration:
         metrics (List[BaseMetric]): List of metrics to track during training.
     """
     dataset: str
-    model_id: str = DEFAULT_FLORENCE2_MODEL_ID
+    model_id: str = DEFAULT_PALIGEMMA_MODEL_ID
     revision: str = DEFAULT_FLORENCE2_MODEL_REVISION
     device: torch.device = DEVICE
     cache_dir: Optional[str] = None
@@ -89,7 +62,6 @@ class TrainingConfiguration:
     init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian"
     output_dir: str = "./training/florence-2"
     metrics: List[BaseMetric] = field(default_factory=list)
-
 
 def train(config: TrainingConfiguration) -> None:
     make_it_reproducible(avoid_non_deterministic_algorithms=False)
@@ -157,6 +129,34 @@ def train(config: TrainingConfiguration) -> None:
     # Log out paths for latest and best checkpoints
     print(f"Latest checkpoint saved at: {checkpoint_manager.latest_checkpoint_dir}")
     print(f"Best checkpoint saved at: {checkpoint_manager.best_checkpoint_dir}")
+
+
+def prepare_peft_model(
+    model: AutoModelForCausalLM,
+    r: int = 8,
+    lora_alpha: int = 8,
+    lora_dropout: float = 0.05,
+    bias: Literal["none", "all", "lora_only"] = "none",
+    inference_mode: bool = False,
+    use_rslora: bool = True,
+    init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian",
+    revision: str = DEFAULT_FLORENCE2_MODEL_REVISION,
+) -> PeftModel:
+    config = LoraConfig(
+        r=r,
+        lora_alpha=lora_alpha,
+        target_modules=["q_proj", "o_proj", "k_proj", "v_proj", "linear", "Conv2d", "lm_head", "fc2"],
+        task_type="CAUSAL_LM",
+        lora_dropout=lora_dropout,
+        bias=bias,
+        inference_mode=inference_mode,
+        use_rslora=use_rslora,
+        init_lora_weights=init_lora_weights,
+        revision=revision,
+    )
+    peft_model = get_peft_model(model, config)
+    peft_model.print_trainable_parameters()
+    return peft_model.to(model.device)
 
 
 def run_training_loop(
