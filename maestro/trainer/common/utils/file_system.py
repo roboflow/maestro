@@ -1,7 +1,7 @@
 import json
 import os
 from glob import glob
-from typing import Union, List
+from typing import List, Union
 
 
 def read_jsonl(path: str) -> List[dict]:

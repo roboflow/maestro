@@ -1,16 +1,19 @@
 import dataclasses
-from typing import Optional, Annotated, List, Dict, Type
+from typing import Annotated, Dict, List, Optional, Type
 
 import rich
 import torch
 import typer
 
-from maestro.trainer.models.florence_2.checkpoints import DEFAULT_FLORENCE2_MODEL_ID, \
-    DEFAULT_FLORENCE2_MODEL_REVISION, DEVICE
-from maestro.trainer.models.florence_2.core import TrainingConfiguration
-from maestro.trainer.models.florence_2.core import train as florence2_train
-from maestro.trainer.models.florence_2.core import evaluate as florence2_evaluate
 from maestro.trainer.common.utils.metrics import BaseMetric, MeanAveragePrecisionMetric
+from maestro.trainer.models.florence_2.checkpoints import (
+    DEFAULT_FLORENCE2_MODEL_ID,
+    DEFAULT_FLORENCE2_MODEL_REVISION,
+    DEVICE,
+)
+from maestro.trainer.models.florence_2.core import TrainingConfiguration
+from maestro.trainer.models.florence_2.core import evaluate as florence2_evaluate
+from maestro.trainer.models.florence_2.core import train as florence2_train
 
 florence_2_app = typer.Typer(help="Fine-tune and evaluate Florence 2 model")
 
@@ -32,8 +35,7 @@ def parse_metrics(metrics: List[str]) -> List[BaseMetric]:
 
 
 @florence_2_app.command(
-    help="Train Florence 2 model",
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+    help="Train Florence 2 model", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
 )
 def train(
     dataset: Annotated[
@@ -143,13 +145,9 @@ def train(
         use_rslora=use_rslora,
         init_lora_weights=init_lora_weights,
         output_dir=output_dir,
-        metrics=metric_objects
+        metrics=metric_objects,
     )
-    typer.echo(typer.style(
-        text="Training configuration",
-        fg=typer.colors.BRIGHT_GREEN,
-        bold=True
-    ))
+    typer.echo(typer.style(text="Training configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))
     rich.print(dataclasses.asdict(config))
     florence2_train(config=config)
 
@@ -208,12 +206,8 @@ def evaluate(
         num_workers=num_workers,
         val_num_workers=val_num_workers,
         output_dir=output_dir,
-        metrics=metric_objects
+        metrics=metric_objects,
     )
-    typer.echo(typer.style(
-        text="Evaluation configuration",
-        fg=typer.colors.BRIGHT_GREEN,
-        bold=True
-    ))
+    typer.echo(typer.style(text="Evaluation configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))
     rich.print(dataclasses.asdict(config))
     florence2_evaluate(config=config)

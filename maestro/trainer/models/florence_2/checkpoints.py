@@ -4,14 +4,11 @@ from typing import Optional, Tuple
 import torch
 from transformers import AutoModelForCausalLM, AutoProcessor
 
-from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, \
-    DEFAULT_CUDA_DEVICE
+from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
 
 DEFAULT_FLORENCE2_MODEL_ID = "microsoft/Florence-2-base-ft"
 DEFAULT_FLORENCE2_MODEL_REVISION = "refs/pr/20"
-DEVICE = torch.device("cpu") \
-    if not torch.cuda.is_available() \
-    else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
+DEVICE = torch.device("cpu") if not torch.cuda.is_available() else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
 
 
 class CheckpointManager:
@@ -33,7 +30,7 @@ class CheckpointManager:
             training_dir (str): Directory where checkpoints will be saved.
         """
         self.training_dir = training_dir
-        self.best_val_loss = float('inf')
+        self.best_val_loss = float("inf")
         self.latest_checkpoint_dir = os.path.join(training_dir, "checkpoints", "latest")
         self.best_checkpoint_dir = os.path.join(training_dir, "checkpoints", "best")
 

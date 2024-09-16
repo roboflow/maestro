@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Dict, Any, Tuple
+from typing import Any, Dict, List, Tuple
 
 from PIL import Image
 from transformers.pipelines.base import Dataset

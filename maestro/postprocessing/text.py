@@ -1,5 +1,5 @@
 import re
-from typing import List, Dict
+from typing import Dict, List
 
 import numpy as np
 import supervision as sv
@@ -23,9 +23,9 @@ def extract_marks_in_brackets(text: str, mode: MarkMode) -> List[str]:
             descending order.
     """
     if mode == MarkMode.NUMERIC:
-        pattern = r'\[(\d+)\]'
+        pattern = r"\[(\d+)\]"
     elif mode == MarkMode.ALPHABETIC:
-        pattern = r'\[([A-Za-z]+)\]'
+        pattern = r"\[([A-Za-z]+)\]"
     else:
         raise ValueError(f"Unknown mode: {mode}")
 
@@ -38,10 +38,7 @@ def extract_marks_in_brackets(text: str, mode: MarkMode) -> List[str]:
         return sorted(unique_marks, reverse=False)
 
 
-def extract_relevant_masks(
-    text: str,
-    detections: sv.Detections
-) -> Dict[str, np.ndarray]:
+def extract_relevant_masks(text: str, detections: sv.Detections) -> Dict[str, np.ndarray]:
     """
     Extracts relevant masks from the detections based on marks found in the given text.
 
@@ -55,8 +52,4 @@ def extract_relevant_masks(
             and each value is the corresponding mask from detections.
     """
     marks = extract_marks_in_brackets(text=text, mode=MarkMode.NUMERIC)
-    return {
-        mark: detections.mask[int(mark)]
-        for mark
-        in marks
-    }
+    return {mark: detections.mask[int(mark)] for mark in marks}

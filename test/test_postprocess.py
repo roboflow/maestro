@@ -21,11 +21,8 @@ from maestro.primitives import MarkMode
         ("[B] lorem ipsum [A] dolor sit amet", MarkMode.ALPHABETIC, ["A", "B"]),
         ("[1] lorem ipsum [A] dolor sit amet", MarkMode.NUMERIC, ["1"]),
         ("[1] lorem ipsum [A] dolor sit amet", MarkMode.ALPHABETIC, ["A"]),
-    ]
+    ],
 )
-def test_extract_marks_in_brackets(
-    text: str, mode: MarkMode,
-    expected_result: List[str]
-) -> None:
+def test_extract_marks_in_brackets(text: str, mode: MarkMode, expected_result: List[str]) -> None:
     result = extract_marks_in_brackets(text=text, mode=mode)
     assert result == expected_result

@@ -2,10 +2,10 @@ import os
 import random
 from typing import Optional
 
-import torch
 import numpy as np
+import torch
 
-from maestro.trainer.common.configuration.env import SEED_ENV, DEFAULT_SEED
+from maestro.trainer.common.configuration.env import DEFAULT_SEED, SEED_ENV
 
 
 def make_it_reproducible(

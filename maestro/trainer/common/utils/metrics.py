@@ -61,11 +61,7 @@ class MeanAveragePrecisionMetric(BaseMetric):
         """
         return ["map50:95", "map50", "map75"]
 
-    def compute(
-        self,
-        targets: List[sv.Detections],
-        predictions: List[sv.Detections]
-    ) -> Dict[str, float]:
+    def compute(self, targets: List[sv.Detections], predictions: List[sv.Detections]) -> Dict[str, float]:
         """
         Computes the mAP metrics based on the targets and predictions.
 
@@ -77,17 +73,11 @@ class MeanAveragePrecisionMetric(BaseMetric):
             Dict[str, float]: A dictionary of computed mAP metrics with metric names as
                 keys and their values.
         """
-        result = MeanAveragePrecision().update(
-            targets=targets, predictions=predictions).compute()
-        return {
-            "map50:95": result.map50_95,
-            "map50": result.map50,
-            "map75": result.map75
-        }
+        result = MeanAveragePrecision().update(targets=targets, predictions=predictions).compute()
+        return {"map50:95": result.map50_95, "map50": result.map50, "map75": result.map75}
 
 
 class MetricsTracker:
-
     @classmethod
     def init(cls, metrics: List[str]) -> MetricsTracker:
         return cls(metrics={metric: [] for metric in metrics})
@@ -110,24 +100,16 @@ class MetricsTracker:
             return self._metrics[metric]
         return [value[2] for value in self._metrics[metric]]
 
-    def as_json(
-        self,
-        output_dir: str = None,
-        filename: str = None
-    ) -> Dict[str, List[Dict[str, float]]]:
+    def as_json(self, output_dir: str = None, filename: str = None) -> Dict[str, List[Dict[str, float]]]:
         metrics_data = {}
         for metric, values in self._metrics.items():
-            metrics_data[metric] = [
-                {'epoch': epoch, 'step': step, 'value': value}
-                for epoch, step, value
-                in values
-            ]
+            metrics_data[metric] = [{"epoch": epoch, "step": step, "value": value} for epoch, step, value in values]
 
         if output_dir and filename:
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
             filepath = os.path.join(output_dir, filename)
-            with open(filepath, 'w') as file:
+            with open(filepath, "w") as file:
                 json.dump(metrics_data, file, indent=4)
 
         return metrics_data
@@ -147,19 +129,11 @@ def aggregate_by_epoch(metric_values: List[Tuple[int, int, float]]) -> Dict[int,
     epoch_data = defaultdict(list)
     for epoch, step, value in metric_values:
         epoch_data[epoch].append(value)
-    avg_per_epoch = {
-        epoch: sum(values) / len(values)
-        for epoch, values
-        in epoch_data.items()
-    }
+    avg_per_epoch = {epoch: sum(values) / len(values) for epoch, values in epoch_data.items()}
     return avg_per_epoch
 
 
-def save_metric_plots(
-    training_tracker: MetricsTracker,
-    validation_tracker: MetricsTracker,
-    output_dir: str
-):
+def save_metric_plots(training_tracker: MetricsTracker, validation_tracker: MetricsTracker, output_dir: str):
     """
     Saves plots of training and validation metrics over epochs.
 
@@ -182,54 +156,39 @@ def save_metric_plots(
         plt.figure(figsize=(8, 6))
 
         if metric in training_metrics:
-            training_values = training_tracker.get_metric_values(
-                metric=metric, with_index=True)
+            training_values = training_tracker.get_metric_values(metric=metric, with_index=True)
             training_avg_values = aggregate_by_epoch(training_values)
             training_epochs = sorted(training_avg_values.keys())
             training_vals = [training_avg_values[epoch] for epoch in training_epochs]
             plt.plot(
-                training_epochs,
-                training_vals,
-                label=f'Training {metric}',
-                marker='o',
-                linestyle='-',
-                color='blue'
+                training_epochs, training_vals, label=f"Training {metric}", marker="o", linestyle="-", color="blue"
             )
 
         if metric in validation_metrics:
-            validation_values = validation_tracker.get_metric_values(
-                metric=metric, with_index=True)
+            validation_values = validation_tracker.get_metric_values(metric=metric, with_index=True)
             validation_avg_values = aggregate_by_epoch(validation_values)
             validation_epochs = sorted(validation_avg_values.keys())
-            validation_vals = [
-                validation_avg_values[epoch]
-                for epoch
-                in validation_epochs
-            ]
+            validation_vals = [validation_avg_values[epoch] for epoch in validation_epochs]
             plt.plot(
                 validation_epochs,
                 validation_vals,
-                label=f'Validation {metric}',
-                marker='o',
-                linestyle='--',
-                color='orange'
+                label=f"Validation {metric}",
+                marker="o",
+                linestyle="--",
+                color="orange",
             )
 
-        plt.title(f'{metric.capitalize()} over Epochs')
-        plt.xlabel('Epoch')
-        plt.ylabel(f'{metric.capitalize()} Value')
+        plt.title(f"{metric.capitalize()} over Epochs")
+        plt.xlabel("Epoch")
+        plt.ylabel(f"{metric.capitalize()} Value")
         plt.legend()
         plt.grid(True)
-        plt.savefig(f'{output_dir}/{metric}_plot.png')
+        plt.savefig(f"{output_dir}/{metric}_plot.png")
         plt.close()
 
 
-
 def display_results(
-    prompts: List[str],
-    expected_responses: List[str],
-    generated_texts: List[str],
-    images: List[Image.Image]
+    prompts: List[str], expected_responses: List[str], generated_texts: List[str], images: List[Image.Image]
 ) -> None:
     """
     Display the results of model inference in IPython environments.
@@ -249,8 +208,10 @@ def display_results(
     """
     try:
         import IPython
+
         if IPython.get_ipython() is not None:
-            from IPython.display import display, HTML
+            from IPython.display import HTML, display
+
             html_out = create_html_output(prompts, expected_responses, generated_texts, images)
             display(HTML(html_out))
     except ImportError:
@@ -258,10 +219,7 @@ def display_results(
 
 
 def create_html_output(
-    prompts: List[str],
-    expected_responses: List[str],
-    generated_texts: List[str],
-    images: List[Image.Image]
+    prompts: List[str], expected_responses: List[str], generated_texts: List[str], images: List[Image.Image]
 ) -> str:
     """
     Create an HTML string to display the results of model inference.
@@ -278,7 +236,8 @@ def create_html_output(
     Returns:
         str: An HTML string containing the formatted results.
     """
-    html_out = "<style>.result-container{display:flex;margin-bottom:20px;border:1px solid #ddd;padding:10px;}.image-container{flex:0 0 256px;}.text-container{flex:1;margin-left:20px;}.prompt,.expected,.generated{margin-bottom:10px;}</style>"
+    html_out = "<style>.result-container{display:flex;margin-bottom:20px;border:1px solid #ddd;padding:10px;}.image-container{flex:0 0 256px;}.text-container{flex:1;margin-left:20px;}.prompt,.expected,.generated{margin-bottom:10px;}</style>"  # noqa: E501
+
     count = min(8, len(images))  # Display up to 8 examples
     for i in range(count):
         html_out += f"""
@@ -314,6 +273,6 @@ def render_inline(image: Image.Image, resize: Tuple[int, int] = (256, 256)) -> s
     """
     image = image.resize(resize)
     with io.BytesIO() as buffer:
-        image.save(buffer, format='jpeg')
+        image.save(buffer, format="jpeg")
         image_b64 = base64.b64encode(buffer.getvalue()).decode()
     return f"data:image/jpeg;base64,{image_b64}"

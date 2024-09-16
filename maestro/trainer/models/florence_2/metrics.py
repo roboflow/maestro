@@ -1,13 +1,12 @@
 import re
-from typing import List
-from typing import Tuple
+from typing import List, Tuple
 
 import numpy as np
 import supervision as sv
 import torch
 from PIL import Image
 from tqdm import tqdm
-from transformers import AutoProcessor, AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoProcessor
 
 from maestro.trainer.common.data_loaders.datasets import DetectionDataset
 
@@ -19,11 +18,11 @@ def postprocess_florence2_output_for_mean_average_precision(
     generated_texts: List[str],
     images: List[Image.Image],
     classes: List[str],
-    processor: AutoProcessor
+    processor: AutoProcessor,
 ) -> Tuple[List[sv.Detections], List[sv.Detections]]:
     targets = []
     predictions = []
-    
+
     for image, suffix, generated_text in zip(images, expected_responses, generated_texts):
         # Postprocess prediction for mean average precision calculation
         prediction = processor.post_process_generation(generated_text, task="<OD>", image_size=image.size)
@@ -34,17 +33,17 @@ def postprocess_florence2_output_for_mean_average_precision(
         prediction.class_id = np.array([classes.index(class_name) for class_name in prediction["class_name"]])
         # Set confidence for mean average precision calculation
         prediction.confidence = np.ones(len(prediction))
-        
+
         # Postprocess target for mean average precision calculation
         target = processor.post_process_generation(suffix, task="<OD>", image_size=image.size)
         if len(target) == 0:
             target["class_name"] = []
         target = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, target, resolution_wh=image.size)
         target.class_id = np.array([classes.index(class_name) for class_name in target["class_name"]])
-        
+
         targets.append(target)
         predictions.append(prediction)
-    
+
     return targets, predictions
 
 
@@ -58,7 +57,7 @@ def run_predictions(
     expected_responses = []
     generated_texts = []
     images = []
-    
+
     for idx in tqdm(list(range(len(dataset))), desc="Generating predictions..."):
         image, data = dataset.dataset[idx]
         prefix = data["prefix"]
@@ -69,12 +68,12 @@ def run_predictions(
             input_ids=inputs["input_ids"], pixel_values=inputs["pixel_values"], max_new_tokens=1024, num_beams=3
         )
         generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
-        
+
         prompts.append(prefix)
         expected_responses.append(suffix)
         generated_texts.append(generated_text)
         images.append(image)
-    
+
     return prompts, expected_responses, generated_texts, images
 
 
