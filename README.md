@@ -8,9 +8,9 @@
 
 ## 👋 hello
 
-**maestro** is a tool designed to streamline and accelerate the fine-tuning process for 
-multimodal models. It provides ready-to-use recipes for fine-tuning popular 
-vision-language models (VLMs) such as **Florence-2**, **PaliGemma**, and 
+**maestro** is a tool designed to streamline and accelerate the fine-tuning process for
+multimodal models. It provides ready-to-use recipes for fine-tuning popular
+vision-language models (VLMs) such as **Florence-2**, **PaliGemma**, and
 **Phi-3.5 Vision** on downstream vision-language tasks.
 
 ## 💻 install
@@ -26,7 +26,7 @@ pip install maestro
 
 ### CLI
 
-VLMs can be fine-tuned on downstream tasks directly from the command line with 
+VLMs can be fine-tuned on downstream tasks directly from the command line with
 `maestro` command:
 
 ```bash
@@ -35,7 +35,7 @@ maestro florence2 train --dataset='<DATASET_PATH>' --epochs=10 --batch-size=8
 
 ### SDK
 
-Alternatively, you can fine-tune VLMs using the Python SDK, which accepts the same 
+Alternatively, you can fine-tune VLMs using the Python SDK, which accepts the same
 arguments as the CLI example above:
 
 ```python
@@ -54,8 +54,8 @@ train(config)
 
 ## 📚 notebooks
 
-Explore our collection of notebooks that demonstrate how to fine-tune various 
-vision-language models using maestro. Each notebook provides step-by-step instructions 
+Explore our collection of notebooks that demonstrate how to fine-tune various
+vision-language models using maestro. Each notebook provides step-by-step instructions
 and code examples to help you get started quickly.
 
 | model and task | colab | video                                                                                  |
@@ -65,8 +65,8 @@ and code examples to help you get started quickly.
 
 ## 🦸 contribution
 
-We would love your help in making this repository even better! We are especially 
-looking for contributors with experience in fine-tuning vision-language models (VLMs). 
-If you notice any bugs or have suggestions for improvement, feel free to open an 
-[issue](https://github.com/roboflow/multimodal-maestro/issues) or submit a 
+We would love your help in making this repository even better! We are especially
+looking for contributors with experience in fine-tuning vision-language models (VLMs).
+If you notice any bugs or have suggestions for improvement, feel free to open an
+[issue](https://github.com/roboflow/multimodal-maestro/issues) or submit a
 [pull request](https://github.com/roboflow/multimodal-maestro/pulls).
