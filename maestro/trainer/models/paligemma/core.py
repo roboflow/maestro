@@ -172,7 +172,7 @@ def prepare_peft_model(
     config = LoraConfig(
         r=r,
         lora_alpha=lora_alpha,
-        target_modules=["q_proj", "o_proj", "k_proj", "v_proj", "linear", "Conv2d", "lm_head", "fc2"],
+        target_modules=["q_proj", "o_proj", "k_proj", "v_proj", "gate_proj", "up_proj", "down_proj"],
         task_type="CAUSAL_LM",
         lora_dropout=lora_dropout,
         bias=bias,
