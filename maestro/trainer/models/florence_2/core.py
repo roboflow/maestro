@@ -18,7 +18,7 @@ from maestro.trainer.common.utils.metrics import (
     save_metric_plots,
     MeanAveragePrecisionMetric
 )
-from maestro.trainer.common.utils.peft import prepare_peft_model, LoraInitLiteral
+from maestro.trainer.common.peft import prepare_peft_model, LoraInitLiteral
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.florence_2.checkpoints import (
     CheckpointManager,

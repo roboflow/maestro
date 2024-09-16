@@ -1,5 +1,25 @@
-from maestro.trainer.common.utils.file_system import create_new_run_directory
+import os
+from dataclasses import dataclass, field, replace
+from typing import List, Literal, Optional, Tuple, Union
 
+import torch
+from peft import LoraConfig, PeftModel, get_peft_model
+from torch.optim import Adam, AdamW, Optimizer, SGD
+from torch.optim.lr_scheduler import LRScheduler
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+from transformers import PaliGemmaForConditionalGeneration, AutoProcessor, get_scheduler
+
+from maestro.trainer.common.utils.file_system import create_new_run_directory
+from maestro.trainer.common.utils.metrics import (
+    BaseMetric,
+    MetricsTracker,
+    display_results,
+    save_metric_plots,
+    MeanAveragePrecisionMetric
+)
+from maestro.trainer.common.peft import prepare_peft_model, LoraInitLiteral
+from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.paligemma.checkpoints import (
     CheckpointManager,
     load_model,
@@ -7,6 +27,13 @@ from maestro.trainer.models.paligemma.checkpoints import (
     DEFAULT_PALIGEMMA_MODEL_REVISION,
     DEVICE
 )
+from maestro.trainer.models.paligemma.data_loading import prepare_data_loaders
+from maestro.trainer.models.paligemma.metrics import (
+    extract_unique_detection_dataset_classes,
+    postprocess_paligemma_output_for_mean_average_precision,
+    run_predictions,
+)
+
 
 @dataclass(frozen=True)
 class TrainingConfiguration:
@@ -43,7 +70,7 @@ class TrainingConfiguration:
     """
     dataset: str
     model_id: str = DEFAULT_PALIGEMMA_MODEL_ID
-    revision: str = DEFAULT_FLORENCE2_MODEL_REVISION
+    revision: str = DEFAULT_PALIGEMMA_MODEL_REVISION
     device: torch.device = DEVICE
     cache_dir: Optional[str] = None
     epochs: int = 10
@@ -132,7 +159,7 @@ def train(config: TrainingConfiguration) -> None:
 
 
 def prepare_peft_model(
-    model: AutoModelForCausalLM,
+    model: PaliGemmaForConditionalGeneration,
     r: int = 8,
     lora_alpha: int = 8,
     lora_dropout: float = 0.05,
@@ -140,7 +167,7 @@ def prepare_peft_model(
     inference_mode: bool = False,
     use_rslora: bool = True,
     init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian",
-    revision: str = DEFAULT_FLORENCE2_MODEL_REVISION,
+    revision: str = DEFAULT_PALIGEMMA_MODEL_REVISION,
 ) -> PeftModel:
     config = LoraConfig(
         r=r,
@@ -263,7 +290,7 @@ def run_training_epoch(
 
 def run_validation_epoch(
     processor: AutoProcessor,
-    model: Union[PeftModel, AutoModelForCausalLM],
+    model: Union[PeftModel, PaliGemmaForConditionalGeneration],
     loader: DataLoader,
     config: TrainingConfiguration,
     metrics_tracker: MetricsTracker,
@@ -307,7 +334,7 @@ def run_validation_epoch(
         for metric in config.metrics:
             if isinstance(metric, MeanAveragePrecisionMetric):
                 classes = extract_unique_detection_dataset_classes(loader.dataset)
-                targets, predictions = postprocess_florence2_output_for_mean_average_precision(
+                targets, predictions = postprocess_paligemma_output_for_mean_average_precision(
                     expected_responses=expected_responses,
                     generated_texts=generated_texts,
                     images=images,
@@ -374,7 +401,7 @@ def evaluate(config: TrainingConfiguration) -> None:
     for metric in config.metrics:
         if isinstance(metric, MeanAveragePrecisionMetric):
             classes = extract_unique_detection_dataset_classes(train_loader.dataset)
-            targets, predictions = postprocess_florence2_output_for_mean_average_precision(
+            targets, predictions = postprocess_paligemma_output_for_mean_average_precision(
                 expected_responses=expected_responses,
                 generated_texts=generated_texts,
                 images=images,

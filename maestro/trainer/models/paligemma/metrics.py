@@ -14,7 +14,7 @@ from maestro.trainer.common.data_loaders.datasets import DetectionDataset
 DETECTION_CLASS_PATTERN = r"([a-zA-Z0-9 -]+)<loc_\d+>"
 
 
-def postprocess_florence2_output_for_mean_average_precision(
+def postprocess_paligemma_output_for_mean_average_precision(
     expected_responses: List[str],
     generated_texts: List[str],
     images: List[Image.Image],

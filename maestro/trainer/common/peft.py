@@ -1,6 +1,10 @@
 from typing import List, Tuple, Optional, Literal, Union, Iterator
+from transformers import AutoModelForCausalLM
+from peft import LoraConfig, PeftModel, get_peft_model
 
 LoraInitLiteral = Literal["gaussian", "olora", "pissa", "pissa_niter_[number of iters]", "loftq"]
+# TO DO
+# Make revision as RevisionLiteral?
 
 def prepare_peft_model(
     model: AutoModelForCausalLM,
@@ -11,7 +15,7 @@ def prepare_peft_model(
     inference_mode: bool = False,
     use_rslora: bool = True,
     init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian",
-    revision: str = DEFAULT_FLORENCE2_MODEL_REVISION,
+    revision: str = "",
 ) -> PeftModel:
     config = LoraConfig(
         r=r,
