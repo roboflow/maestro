@@ -7,7 +7,7 @@ import json
 import os
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import matplotlib.pyplot as plt
 import supervision as sv
@@ -16,15 +16,13 @@ from supervision.metrics.mean_average_precision import MeanAveragePrecision
 
 
 class BaseMetric(ABC):
-    """
-    Abstract base class for custom metrics. Subclasses must implement
+    """Abstract base class for custom metrics. Subclasses must implement
     the 'describe' and 'compute' methods.
     """
 
     @abstractmethod
-    def describe(self) -> List[str]:
-        """
-        Describe the names of the metrics that this class will compute.
+    def describe(self) -> list[str]:
+        """Describe the names of the metrics that this class will compute.
 
         Returns:
             List[str]: A list of metric names that will be computed.
@@ -32,9 +30,8 @@ class BaseMetric(ABC):
         pass
 
     @abstractmethod
-    def compute(self, targets: List[Any], predictions: List[Any]) -> Dict[str, float]:
-        """
-        Compute the metric based on the targets and predictions.
+    def compute(self, targets: list[Any], predictions: list[Any]) -> dict[str, float]:
+        """Compute the metric based on the targets and predictions.
 
         Args:
             targets (List[Any]): The ground truth.
@@ -48,22 +45,18 @@ class BaseMetric(ABC):
 
 
 class MeanAveragePrecisionMetric(BaseMetric):
-    """
-    A class used to compute the Mean Average Precision (mAP) metric.
-    """
+    """A class used to compute the Mean Average Precision (mAP) metric."""
 
-    def describe(self) -> List[str]:
-        """
-        Returns a list of metric names that this class will compute.
+    def describe(self) -> list[str]:
+        """Returns a list of metric names that this class will compute.
 
         Returns:
             List[str]: A list of metric names.
         """
         return ["map50:95", "map50", "map75"]
 
-    def compute(self, targets: List[sv.Detections], predictions: List[sv.Detections]) -> Dict[str, float]:
-        """
-        Computes the mAP metrics based on the targets and predictions.
+    def compute(self, targets: list[sv.Detections], predictions: list[sv.Detections]) -> dict[str, float]:
+        """Computes the mAP metrics based on the targets and predictions.
 
         Args:
             targets (List[sv.Detections]): The ground truth detections.
@@ -79,16 +72,16 @@ class MeanAveragePrecisionMetric(BaseMetric):
 
 class MetricsTracker:
     @classmethod
-    def init(cls, metrics: List[str]) -> MetricsTracker:
+    def init(cls, metrics: list[str]) -> MetricsTracker:
         return cls(metrics={metric: [] for metric in metrics})
 
-    def __init__(self, metrics: Dict[str, List[Tuple[int, int, float]]]):
+    def __init__(self, metrics: dict[str, list[tuple[int, int, float]]]) -> None:
         self._metrics = metrics
 
     def register(self, metric: str, epoch: int, step: int, value: float) -> None:
         self._metrics[metric].append((epoch, step, value))
 
-    def describe_metrics(self) -> List[str]:
+    def describe_metrics(self) -> list[str]:
         return list(self._metrics.keys())
 
     def get_metric_values(
@@ -102,7 +95,7 @@ class MetricsTracker:
 
     def as_json(
         self, output_dir: Optional[str] = None, filename: Optional[str] = None
-    ) -> Dict[str, List[Dict[str, float]]]:
+    ) -> dict[str, list[dict[str, float]]]:
         metrics_data = {}
         for metric, values in self._metrics.items():
             metrics_data[metric] = [{"epoch": epoch, "step": step, "value": value} for epoch, step, value in values]
@@ -117,9 +110,8 @@ class MetricsTracker:
         return metrics_data
 
 
-def aggregate_by_epoch(metric_values: List[Tuple[int, int, float]]) -> Dict[int, float]:
-    """
-    Aggregates metric values by epoch, calculating the average for each epoch.
+def aggregate_by_epoch(metric_values: list[tuple[int, int, float]]) -> dict[int, float]:
+    """Aggregates metric values by epoch, calculating the average for each epoch.
 
     Args:
         metric_values (List[Tuple[int, int, float]]): A list of tuples containing
@@ -135,9 +127,8 @@ def aggregate_by_epoch(metric_values: List[Tuple[int, int, float]]) -> Dict[int,
     return avg_per_epoch
 
 
-def save_metric_plots(training_tracker: MetricsTracker, validation_tracker: MetricsTracker, output_dir: str):
-    """
-    Saves plots of training and validation metrics over epochs.
+def save_metric_plots(training_tracker: MetricsTracker, validation_tracker: MetricsTracker, output_dir: str) -> None:
+    """Saves plots of training and validation metrics over epochs.
 
     Args:
         training_tracker (MetricsTracker): Tracker containing training metrics.
@@ -190,10 +181,9 @@ def save_metric_plots(training_tracker: MetricsTracker, validation_tracker: Metr
 
 
 def display_results(
-    prompts: List[str], expected_responses: List[str], generated_texts: List[str], images: List[Image.Image]
+    prompts: list[str], expected_responses: list[str], generated_texts: list[str], images: list[Image.Image]
 ) -> None:
-    """
-    Display the results of model inference in IPython environments.
+    """Display the results of model inference in IPython environments.
 
     This function attempts to display the results (prompts, expected responses,
     generated texts, and images) in an HTML format if running in an IPython
@@ -221,10 +211,9 @@ def display_results(
 
 
 def create_html_output(
-    prompts: List[str], expected_responses: List[str], generated_texts: List[str], images: List[Image.Image]
+    prompts: list[str], expected_responses: list[str], generated_texts: list[str], images: list[Image.Image]
 ) -> str:
-    """
-    Create an HTML string to display the results of model inference.
+    """Create an HTML string to display the results of model inference.
 
     This function generates an HTML string that includes styled divs for each
     result, containing the input image, prompt, expected response, and generated text.
@@ -257,9 +246,8 @@ def create_html_output(
     return html_out
 
 
-def render_inline(image: Image.Image, resize: Tuple[int, int] = (256, 256)) -> str:
-    """
-    Convert an image into an inline HTML string.
+def render_inline(image: Image.Image, resize: tuple[int, int] = (256, 256)) -> str:
+    """Convert an image into an inline HTML string.
 
     This function takes an image, resizes it, and converts it to a base64-encoded
     string that can be used as the source for an HTML img tag.

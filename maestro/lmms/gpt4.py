@@ -15,8 +15,7 @@ API_URL = "https://api.openai.com/v1/chat/completions"
 
 
 def encode_image_to_base64(image: np.ndarray) -> str:
-    """
-    Encodes an image into a base64-encoded string in JPEG format.
+    """Encodes an image into a base64-encoded string in JPEG format.
 
     Parameters:
         image (np.ndarray): The image to be encoded. This should be a numpy array as
@@ -56,8 +55,7 @@ def compose_payload(image: np.ndarray, prompt: str) -> dict:
 
 
 def prompt_image(api_key: str, image: np.ndarray, prompt: str) -> str:
-    """
-    Sends an image and a textual prompt to the OpenAI API and returns the API's textual
+    """Sends an image and a textual prompt to the OpenAI API and returns the API's textual
     response.
 
     This function integrates an image with a user-defined prompt to generate a response

@@ -1,5 +1,6 @@
 import os
-from typing import Iterator, List, Literal, Optional, Tuple, Union
+from collections.abc import Iterator
+from typing import Literal, Optional, Union
 
 import torch
 from peft import LoraConfig, PeftModel, get_peft_model
@@ -149,7 +150,7 @@ def load_model(
     device: torch.device = DEVICE,
     hf_token: Optional[str] = None,
     cache_dir: Optional[str] = None,
-) -> Tuple[AutoProcessor, PaliGemmaForConditionalGeneration]:
+) -> tuple[AutoProcessor, PaliGemmaForConditionalGeneration]:
     if hf_token is None:
         hf_token = os.getenv(HF_TOKEN_ENV)
     processor = AutoProcessor.from_pretrained(model_id, token=hf_token, cache_dir=cache_dir)
@@ -192,7 +193,7 @@ def prepare_peft_model(
 
 
 def _collate_fn(
-    examples: List[dict],
+    examples: list[dict],
     dataset_root: str,
     processor: AutoProcessor,
     device: torch.device = DEVICE,

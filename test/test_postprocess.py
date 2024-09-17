@@ -1,5 +1,3 @@
-from typing import List
-
 import pytest
 
 from maestro.postprocessing.text import extract_marks_in_brackets
@@ -23,6 +21,6 @@ from maestro.primitives import MarkMode
         ("[1] lorem ipsum [A] dolor sit amet", MarkMode.ALPHABETIC, ["A"]),
     ],
 )
-def test_extract_marks_in_brackets(text: str, mode: MarkMode, expected_result: List[str]) -> None:
+def test_extract_marks_in_brackets(text: str, mode: MarkMode, expected_result: list[str]) -> None:
     result = extract_marks_in_brackets(text=text, mode=mode)
     assert result == expected_result

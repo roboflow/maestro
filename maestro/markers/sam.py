@@ -10,8 +10,7 @@ from maestro.postprocessing.mask import masks_to_marks
 
 
 class SegmentAnythingMarkGenerator:
-    """
-    A class for performing image segmentation using a specified model.
+    """A class for performing image segmentation using a specified model.
 
     Parameters:
         device (str): The device to run the model on (e.g., 'cpu', 'cuda').
@@ -19,7 +18,7 @@ class SegmentAnythingMarkGenerator:
             'facebook/sam-vit-huge'.
     """
 
-    def __init__(self, device: str = "cpu", model_name: str = "facebook/sam-vit-huge"):
+    def __init__(self, device: str = "cpu", model_name: str = "facebook/sam-vit-huge") -> None:
         self.model = SamModel.from_pretrained(model_name).to(device)
         self.processor = SamProcessor.from_pretrained(model_name)
         self.image_processor = SamImageProcessor.from_pretrained(model_name)
@@ -29,8 +28,7 @@ class SegmentAnythingMarkGenerator:
         )
 
     def generate(self, image: np.ndarray, mask: Optional[np.ndarray] = None) -> sv.Detections:
-        """
-        Generate image segmentation marks.
+        """Generate image segmentation marks.
 
         Parameters:
             image (np.ndarray): The image to be marked in BGR format.

@@ -6,8 +6,7 @@ import supervision as sv
 
 
 class FeatureType(Enum):
-    """
-    An enumeration to represent the types of features for mask adjustment in image
+    """An enumeration to represent the types of features for mask adjustment in image
     segmentation.
     """
 
@@ -20,8 +19,7 @@ class FeatureType(Enum):
 
 
 def compute_mask_iou_vectorized(masks: np.ndarray) -> np.ndarray:
-    """
-    Vectorized computation of the Intersection over Union (IoU) for all pairs of masks.
+    """Vectorized computation of the Intersection over Union (IoU) for all pairs of masks.
 
     Parameters:
         masks (np.ndarray): A 3D numpy array with shape `(N, H, W)`, where `N` is the
@@ -49,8 +47,7 @@ def compute_mask_iou_vectorized(masks: np.ndarray) -> np.ndarray:
 
 
 def mask_non_max_suppression(masks: np.ndarray, iou_threshold: float = 0.6) -> np.ndarray:
-    """
-    Performs Non-Max Suppression on a set of masks by prioritizing larger masks and
+    """Performs Non-Max Suppression on a set of masks by prioritizing larger masks and
         removing smaller masks that overlap significantly.
 
     When the IoU between two masks exceeds the specified threshold, the smaller mask
@@ -85,8 +82,7 @@ def mask_non_max_suppression(masks: np.ndarray, iou_threshold: float = 0.6) -> n
 def filter_masks_by_relative_area(
     masks: np.ndarray, minimum_area: float = 0.01, maximum_area: float = 1.0
 ) -> np.ndarray:
-    """
-    Filters masks based on their relative area within the total area of each mask.
+    """Filters masks based on their relative area within the total area of each mask.
 
     Parameters:
         masks (np.ndarray): A 3D numpy array with shape `(N, H, W)`, where `N` is the
@@ -104,7 +100,6 @@ def filter_masks_by_relative_area(
         ValueError: If `minimum_area` or `maximum_area` are outside the `0` to `1`
             range, or if `minimum_area` is greater than `maximum_area`.
     """
-
     if not (isinstance(masks, np.ndarray) and masks.ndim == 3):
         raise ValueError("Input must be a 3D numpy array.")
 
@@ -122,8 +117,7 @@ def filter_masks_by_relative_area(
 def adjust_mask_features_by_relative_area(
     mask: np.ndarray, area_threshold: float, feature_type: FeatureType = FeatureType.ISLAND
 ) -> np.ndarray:
-    """
-    Adjusts a mask by removing small islands or filling small holes based on a relative
+    """Adjusts a mask by removing small islands or filling small holes based on a relative
     area threshold.
 
     !!! warning
@@ -162,8 +156,7 @@ def adjust_mask_features_by_relative_area(
 
 
 def masks_to_marks(masks: np.ndarray) -> sv.Detections:
-    """
-    Converts a set of masks to a marks (sv.Detections) object.
+    """Converts a set of masks to a marks (sv.Detections) object.
 
     Parameters:
         masks (np.ndarray): A 3D numpy array with shape `(N, H, W)`, where `N` is the
@@ -187,8 +180,7 @@ def refine_marks(
     minimum_mask_area: float = 0.02,
     maximum_mask_area: float = 1.0,
 ) -> sv.Detections:
-    """
-    Refines a set of masks by removing small islands and holes, and filtering by mask
+    """Refines a set of masks by removing small islands and holes, and filtering by mask
     area.
 
     Parameters:

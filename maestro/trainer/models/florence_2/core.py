@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass, field, replace
-from typing import List, Literal, Optional, Tuple, Union
+from typing import Literal, Optional, Union
 
 import torch
 from peft import LoraConfig, PeftModel, get_peft_model
@@ -89,7 +89,7 @@ class TrainingConfiguration:
     use_rslora: bool = True
     init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian"
     output_dir: str = "./training/florence-2"
-    metrics: List[BaseMetric] = field(default_factory=list)
+    metrics: list[BaseMetric] = field(default_factory=list)
 
 
 def train(config: TrainingConfiguration) -> None:
@@ -189,7 +189,7 @@ def prepare_peft_model(
 def run_training_loop(
     processor: AutoProcessor,
     model: PeftModel,
-    data_loaders: Tuple[DataLoader, Optional[DataLoader]],
+    data_loaders: tuple[DataLoader, Optional[DataLoader]],
     config: TrainingConfiguration,
     training_metrics_tracker: MetricsTracker,
     validation_metrics_tracker: MetricsTracker,
@@ -234,7 +234,7 @@ def run_training_epoch(
     checkpoint_manager: CheckpointManager,
 ) -> None:
     model.train()
-    training_losses: List[float] = []
+    training_losses: list[float] = []
 
     with tqdm(total=len(train_loader), desc=f"Epoch {epoch}/{config.epochs}", unit="batch") as pbar:
         for step_id, (inputs, answers) in enumerate(train_loader):

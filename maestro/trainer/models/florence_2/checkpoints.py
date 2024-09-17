@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from transformers import AutoModelForCausalLM, AutoProcessor
@@ -23,7 +23,7 @@ class CheckpointManager:
         best_checkpoint_dir (str): Directory for the best checkpoint.
     """
 
-    def __init__(self, training_dir: str):
+    def __init__(self, training_dir: str) -> None:
         """Initializes the CheckpointManager.
 
         Args:
@@ -34,7 +34,7 @@ class CheckpointManager:
         self.latest_checkpoint_dir = os.path.join(training_dir, "checkpoints", "latest")
         self.best_checkpoint_dir = os.path.join(training_dir, "checkpoints", "best")
 
-    def save_latest(self, processor: AutoProcessor, model: AutoModelForCausalLM):
+    def save_latest(self, processor: AutoProcessor, model: AutoModelForCausalLM) -> None:
         """Saves the latest model checkpoint.
 
         Args:
@@ -43,7 +43,7 @@ class CheckpointManager:
         """
         save_model(self.latest_checkpoint_dir, processor, model)
 
-    def save_best(self, processor: AutoProcessor, model: AutoModelForCausalLM, val_loss: float):
+    def save_best(self, processor: AutoProcessor, model: AutoModelForCausalLM, val_loss: float) -> None:
         """Saves the best model checkpoint if the validation loss improves.
 
         Args:
@@ -87,7 +87,7 @@ def load_model(
     revision: str = DEFAULT_FLORENCE2_MODEL_REVISION,
     device: torch.device = DEVICE,
     cache_dir: Optional[str] = None,
-) -> Tuple[AutoProcessor, AutoModelForCausalLM]:
+) -> tuple[AutoProcessor, AutoModelForCausalLM]:
     """Loads a Florence-2 model and its associated processor.
 
     Args:

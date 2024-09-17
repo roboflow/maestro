@@ -1,15 +1,15 @@
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 
 class CheckpointsLeaderboard:
     def __init__(
         self,
         max_checkpoints: int,
-    ):
+    ) -> None:
         self._max_checkpoints = max(max_checkpoints, 1)
-        self._leaderboard: Dict[int, Tuple[str, float]] = {}
+        self._leaderboard: dict[int, tuple[str, float]] = {}
 
-    def register_checkpoint(self, epoch: int, path: str, loss: float) -> Tuple[bool, Optional[str]]:
+    def register_checkpoint(self, epoch: int, path: str, loss: float) -> tuple[bool, Optional[str]]:
         if len(self._leaderboard) < self._max_checkpoints:
             self._leaderboard[epoch] = (path, loss)
             return True, None

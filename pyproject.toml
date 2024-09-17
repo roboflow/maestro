@@ -62,10 +62,9 @@ docs = [
 ]
 dev = [
     "pytest~=8.3.2",
-    "black~=24.8.0",
     "pre-commit~=3.8.0",
     "mypy~=1.11.2",
-    "flake8~=7.1.1",
+    "ruff~=0.6.5",
     "tox~=4.18.1"
 ]
 
@@ -125,9 +124,10 @@ indent-width = 4
 
 [tool.ruff.lint]
 
-# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
-select = ["E", "F", "I", "A", "Q", "W"]
-ignore = []
+# Enable pycodestyle (`E`)
+select = ["E", "F", "I", "A", "Q", "W", "N", "T", "Q","TRY","UP","C90","RUF"]
+ignore = ["T201","TRY003"]
+
 # Allow autofix for all enabled rules (when `--fix`) is provided.
 fixable = [
     "A",
@@ -192,7 +192,9 @@ convention = "google"
 "__init__.py" = ["E402", "F401"]
 "*.ipynb" = ["E501"]
 
-
+[tool.ruff.lint.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+keep-runtime-typing = true
 
 [tool.ruff.lint.mccabe]
 # Flag errors (`C901`) whenever the complexity level exceeds 5.

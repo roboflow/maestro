@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Annotated, Dict, List, Literal, Optional, Type, Union
+from typing import Annotated, Literal, Optional, Union
 
 import rich
 import torch
@@ -18,12 +18,12 @@ from maestro.trainer.models.florence_2.core import train as florence2_train
 florence_2_app = typer.Typer(help="Fine-tune and evaluate Florence 2 model")
 
 
-METRIC_CLASSES: Dict[str, Type[BaseMetric]] = {
+METRIC_CLASSES: dict[str, type[BaseMetric]] = {
     "mean_average_precision": MeanAveragePrecisionMetric,
 }
 
 
-def parse_metrics(metrics: List[str]) -> List[BaseMetric]:
+def parse_metrics(metrics: list[str]) -> list[BaseMetric]:
     metric_objects = []
     for metric_name in metrics:
         metric_class = METRIC_CLASSES.get(metric_name.lower())
@@ -119,7 +119,7 @@ def train(
         typer.Option("--output_dir", help="Directory to save output files"),
     ] = "./training/florence-2",
     metrics: Annotated[
-        List[str],
+        list[str],
         typer.Option("--metrics", help="List of metrics to track during training"),
     ] = [],
 ) -> None:
@@ -191,7 +191,7 @@ def evaluate(
         typer.Option("--output_dir", help="Directory to save output files"),
     ] = "./evaluation/florence-2",
     metrics: Annotated[
-        List[str],
+        list[str],
         typer.Option("--metrics", help="List of metrics to track during evaluation"),
     ] = [],
 ) -> None:

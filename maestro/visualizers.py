@@ -3,8 +3,7 @@ import supervision as sv
 
 
 class MarkVisualizer:
-    """
-    A class for visualizing different marks including bounding boxes, masks, polygons,
+    """A class for visualizing different marks including bounding boxes, masks, polygons,
     and labels.
 
     Parameters:
@@ -34,8 +33,7 @@ class MarkVisualizer:
         with_polygon: bool = True,
         with_label: bool = True,
     ) -> np.ndarray:
-        """
-        Visualizes annotations on an image.
+        """Visualizes annotations on an image.
 
         This method takes an image and an instance of sv.Detections, and overlays
         the specified types of marks (boxes, masks, polygons, labels) on the image.
