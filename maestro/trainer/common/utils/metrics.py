@@ -7,7 +7,7 @@ import json
 import os
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import supervision as sv
@@ -100,7 +100,9 @@ class MetricsTracker:
             return self._metrics[metric]
         return [value[2] for value in self._metrics[metric]]
 
-    def as_json(self, output_dir: str = None, filename: str = None) -> Dict[str, List[Dict[str, float]]]:
+    def as_json(
+        self, output_dir: Optional[str] = None, filename: Optional[str] = None
+    ) -> Dict[str, List[Dict[str, float]]]:
         metrics_data = {}
         for metric, values in self._metrics.items():
             metrics_data[metric] = [{"epoch": epoch, "step": step, "value": value} for epoch, step, value in values]

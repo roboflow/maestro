@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Annotated, Dict, List, Optional, Type
+from typing import Annotated, Dict, List, Literal, Optional, Type, Union
 
 import rich
 import torch
@@ -11,7 +11,7 @@ from maestro.trainer.models.florence_2.checkpoints import (
     DEFAULT_FLORENCE2_MODEL_REVISION,
     DEVICE,
 )
-from maestro.trainer.models.florence_2.core import TrainingConfiguration
+from maestro.trainer.models.florence_2.core import LoraInitLiteral, TrainingConfiguration
 from maestro.trainer.models.florence_2.core import evaluate as florence2_evaluate
 from maestro.trainer.models.florence_2.core import train as florence2_train
 
@@ -63,7 +63,7 @@ def train(
         typer.Option("--epochs", help="Number of training epochs"),
     ] = 10,
     optimizer: Annotated[
-        str,
+        Literal["sgd", "adamw", "adam"],
         typer.Option("--optimizer", help="Optimizer to use for training"),
     ] = "adamw",
     lr: Annotated[
@@ -71,7 +71,7 @@ def train(
         typer.Option("--lr", help="Learning rate for the optimizer"),
     ] = 1e-5,
     lr_scheduler: Annotated[
-        str,
+        Literal["linear", "cosine", "polynomial"],
         typer.Option("--lr_scheduler", help="Learning rate scheduler"),
     ] = "linear",
     batch_size: Annotated[
@@ -103,7 +103,7 @@ def train(
         typer.Option("--lora_dropout", help="Dropout probability for LoRA layers"),
     ] = 0.05,
     bias: Annotated[
-        str,
+        Literal["none", "all", "lora_only"],
         typer.Option("--bias", help="Which bias to train"),
     ] = "none",
     use_rslora: Annotated[
@@ -111,7 +111,7 @@ def train(
         typer.Option("--use_rslora/--no_use_rslora", help="Whether to use RSLoRA"),
     ] = True,
     init_lora_weights: Annotated[
-        str,
+        Union[bool, LoraInitLiteral],
         typer.Option("--init_lora_weights", help="How to initialize LoRA weights"),
     ] = "gaussian",
     output_dir: Annotated[

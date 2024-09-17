@@ -82,7 +82,7 @@ from maestro.postprocessing.mask import (
 def test_mask_non_max_suppression(
     masks: np.ndarray, iou_threshold: float, expected_result: Optional[np.ndarray], exception: Exception
 ) -> None:
-    with exception:
+    with exception:  # type: ignore
         result = mask_non_max_suppression(masks=masks, iou_threshold=iou_threshold)
         assert np.array_equal(result, expected_result)
 
@@ -177,7 +177,7 @@ def test_mask_non_max_suppression(
 def test_compute_mask_iou_vectorized(
     masks: np.ndarray, expected_result: Optional[np.ndarray], exception: Exception
 ) -> None:
-    with exception:
+    with exception:  # type: ignore
         result = compute_mask_iou_vectorized(masks)
         assert np.array_equal(result, expected_result)
 
@@ -240,7 +240,7 @@ def test_filter_masks_by_relative_area(
     expected_result: Optional[np.ndarray],
     exception: Exception,
 ) -> None:
-    with exception:
+    with exception:  # type: ignore
         result = filter_masks_by_relative_area(masks=masks, minimum_area=minimum_area, maximum_area=maximum_area)
         assert np.array_equal(result, expected_result)
 
@@ -467,7 +467,7 @@ def test_adjust_mask_features_by_relative_area(
     expected_result: Optional[np.ndarray],
     exception: Exception,
 ) -> None:
-    with exception:
+    with exception:  # type: ignore
         result = adjust_mask_features_by_relative_area(
             mask=mask, area_threshold=area_threshold, feature_type=feature_type
         )
