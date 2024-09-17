@@ -125,8 +125,8 @@ indent-width = 4
 [tool.ruff.lint]
 
 # Enable pycodestyle (`E`)
-select = ["E", "F", "I", "A", "Q", "W", "N", "T", "Q","TRY","UP","C90","RUF"]
-ignore = ["T201","TRY003"]
+select = ["E", "F", "I", "A", "Q", "W", "N", "T", "Q","TRY","UP","C90","RUF","NPY"]
+ignore = ["T201","TRY003","NPY201"]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
 fixable = [

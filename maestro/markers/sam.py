@@ -49,7 +49,7 @@ class SegmentAnythingMarkGenerator:
             image_embeddings = self.model.get_image_embeddings(inputs.pixel_values)
             masks = []
             for polygon in sv.mask_to_polygons(mask.astype(bool)):
-                indexes = np.random.choice(a=polygon.shape[0], size=5, replace=True)
+                indexes = np.random.default_rng().choice(a=polygon.shape[0], size=5, replace=True)
                 input_points = polygon[indexes]
                 inputs = self.processor(images=image, input_points=[[input_points]], return_tensors="pt").to(
                     self.device
