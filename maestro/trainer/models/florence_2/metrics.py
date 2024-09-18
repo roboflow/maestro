@@ -55,7 +55,9 @@ def postprocess_florence2_output_for_generic_metric(
 
     for image, generated_text in zip(images, generated_texts):
         # Postprocess generated text for generic metric calculation
-        prediction = processor.post_process_generation(generated_text, task="pure_text", image_size=image.size)["pure_text"]
+        prediction = processor.post_process_generation(generated_text, task="pure_text", image_size=image.size)[
+            "pure_text"
+        ]
         predictions.append(prediction)
 
     return predictions
