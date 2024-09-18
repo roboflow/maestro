@@ -2,10 +2,10 @@ import os
 import random
 from typing import Optional
 
-import torch
 import numpy as np
+import torch
 
-from maestro.trainer.common.configuration.env import SEED_ENV, DEFAULT_SEED
+from maestro.trainer.common.configuration.env import DEFAULT_SEED, SEED_ENV
 
 
 def make_it_reproducible(
@@ -17,7 +17,7 @@ def make_it_reproducible(
         seed = int(os.getenv(SEED_ENV, DEFAULT_SEED))
     random.seed(seed)
     torch.manual_seed(seed)
-    np.random.seed(seed)
+    np.random.default_rng(seed)
     if avoid_non_deterministic_algorithms:
         torch.use_deterministic_algorithms(True)
     if disable_cudnn_benchmark:

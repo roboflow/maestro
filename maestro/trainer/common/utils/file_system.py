@@ -1,10 +1,10 @@
 import json
 import os
 from glob import glob
-from typing import Union, List
+from typing import Union
 
 
-def read_jsonl(path: str) -> List[dict]:
+def read_jsonl(path: str) -> list[dict]:
     file_lines = read_file(
         path=path,
         split_lines=True,
@@ -17,8 +17,8 @@ def read_file(
     split_lines: bool = False,
     strip_white_spaces: bool = False,
     line_separator: str = "\n",
-) -> Union[str, List[str]]:
-    with open(path, "r") as f:
+) -> Union[str, list[str]]:
+    with open(path) as f:
         file_content = f.read()
     if strip_white_spaces:
         file_content = file_content.strip()
@@ -42,8 +42,7 @@ def ensure_parent_dir_exists(path: str) -> None:
 
 
 def create_new_run_directory(base_output_dir: str) -> str:
-    """
-    Creates a new numbered directory for the current training run.
+    """Creates a new numbered directory for the current training run.
 
     Args:
         base_output_dir (str): The base directory where all run directories are stored.

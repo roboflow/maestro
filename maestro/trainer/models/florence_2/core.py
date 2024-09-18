@@ -1,10 +1,10 @@
 import os
 from dataclasses import dataclass, field, replace
-from typing import List, Literal, Optional, Tuple, Union
+from typing import Literal, Optional, Union
 
 import torch
 from peft import LoraConfig, PeftModel, get_peft_model
-from torch.optim import Adam, AdamW, Optimizer, SGD
+from torch.optim import SGD, Adam, AdamW, Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -13,18 +13,18 @@ from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 from maestro.trainer.common.utils.file_system import create_new_run_directory
 from maestro.trainer.common.utils.metrics import (
     BaseMetric,
+    MeanAveragePrecisionMetric,
     MetricsTracker,
     display_results,
     save_metric_plots,
-    MeanAveragePrecisionMetric
 )
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.florence_2.checkpoints import (
-    CheckpointManager,
-    load_model,
     DEFAULT_FLORENCE2_MODEL_ID,
     DEFAULT_FLORENCE2_MODEL_REVISION,
-    DEVICE
+    DEVICE,
+    CheckpointManager,
+    load_model,
 )
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
 from maestro.trainer.models.florence_2.metrics import (
@@ -68,6 +68,7 @@ class TrainingConfiguration:
         output_dir (str): Directory to save output files.
         metrics (List[BaseMetric]): List of metrics to track during training.
     """
+
     dataset: str
     model_id: str = DEFAULT_FLORENCE2_MODEL_ID
     revision: str = DEFAULT_FLORENCE2_MODEL_REVISION
@@ -88,7 +89,7 @@ class TrainingConfiguration:
     use_rslora: bool = True
     init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian"
     output_dir: str = "./training/florence-2"
-    metrics: List[BaseMetric] = field(default_factory=list)
+    metrics: list[BaseMetric] = field(default_factory=list)
 
 
 def train(config: TrainingConfiguration) -> None:
@@ -101,7 +102,7 @@ def train(config: TrainingConfiguration) -> None:
         output_dir=run_dir,
     )
     checkpoint_manager = CheckpointManager(run_dir)
-    
+
     processor, model = load_model(
         model_id_or_path=config.model_id,
         revision=config.revision,
@@ -139,7 +140,7 @@ def train(config: TrainingConfiguration) -> None:
         config=config,
         training_metrics_tracker=training_metrics_tracker,
         validation_metrics_tracker=validation_metrics_tracker,
-        checkpoint_manager=checkpoint_manager
+        checkpoint_manager=checkpoint_manager,
     )
 
     save_metric_plots(
@@ -147,13 +148,11 @@ def train(config: TrainingConfiguration) -> None:
         validation_tracker=validation_metrics_tracker,
         output_dir=os.path.join(config.output_dir, "metrics"),
     )
-    training_metrics_tracker.as_json(
-        output_dir=os.path.join(config.output_dir, "metrics"),
-        filename="training.json")
+    training_metrics_tracker.as_json(output_dir=os.path.join(config.output_dir, "metrics"), filename="training.json")
     validation_metrics_tracker.as_json(
-        output_dir=os.path.join(config.output_dir, "metrics"),
-        filename="validation.json")
-    
+        output_dir=os.path.join(config.output_dir, "metrics"), filename="validation.json"
+    )
+
     # Log out paths for latest and best checkpoints
     print(f"Latest checkpoint saved at: {checkpoint_manager.latest_checkpoint_dir}")
     print(f"Best checkpoint saved at: {checkpoint_manager.best_checkpoint_dir}")
@@ -190,7 +189,7 @@ def prepare_peft_model(
 def run_training_loop(
     processor: AutoProcessor,
     model: PeftModel,
-    data_loaders: Tuple[DataLoader, Optional[DataLoader]],
+    data_loaders: tuple[DataLoader, Optional[DataLoader]],
     config: TrainingConfiguration,
     training_metrics_tracker: MetricsTracker,
     validation_metrics_tracker: MetricsTracker,
@@ -217,7 +216,7 @@ def run_training_loop(
             lr_scheduler=lr_scheduler,
             training_metrics_tracker=training_metrics_tracker,
             validation_metrics_tracker=validation_metrics_tracker,
-            checkpoint_manager=checkpoint_manager
+            checkpoint_manager=checkpoint_manager,
         )
 
 
@@ -235,17 +234,14 @@ def run_training_epoch(
     checkpoint_manager: CheckpointManager,
 ) -> None:
     model.train()
-    training_losses: List[float] = []
-    
+    training_losses: list[float] = []
+
     with tqdm(total=len(train_loader), desc=f"Epoch {epoch}/{config.epochs}", unit="batch") as pbar:
         for step_id, (inputs, answers) in enumerate(train_loader):
             input_ids = inputs["input_ids"]
             pixel_values = inputs["pixel_values"]
             labels = processor.tokenizer(
-                text=answers, 
-                return_tensors="pt", 
-                padding=True, 
-                return_token_type_ids=False
+                text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
             ).input_ids.to(config.device)
             outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
             loss = outputs.loss
@@ -261,13 +257,13 @@ def run_training_epoch(
                 value=loss,
             )
             training_losses.append(loss)
-            
+
             # Update progress bar
             last_100_losses = training_losses[-100:]
             loss_moving_average = sum(last_100_losses) / len(last_100_losses) if last_100_losses else 0.0
             pbar.set_postfix({"Loss": f"{loss_moving_average:.4f}"})
             pbar.update(1)
-        
+
     # Save checkpoints based on training loss if no validation loader
     if val_loader is None or len(val_loader) == 0:
         train_loss = sum(training_losses) / len(training_losses)
@@ -283,7 +279,7 @@ def run_training_epoch(
         config=config,
         metrics_tracker=validation_metrics_tracker,
     )
-    
+
     val_loss = validation_metrics_tracker.get_metric_values("loss")[-1][2]
     checkpoint_manager.save_latest(processor, model)
     checkpoint_manager.save_best(processor, model, val_loss)
@@ -295,7 +291,7 @@ def run_validation_epoch(
     loader: DataLoader,
     config: TrainingConfiguration,
     metrics_tracker: MetricsTracker,
-    epoch_number: int
+    epoch_number: int,
 ) -> None:
     val_loss = 0.0
     with torch.no_grad():
@@ -303,16 +299,9 @@ def run_validation_epoch(
             input_ids = inputs["input_ids"]
             pixel_values = inputs["pixel_values"]
             labels = processor.tokenizer(
-                text=targets,
-                return_tensors="pt",
-                padding=True,
-                return_token_type_ids=False
+                text=targets, return_tensors="pt", padding=True, return_token_type_ids=False
             ).input_ids.to(config.device)
-            outputs = model(
-                input_ids=input_ids,
-                pixel_values=pixel_values,
-                labels=labels
-            )
+            outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
             loss = outputs.loss
             val_loss += loss.item()
         avg_val_loss = val_loss / len(loader)
@@ -329,9 +318,9 @@ def run_validation_epoch(
             model=model,
             device=config.device,
         )
-        
+
         metrics_results = {"loss": avg_val_loss}
-        
+
         for metric in config.metrics:
             if isinstance(metric, MeanAveragePrecisionMetric):
                 classes = extract_unique_detection_dataset_classes(loader.dataset)
@@ -340,7 +329,7 @@ def run_validation_epoch(
                     generated_texts=generated_texts,
                     images=images,
                     classes=classes,
-                    processor=processor
+                    processor=processor,
                 )
                 result = metric.compute(targets=targets, predictions=predictions)
                 for key, value in result.items():
@@ -351,7 +340,7 @@ def run_validation_epoch(
                         value=value,
                     )
                     metrics_results[key] = value
-        
+
         print("Validation Metrics:", ", ".join([f"{k}: {v:.4f}" for k, v in metrics_results.items()]))
 
         # Display inference results in IPython environments
@@ -385,7 +374,7 @@ def evaluate(config: TrainingConfiguration) -> None:
         test_loaders_workers=config.val_num_workers,
     )
     evaluation_loader = test_loader if test_loader is not None else val_loader
-    
+
     metrics = []
     for metric in config.metrics:
         metrics += metric.describe()
@@ -407,7 +396,7 @@ def evaluate(config: TrainingConfiguration) -> None:
                 generated_texts=generated_texts,
                 images=images,
                 classes=classes,
-                processor=processor
+                processor=processor,
             )
             result = metric.compute(targets=targets, predictions=predictions)
             for key, value in result.items():
@@ -419,5 +408,5 @@ def evaluate(config: TrainingConfiguration) -> None:
                 )
 
     evaluation_metrics_tracker.as_json(
-        output_dir=os.path.join(config.output_dir, "metrics"),
-        filename="evaluation.json")
+        output_dir=os.path.join(config.output_dir, "metrics"), filename="evaluation.json"
+    )

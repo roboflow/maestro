@@ -62,10 +62,9 @@ docs = [
 ]
 dev = [
     "pytest~=8.3.2",
-    "black~=24.8.0",
     "pre-commit~=3.8.0",
     "mypy~=1.11.2",
-    "flake8~=7.1.1",
+    "ruff~=0.6.5",
     "tox~=4.18.1"
 ]
 
@@ -78,3 +77,142 @@ include-package-data = true # include non-python files in the package (default)
 [tool.setuptools.packages.find]
 where = ["."]
 exclude = ["cookbooks", "docs", "docs.*", "test", "test.*", "mkdocs", "mkdocs.*"]
+
+### Linting and Formatting
+[tool.bandit]
+target = ["test", "maestro"]
+tests = ["B201", "B301", "B318", "B314", "B303", "B413", "B412", "B410"]
+
+[tool.autoflake]
+check = true
+imports = ["cv2", "maestro"]
+
+
+[tool.ruff]
+target-version = "py39"
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "yarn-error.log",
+    "yarn.lock",
+    "docs",
+]
+
+line-length = 120
+indent-width = 4
+
+[tool.ruff.lint]
+
+# Enable pycodestyle (`E`)
+select = ["E", "F", "I", "A", "Q", "W", "N", "T", "Q","TRY","UP","C90","RUF","NPY"]
+ignore = ["T201","TRY003","NPY201"]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "I",
+    "N",
+    "Q",
+    "S",
+    "T",
+    "W",
+    "ANN",
+    "ARG",
+    "BLE",
+    "COM",
+    "DJ",
+    "DTZ",
+    "EM",
+    "ERA",
+    "EXE",
+    "FBT",
+    "ICN",
+    "INP",
+    "ISC",
+    "NPY",
+    "PD",
+    "PGH",
+    "PIE",
+    "PL",
+    "PT",
+    "PTH",
+    "PYI",
+    "RET",
+    "RSE",
+    "RUF",
+    "SIM",
+    "SLF",
+    "TCH",
+    "TID",
+    "TRY",
+    "UP",
+    "YTT",
+]
+unfixable = []
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+pylint.max-args = 20
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "double"
+multiline-quotes = "double"
+docstring-quotes = "double"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402", "F401"]
+"*.ipynb" = ["E501"]
+
+[tool.ruff.lint.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+keep-runtime-typing = true
+
+[tool.ruff.lint.mccabe]
+# Flag errors (`C901`) whenever the complexity level exceeds 5.
+max-complexity = 15
+
+[tool.ruff.lint.isort]
+order-by-type = true
+no-sections = false
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"

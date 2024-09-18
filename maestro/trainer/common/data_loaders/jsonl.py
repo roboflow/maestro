@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from typing import List
 
 from torch.utils.data import Dataset
 
@@ -18,14 +17,14 @@ class JSONLDataset(Dataset):
         random.shuffle(file_content)
         return cls(jsons=file_content)
 
-    def __init__(self, jsons: List[dict]):
+    def __init__(self, jsons: list[dict]) -> None:
         self.jsons = jsons
 
     def __getitem__(self, index):
         return self.jsons[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.jsons)
 
-    def shuffle(self):
+    def shuffle(self) -> None:
         random.shuffle(self.jsons)
