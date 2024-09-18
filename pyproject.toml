@@ -65,7 +65,7 @@ dev = [
     "pre-commit~=3.8.0",
     "mypy~=1.11.2",
     "ruff~=0.6.5",
-    "tox~=4.18.1"
+    "tox>=4.18.1,<4.20.0"
 ]
 
 [project.scripts]
