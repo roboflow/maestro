@@ -422,6 +422,20 @@ def evaluate(config: TrainingConfiguration) -> None:
                     step=1,
                     value=value,
                 )
+        else:
+            predictions = postprocess_florence2_output_for_generic_metric(
+                generated_texts=generated_texts,
+                images=images,
+                processor=processor,
+            )
+            result = metric.compute(targets=expected_responses, predictions=predictions)
+            for key, value in result.items():
+                evaluation_metrics_tracker.register(
+                    metric=key,
+                    epoch=1,
+                    step=1,
+                    value=value,
+                )
 
     evaluation_metrics_tracker.as_json(
         output_dir=os.path.join(config.output_dir, "metrics"), filename="evaluation.json"
