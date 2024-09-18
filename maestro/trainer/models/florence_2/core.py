@@ -29,6 +29,7 @@ from maestro.trainer.models.florence_2.checkpoints import (
 from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
 from maestro.trainer.models.florence_2.metrics import (
     extract_unique_detection_dataset_classes,
+    postprocess_florence2_output_for_generic_metric,
     postprocess_florence2_output_for_mean_average_precision,
     run_predictions,
 )
@@ -332,6 +333,21 @@ def run_validation_epoch(
                     processor=processor,
                 )
                 result = metric.compute(targets=targets, predictions=predictions)
+                for key, value in result.items():
+                    metrics_tracker.register(
+                        metric=key,
+                        epoch=epoch_number,
+                        step=1,
+                        value=value,
+                    )
+                    metrics_results[key] = value
+            else:
+                predictions = postprocess_florence2_output_for_generic_metric(
+                    generated_texts=generated_texts,
+                    images=images,
+                    processor=processor,
+                )
+                result = metric.compute(predictions=predictions, targets=expected_responses)
                 for key, value in result.items():
                     metrics_tracker.register(
                         metric=key,
