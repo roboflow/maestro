@@ -26,7 +26,7 @@ from maestro.trainer.models.florence_2.checkpoints import (
     CheckpointManager,
     load_model,
 )
-from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
+from maestro.trainer.models.florence_2.loaders import create_data_loaders
 from maestro.trainer.models.florence_2.metrics import (
     extract_unique_detection_dataset_classes,
     postprocess_florence2_output_for_generic_metric,
@@ -110,7 +110,7 @@ def train(config: TrainingConfiguration) -> None:
         device=config.device,
         cache_dir=config.cache_dir,
     )
-    train_loader, val_loader, test_loader = prepare_data_loaders(
+    train_loader, val_loader, test_loader = create_data_loaders(
         dataset_location=config.dataset,
         train_batch_size=config.batch_size,
         processor=processor,
@@ -238,13 +238,18 @@ def run_training_epoch(
     training_losses: list[float] = []
 
     with tqdm(total=len(train_loader), desc=f"Epoch {epoch}/{config.epochs}", unit="batch") as pbar:
-        for step_id, (inputs, answers) in enumerate(train_loader):
-            input_ids = inputs["input_ids"]
-            pixel_values = inputs["pixel_values"]
+        for batch_id, (inputs, _, answers, _) in enumerate(train_loader):
             labels = processor.tokenizer(
-                text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
+                text=answers,
+                return_tensors="pt",
+                padding=True,
+                return_token_type_ids=False
             ).input_ids.to(config.device)
-            outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
+            outputs = model(
+                input_ids=inputs["input_ids"],
+                pixel_values=inputs["pixel_values"],
+                labels=labels
+            )
             loss = outputs.loss
             loss.backward()
             optimizer.step()
@@ -254,12 +259,11 @@ def run_training_epoch(
             training_metrics_tracker.register(
                 metric="loss",
                 epoch=epoch,
-                step=step_id + 1,
+                step=batch_id + 1,
                 value=loss,
             )
             training_losses.append(loss)
 
-            # Update progress bar
             last_100_losses = training_losses[-100:]
             loss_moving_average = sum(last_100_losses) / len(last_100_losses) if last_100_losses else 0.0
             pbar.set_postfix({"Loss": f"{loss_moving_average:.4f}"})
@@ -294,23 +298,27 @@ def run_validation_epoch(
     metrics_tracker: MetricsTracker,
     epoch_number: int,
 ) -> None:
-    val_loss = 0.0
+    loss_values = []
     with torch.no_grad():
-        for inputs, targets in loader:
-            input_ids = inputs["input_ids"]
-            pixel_values = inputs["pixel_values"]
+        for inputs, questions, answers, images in loader:
             labels = processor.tokenizer(
-                text=targets, return_tensors="pt", padding=True, return_token_type_ids=False
+                text=answers,
+                return_tensors="pt",
+                padding=True,
+                return_token_type_ids=False
             ).input_ids.to(config.device)
-            outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
-            loss = outputs.loss
-            val_loss += loss.item()
-        avg_val_loss = val_loss / len(loader)
+            outputs = model(
+                input_ids=inputs["input_ids"],
+                pixel_values=inputs["pixel_values"],
+                labels=labels
+            )
+            loss_values.append(outputs.loss.item())
+        average_loss_value = sum(loss_values)/len(loss_values)
         metrics_tracker.register(
             metric="loss",
             epoch=epoch_number,
             step=1,
-            value=avg_val_loss,
+            value=average_loss_value,
         )
         # Run inference once for all metrics
         prompts, expected_responses, generated_texts, images = run_predictions(
@@ -320,7 +328,7 @@ def run_validation_epoch(
             device=config.device,
         )
 
-        metrics_results = {"loss": avg_val_loss}
+        metrics_results = {"loss": average_loss_value}
 
         for metric in config.metrics:
             if isinstance(metric, MeanAveragePrecisionMetric):
