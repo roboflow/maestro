@@ -240,16 +240,9 @@ def run_training_epoch(
     with tqdm(total=len(train_loader), desc=f"Epoch {epoch}/{config.epochs}", unit="batch") as pbar:
         for batch_id, (inputs, _, answers, _) in enumerate(train_loader):
             labels = processor.tokenizer(
-                text=answers,
-                return_tensors="pt",
-                padding=True,
-                return_token_type_ids=False
+                text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
             ).input_ids.to(config.device)
-            outputs = model(
-                input_ids=inputs["input_ids"],
-                pixel_values=inputs["pixel_values"],
-                labels=labels
-            )
+            outputs = model(input_ids=inputs["input_ids"], pixel_values=inputs["pixel_values"], labels=labels)
             loss = outputs.loss
             loss.backward()
             optimizer.step()
@@ -302,18 +295,11 @@ def run_validation_epoch(
     with torch.no_grad():
         for inputs, questions, answers, images in loader:
             labels = processor.tokenizer(
-                text=answers,
-                return_tensors="pt",
-                padding=True,
-                return_token_type_ids=False
+                text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
             ).input_ids.to(config.device)
-            outputs = model(
-                input_ids=inputs["input_ids"],
-                pixel_values=inputs["pixel_values"],
-                labels=labels
-            )
+            outputs = model(input_ids=inputs["input_ids"], pixel_values=inputs["pixel_values"], labels=labels)
             loss_values.append(outputs.loss.item())
-        average_loss_value = sum(loss_values)/len(loss_values)
+        average_loss_value = sum(loss_values) / len(loss_values)
         metrics_tracker.register(
             metric="loss",
             epoch=epoch_number,
