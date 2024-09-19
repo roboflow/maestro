@@ -22,33 +22,21 @@ def process_output_for_detection_metric(
 
     for image, suffix, generated_text in zip(images, expected_answers, generated_answers):
         # Postprocess prediction for mean average precision calculation
-        prediction = processor.post_process_generation(
-            generated_text, task="<OD>", image_size=image.size
-        )
-        prediction = sv.Detections.from_lmm(
-            sv.LMM.FLORENCE_2, prediction, resolution_wh=image.size
-        )
+        prediction = processor.post_process_generation(generated_text, task="<OD>", image_size=image.size)
+        prediction = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, prediction, resolution_wh=image.size)
         if len(prediction) == 0:
             prediction["class_name"] = []
         prediction = prediction[np.isin(prediction["class_name"], classes)]
-        prediction.class_id = np.array(
-            [classes.index(class_name) for class_name in prediction["class_name"]]
-        )
+        prediction.class_id = np.array([classes.index(class_name) for class_name in prediction["class_name"]])
         # Set confidence for mean average precision calculation
         prediction.confidence = np.ones(len(prediction))
 
         # Postprocess target for mean average precision calculation
-        target = processor.post_process_generation(
-            suffix, task="<OD>", image_size=image.size
-        )
+        target = processor.post_process_generation(suffix, task="<OD>", image_size=image.size)
         if len(target) == 0:
             target["class_name"] = []
-        target = sv.Detections.from_lmm(
-            sv.LMM.FLORENCE_2, target, resolution_wh=image.size
-        )
-        target.class_id = np.array(
-            [classes.index(class_name) for class_name in target["class_name"]]
-        )
+        target = sv.Detections.from_lmm(sv.LMM.FLORENCE_2, target, resolution_wh=image.size)
+        target.class_id = np.array([classes.index(class_name) for class_name in target["class_name"]])
 
         targets.append(target)
         predictions.append(prediction)
@@ -63,9 +51,9 @@ def process_output_for_text_metric(
 ) -> list[str]:
     predictions = []
     for image, generated_text in zip(images, generated_answers):
-        prediction = processor.post_process_generation(
-            generated_text, task="pure_text", image_size=image.size
-        )["pure_text"]
+        prediction = processor.post_process_generation(generated_text, task="pure_text", image_size=image.size)[
+            "pure_text"
+        ]
         predictions.append(prediction)
 
     return predictions

@@ -28,8 +28,11 @@ from maestro.trainer.models.florence_2.checkpoints import (
 )
 from maestro.trainer.models.florence_2.inference import run_predictions
 from maestro.trainer.models.florence_2.loaders import create_data_loaders
-from maestro.trainer.models.florence_2.metrics import get_unique_detection_classes, \
-    process_output_for_detection_metric, process_output_for_text_metric
+from maestro.trainer.models.florence_2.metrics import (
+    get_unique_detection_classes,
+    process_output_for_detection_metric,
+    process_output_for_text_metric,
+)
 from maestro.trainer.models.paligemma.training import LoraInitLiteral
 
 
@@ -146,12 +149,9 @@ def train(config: TrainingConfiguration) -> None:
         validation_tracker=validation_metrics_tracker,
         output_dir=os.path.join(config.output_dir, "metrics"),
     )
-    training_metrics_tracker.as_json(
-        output_dir=os.path.join(config.output_dir, "metrics"),
-        filename="training.json")
+    training_metrics_tracker.as_json(output_dir=os.path.join(config.output_dir, "metrics"), filename="training.json")
     validation_metrics_tracker.as_json(
-        output_dir=os.path.join(config.output_dir, "metrics"),
-        filename="validation.json"
+        output_dir=os.path.join(config.output_dir, "metrics"), filename="validation.json"
     )
 
     # Log out paths for latest and best checkpoints
@@ -160,21 +160,20 @@ def train(config: TrainingConfiguration) -> None:
 
 
 def prepare_peft_model(
-        model: AutoModelForCausalLM,
-        r: int = 8,
-        lora_alpha: int = 8,
-        lora_dropout: float = 0.05,
-        bias: Literal["none", "all", "lora_only"] = "none",
-        inference_mode: bool = False,
-        use_rslora: bool = True,
-        init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian",
-        revision: str = DEFAULT_FLORENCE2_MODEL_REVISION,
+    model: AutoModelForCausalLM,
+    r: int = 8,
+    lora_alpha: int = 8,
+    lora_dropout: float = 0.05,
+    bias: Literal["none", "all", "lora_only"] = "none",
+    inference_mode: bool = False,
+    use_rslora: bool = True,
+    init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian",
+    revision: str = DEFAULT_FLORENCE2_MODEL_REVISION,
 ) -> PeftModel:
     config = LoraConfig(
         r=r,
         lora_alpha=lora_alpha,
-        target_modules=["q_proj", "o_proj", "k_proj", "v_proj", "linear", "Conv2d",
-                        "lm_head", "fc2"],
+        target_modules=["q_proj", "o_proj", "k_proj", "v_proj", "linear", "Conv2d", "lm_head", "fc2"],
         task_type="CAUSAL_LM",
         lora_dropout=lora_dropout,
         bias=bias,
@@ -189,13 +188,13 @@ def prepare_peft_model(
 
 
 def run_training_loop(
-        processor: AutoProcessor,
-        model: PeftModel,
-        data_loaders: tuple[DataLoader, Optional[DataLoader]],
-        config: TrainingConfiguration,
-        training_metrics_tracker: MetricsTracker,
-        validation_metrics_tracker: MetricsTracker,
-        checkpoint_manager: CheckpointManager,
+    processor: AutoProcessor,
+    model: PeftModel,
+    data_loaders: tuple[DataLoader, Optional[DataLoader]],
+    config: TrainingConfiguration,
+    training_metrics_tracker: MetricsTracker,
+    validation_metrics_tracker: MetricsTracker,
+    checkpoint_manager: CheckpointManager,
 ) -> None:
     train_loader, val_loader = data_loaders
     optimizer = get_optimizer(model=model, config=config)
@@ -223,38 +222,27 @@ def run_training_loop(
 
 
 def run_training_epoch(
-        processor: AutoProcessor,
-        model: PeftModel,
-        train_loader: DataLoader,
-        val_loader: Optional[DataLoader],
-        epoch: int,
-        config: TrainingConfiguration,
-        optimizer: Optimizer,
-        lr_scheduler: LRScheduler,
-        training_metrics_tracker: MetricsTracker,
-        validation_metrics_tracker: MetricsTracker,
-        checkpoint_manager: CheckpointManager,
+    processor: AutoProcessor,
+    model: PeftModel,
+    train_loader: DataLoader,
+    val_loader: Optional[DataLoader],
+    epoch: int,
+    config: TrainingConfiguration,
+    optimizer: Optimizer,
+    lr_scheduler: LRScheduler,
+    training_metrics_tracker: MetricsTracker,
+    validation_metrics_tracker: MetricsTracker,
+    checkpoint_manager: CheckpointManager,
 ) -> None:
     model.train()
     loss_values: list[float] = []
-    progress_bar = tqdm(
-        total=len(train_loader),
-        desc=f"training {epoch}/{config.epochs}",
-        unit="batch"
-    )
+    progress_bar = tqdm(total=len(train_loader), desc=f"training {epoch}/{config.epochs}", unit="batch")
     with progress_bar:
         for batch_id, (inputs, _, answers, _) in enumerate(train_loader):
             labels = processor.tokenizer(
-                text=answers,
-                return_tensors="pt",
-                padding=True,
-                return_token_type_ids=False
+                text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
             ).input_ids.to(config.device)
-            outputs = model(
-                input_ids=inputs["input_ids"],
-                pixel_values=inputs["pixel_values"],
-                labels=labels
-            )
+            outputs = model(input_ids=inputs["input_ids"], pixel_values=inputs["pixel_values"], labels=labels)
 
             loss = outputs.loss
             loss.backward()
@@ -297,28 +285,21 @@ def run_training_epoch(
 
 
 def run_validation_epoch(
-        processor: AutoProcessor,
-        model: Union[PeftModel, AutoModelForCausalLM],
-        loader: DataLoader,
-        config: TrainingConfiguration,
-        metrics_tracker: MetricsTracker,
-        epoch_number: int,
+    processor: AutoProcessor,
+    model: Union[PeftModel, AutoModelForCausalLM],
+    loader: DataLoader,
+    config: TrainingConfiguration,
+    metrics_tracker: MetricsTracker,
+    epoch_number: int,
 ) -> None:
     loss_values: list[float] = []
     with torch.no_grad():
         progress_bar = tqdm(loader, desc="running validation", unit="batch")
         for inputs, questions, answers, images in progress_bar:
             labels = processor.tokenizer(
-                text=answers,
-                return_tensors="pt",
-                padding=True,
-                return_token_type_ids=False
+                text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
             ).input_ids.to(config.device)
-            outputs = model(
-                input_ids=inputs["input_ids"],
-                pixel_values=inputs["pixel_values"],
-                labels=labels
-            )
+            outputs = model(input_ids=inputs["input_ids"], pixel_values=inputs["pixel_values"], labels=labels)
             loss_values.append(outputs.loss.item())
         average_loss = sum(loss_values) / len(loss_values) if loss_values else 0.0
         metrics_tracker.register(
@@ -329,9 +310,7 @@ def run_validation_epoch(
         )
         # Run inference once for all metrics
         questions, expected_answers, generated_answers, images = run_predictions(
-            loader=loader,
-            processor=processor,
-            model=model
+            loader=loader, processor=processor, model=model
         )
 
         metrics_results = {"loss": average_loss}
@@ -361,10 +340,7 @@ def run_validation_epoch(
                     images=images,
                     processor=processor,
                 )
-                result = metric.compute(
-                    predictions=predictions,
-                    targets=expected_answers
-                )
+                result = metric.compute(predictions=predictions, targets=expected_answers)
                 for key, value in result.items():
                     metrics_tracker.register(
                         metric=key,
@@ -374,11 +350,7 @@ def run_validation_epoch(
                     )
                     metrics_results[key] = value
 
-        print("Validation Metrics:", ", ".join([
-            f"{k}: {v:.4f}"
-            for k, v
-            in metrics_results.items()
-        ]))
+        print("Validation Metrics:", ", ".join([f"{k}: {v:.4f}" for k, v in metrics_results.items()]))
 
         # Display inference results in IPython environments
         display_results(questions, expected_answers, generated_answers, images)
@@ -419,9 +391,7 @@ def evaluate(config: TrainingConfiguration) -> None:
 
     # Run inference once for all metrics
     _, expected_answers, generated_answers, images = run_predictions(
-        loader=evaluation_loader,
-        processor=processor,
-        model=model
+        loader=evaluation_loader, processor=processor, model=model
     )
 
     for metric in config.metrics:
@@ -458,6 +428,5 @@ def evaluate(config: TrainingConfiguration) -> None:
                 )
 
     evaluation_metrics_tracker.as_json(
-        output_dir=os.path.join(config.output_dir, "metrics"),
-        filename="evaluation.json"
+        output_dir=os.path.join(config.output_dir, "metrics"), filename="evaluation.json"
     )
