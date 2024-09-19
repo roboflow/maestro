@@ -106,5 +106,10 @@ def process_batch(
     device: torch.device,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     questions, answers, images = zip(*batch)
-    inputs = processor(text=list(questions), images=list(images), return_tensors="pt", padding=True).to(device)
+    inputs = processor(
+        text=list(questions),
+        images=list(images),
+        return_tensors="pt",
+        padding=True
+    ).to(device)
     return inputs, questions, answers, images
