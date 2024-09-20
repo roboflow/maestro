@@ -19,7 +19,7 @@ Watch: Florence-2 Fine-tuning Overview
 === "Object Detection"
 
     ```txt
-    
+
     ```
 
 === "Visual Question Answering"
