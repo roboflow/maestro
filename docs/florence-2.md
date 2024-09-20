@@ -1,20 +1,20 @@
 ## Overview
 
-Florence-2, released by Microsoft in June 2024, is a compact yet powerful 
-vision-language model (VLM) designed for a wide range of tasks, including object 
-detection, captioning, and optical character recognition (OCR). It uses a DaViT vision 
-encoder and BERT to process images and text into embeddings, which are then processed 
-through a transformer architecture. Florence-2’s strength lies in its pre-training on 
-the large FLD-5B dataset, which includes over 5 billion annotations for 126 million 
-images. The model can be fine-tuned for specific applications like visual question 
-answering (VQA) and document understanding, demonstrating significant improvements in 
-performance post-tuning. Its ability to adapt quickly makes it an attractive choice for 
+Florence-2, released by Microsoft in June 2024, is a compact yet powerful
+vision-language model (VLM) designed for a wide range of tasks, including object
+detection, captioning, and optical character recognition (OCR). It uses a DaViT vision
+encoder and BERT to process images and text into embeddings, which are then processed
+through a transformer architecture. Florence-2’s strength lies in its pre-training on
+the large FLD-5B dataset, which includes over 5 billion annotations for 126 million
+images. The model can be fine-tuned for specific applications like visual question
+answering (VQA) and document understanding, demonstrating significant improvements in
+performance post-tuning. Its ability to adapt quickly makes it an attractive choice for
 resource-constrained environments.
 
 ## Dataset Format
 
-The Florence-2 model expects a specific dataset structure for training and evaluation. 
-The dataset should be organized into train, test, and validation splits, with each 
+The Florence-2 model expects a specific dataset structure for training and evaluation.
+The dataset should be organized into train, test, and validation splits, with each
 split containing image files and an `annotations.jsonl` file.
 
 ```
@@ -36,10 +36,10 @@ dataset/
     └── annotations.jsonl
 ```
 
-Each annotation entry contains the image filename and a description of the objects in 
-the image. The labels are structured as 
-`class name<loc_x_min><loc_y_min><loc_x_max><loc_y_max>`, where the bounding box 
-coordinates (`x_min`, `y_min`, `x_max`, `y_max`) are normalized to values between 0 
+Each annotation entry contains the image filename and a description of the objects in
+the image. The labels are structured as
+`class name<loc_x_min><loc_y_min><loc_x_max><loc_y_max>`, where the bounding box
+coordinates (`x_min`, `y_min`, `x_max`, `y_max`) are normalized to values between 0
 and 1000.
 
 ```
@@ -50,9 +50,9 @@ and 1000.
 
 ## Examples
 
-Below are two examples demonstrating how to train the Florence-2 model. The first 
-snippet is for CLI usage, allowing you to quickly train the model with simple commands. 
-The second snippet is for SDK usage, offering more customization and flexibility when 
+Below are two examples demonstrating how to train the Florence-2 model. The first
+snippet is for CLI usage, allowing you to quickly train the model with simple commands.
+The second snippet is for SDK usage, offering more customization and flexibility when
 integrating Florence-2 into your own Python projects.
 
 ### CLI
