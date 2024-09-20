@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://roboflow.github.io/multimodal-maestro/</loc>
+         <lastmod>2024-09-20</lastmod>
+    </url>
+    <url>
+         <loc>https://roboflow.github.io/multimodal-maestro/get_started/</loc>
+         <lastmod>2024-09-20</lastmod>
+    </url>
+    <url>
+         <loc>https://roboflow.github.io/multimodal-maestro/lmms/</loc>
+         <lastmod>2024-09-20</lastmod>
+    </url>
+    <url>
+         <loc>https://roboflow.github.io/multimodal-maestro/markers/</loc>
+         <lastmod>2024-09-20</lastmod>
+    </url>
+    <url>
+         <loc>https://roboflow.github.io/multimodal-maestro/visualizers/</loc>
+         <lastmod>2024-09-20</lastmod>
+    </url>
+</urlset>
