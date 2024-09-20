@@ -17,6 +17,9 @@ extra:
       link: https://www.linkedin.com/company/roboflow-ai/mycompany/
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/roboflow
+  version:
+    provider: mike
+
 
 nav:
   - Maestro: index.md
@@ -59,7 +62,7 @@ plugins:
         python:
           options:
             parameter_headings: true
-            paths: [supervision]
+            paths: [maestro]
             load_external_modules: true
             allow_inspection: true
             show_bases: true
