@@ -1,5 +1,4 @@
 import re
-from typing import List, Dict
 
 import numpy as np
 import supervision as sv
@@ -7,9 +6,8 @@ import supervision as sv
 from maestro.primitives import MarkMode
 
 
-def extract_marks_in_brackets(text: str, mode: MarkMode) -> List[str]:
-    """
-    Extracts all unique marks enclosed in square brackets from a given string, based
+def extract_marks_in_brackets(text: str, mode: MarkMode) -> list[str]:
+    """Extracts all unique marks enclosed in square brackets from a given string, based
         on the specified mode. Duplicates are removed and the results are sorted in
         descending order.
 
@@ -23,9 +21,9 @@ def extract_marks_in_brackets(text: str, mode: MarkMode) -> List[str]:
             descending order.
     """
     if mode == MarkMode.NUMERIC:
-        pattern = r'\[(\d+)\]'
+        pattern = r"\[(\d+)\]"
     elif mode == MarkMode.ALPHABETIC:
-        pattern = r'\[([A-Za-z]+)\]'
+        pattern = r"\[([A-Za-z]+)\]"
     else:
         raise ValueError(f"Unknown mode: {mode}")
 
@@ -38,12 +36,8 @@ def extract_marks_in_brackets(text: str, mode: MarkMode) -> List[str]:
         return sorted(unique_marks, reverse=False)
 
 
-def extract_relevant_masks(
-    text: str,
-    detections: sv.Detections
-) -> Dict[str, np.ndarray]:
-    """
-    Extracts relevant masks from the detections based on marks found in the given text.
+def extract_relevant_masks(text: str, detections: sv.Detections) -> dict[str, np.ndarray]:
+    """Extracts relevant masks from the detections based on marks found in the given text.
 
     Args:
         text (str): The string containing marks in square brackets to be searched for.
@@ -55,8 +49,4 @@ def extract_relevant_masks(
             and each value is the corresponding mask from detections.
     """
     marks = extract_marks_in_brackets(text=text, mode=MarkMode.NUMERIC)
-    return {
-        mark: detections.mask[int(mark)]
-        for mark
-        in marks
-    }
+    return {mark: detections.mask[int(mark)] for mark in marks}

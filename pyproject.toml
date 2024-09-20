@@ -1,0 +1,218 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "maestro"
+version = "0.2.0rc4"
+description = "Visual Prompting for Large Multimodal Models (LMMs)"
+readme = "README.md"
+authors = [
+    {name = "Roboflow", email = "help@roboflow.com"}
+]
+license = {file = "LICENSE"}
+keywords = ["roboflow","maestro","multimodal-maestro","transformers", "torch", "accelerate", "multimodal", "lmm", "vision", "nlp", "prompting"]
+requires-python = ">=3.9,<3.13"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS"
+]
+
+dependencies = [
+    "supervision~=0.24.0rc1",
+    "requests>=2.31.0,<=2.32.3",
+    "transformers~=4.44.2",
+    "torch~=2.4.0",
+    "accelerate>=0.33,<0.35",
+    "sentencepiece~=0.2.0",
+    "peft~=0.12.0",
+    "flash-attn~=2.6.3; sys_platform != 'darwin'",
+    "einops~=0.8.0",
+    "timm~=1.0.9",
+    "typer~=0.12.5"
+]
+
+[project.urls]
+Homepage = "https://roboflow.github.io/multimodal-maestro/"
+Documentation = "https://roboflow.github.io/multimodal-maestro/"
+Repository = "https://github.com/roboflow/multimodal-maestro"
+Issues = "https://github.com/roboflow/multimodal-maestro/issues"
+Changelog = "https://github.com/roboflow/multimodal-maestro/blob/main/CHANGELOG.md"
+
+
+[project.optional-dependencies]
+docs = [
+    "mkdocs-material~=9.5.33",
+    "mkdocstrings[python]>=0.20.0,<0.26.2"
+]
+dev = [
+    "pytest~=8.3.2",
+    "pre-commit~=3.8.0",
+    "mypy~=1.11.2",
+    "ruff~=0.6.5",
+    "tox>=4.18.1,<4.20.0"
+]
+
+[project.scripts]
+maestro = "maestro.cli.main:app"
+
+[tool.setuptools]
+include-package-data = true # include non-python files in the package (default)
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["cookbooks", "docs", "docs.*", "test", "test.*", "mkdocs", "mkdocs.*"]
+
+### Linting and Formatting
+[tool.bandit]
+target = ["test", "maestro"]
+tests = ["B201", "B301", "B318", "B314", "B303", "B413", "B412", "B410"]
+
+[tool.autoflake]
+check = true
+imports = ["cv2", "maestro"]
+
+
+[tool.ruff]
+target-version = "py39"
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "yarn-error.log",
+    "yarn.lock",
+    "docs",
+]
+
+line-length = 120
+indent-width = 4
+
+[tool.ruff.lint]
+
+# Enable pycodestyle (`E`)
+select = ["E", "F", "I", "A", "Q", "W", "N", "T", "Q","TRY","UP","C90","RUF","NPY"]
+ignore = ["T201","TRY003","NPY201"]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "I",
+    "N",
+    "Q",
+    "S",
+    "T",
+    "W",
+    "ANN",
+    "ARG",
+    "BLE",
+    "COM",
+    "DJ",
+    "DTZ",
+    "EM",
+    "ERA",
+    "EXE",
+    "FBT",
+    "ICN",
+    "INP",
+    "ISC",
+    "NPY",
+    "PD",
+    "PGH",
+    "PIE",
+    "PL",
+    "PT",
+    "PTH",
+    "PYI",
+    "RET",
+    "RSE",
+    "RUF",
+    "SIM",
+    "SLF",
+    "TCH",
+    "TID",
+    "TRY",
+    "UP",
+    "YTT",
+]
+unfixable = []
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+pylint.max-args = 20
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "double"
+multiline-quotes = "double"
+docstring-quotes = "double"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402", "F401"]
+"*.ipynb" = ["E501"]
+
+[tool.ruff.lint.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+keep-runtime-typing = true
+
+[tool.ruff.lint.mccabe]
+# Flag errors (`C901`) whenever the complexity level exceeds 5.
+max-complexity = 15
+
+[tool.ruff.lint.isort]
+order-by-type = true
+no-sections = false
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"

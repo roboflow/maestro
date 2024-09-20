@@ -6,12 +6,12 @@ import supervision as sv
 
 
 class FeatureType(Enum):
-    """
-    An enumeration to represent the types of features for mask adjustment in image
+    """An enumeration to represent the types of features for mask adjustment in image
     segmentation.
     """
-    ISLAND = 'ISLAND'
-    HOLE = 'HOLE'
+
+    ISLAND = "ISLAND"
+    HOLE = "HOLE"
 
     @classmethod
     def list(cls):
@@ -19,8 +19,7 @@ class FeatureType(Enum):
 
 
 def compute_mask_iou_vectorized(masks: np.ndarray) -> np.ndarray:
-    """
-    Vectorized computation of the Intersection over Union (IoU) for all pairs of masks.
+    """Vectorized computation of the Intersection over Union (IoU) for all pairs of masks.
 
     Parameters:
         masks (np.ndarray): A 3D numpy array with shape `(N, H, W)`, where `N` is the
@@ -47,12 +46,8 @@ def compute_mask_iou_vectorized(masks: np.ndarray) -> np.ndarray:
     return iou_matrix
 
 
-def mask_non_max_suppression(
-    masks: np.ndarray,
-    iou_threshold: float = 0.6
-) -> np.ndarray:
-    """
-    Performs Non-Max Suppression on a set of masks by prioritizing larger masks and
+def mask_non_max_suppression(masks: np.ndarray, iou_threshold: float = 0.6) -> np.ndarray:
+    """Performs Non-Max Suppression on a set of masks by prioritizing larger masks and
         removing smaller masks that overlap significantly.
 
     When the IoU between two masks exceeds the specified threshold, the smaller mask
@@ -85,12 +80,9 @@ def mask_non_max_suppression(
 
 
 def filter_masks_by_relative_area(
-    masks: np.ndarray,
-    minimum_area: float = 0.01,
-    maximum_area: float = 1.0
+    masks: np.ndarray, minimum_area: float = 0.01, maximum_area: float = 1.0
 ) -> np.ndarray:
-    """
-    Filters masks based on their relative area within the total area of each mask.
+    """Filters masks based on their relative area within the total area of each mask.
 
     Parameters:
         masks (np.ndarray): A 3D numpy array with shape `(N, H, W)`, where `N` is the
@@ -108,7 +100,6 @@ def filter_masks_by_relative_area(
         ValueError: If `minimum_area` or `maximum_area` are outside the `0` to `1`
             range, or if `minimum_area` is greater than `maximum_area`.
     """
-
     if not (isinstance(masks, np.ndarray) and masks.ndim == 3):
         raise ValueError("Input must be a 3D numpy array.")
 
@@ -124,12 +115,9 @@ def filter_masks_by_relative_area(
 
 
 def adjust_mask_features_by_relative_area(
-    mask: np.ndarray,
-    area_threshold: float,
-    feature_type: FeatureType = FeatureType.ISLAND
+    mask: np.ndarray, area_threshold: float, feature_type: FeatureType = FeatureType.ISLAND
 ) -> np.ndarray:
-    """
-    Adjusts a mask by removing small islands or filling small holes based on a relative
+    """Adjusts a mask by removing small islands or filling small holes based on a relative
     area threshold.
 
     !!! warning
@@ -150,11 +138,7 @@ def adjust_mask_features_by_relative_area(
     total_area = width * height
 
     mask = np.uint8(mask * 255)
-    operation = (
-        cv2.RETR_EXTERNAL
-        if feature_type == FeatureType.ISLAND
-        else cv2.RETR_CCOMP
-    )
+    operation = cv2.RETR_EXTERNAL if feature_type == FeatureType.ISLAND else cv2.RETR_CCOMP
     contours, _ = cv2.findContours(mask, operation, cv2.CHAIN_APPROX_SIMPLE)
 
     for contour in contours:
@@ -166,14 +150,13 @@ def adjust_mask_features_by_relative_area(
                 contours=[contour],
                 contourIdx=-1,
                 color=(0 if feature_type == FeatureType.ISLAND else 255),
-                thickness=-1
+                thickness=-1,
             )
     return np.where(mask > 0, 1, 0).astype(bool)
 
 
 def masks_to_marks(masks: np.ndarray) -> sv.Detections:
-    """
-    Converts a set of masks to a marks (sv.Detections) object.
+    """Converts a set of masks to a marks (sv.Detections) object.
 
     Parameters:
         masks (np.ndarray): A 3D numpy array with shape `(N, H, W)`, where `N` is the
@@ -187,10 +170,7 @@ def masks_to_marks(masks: np.ndarray) -> sv.Detections:
         marks = sv.Detections.empty()
         marks.mask = np.empty((0, 0, 0), dtype=bool)
         return marks
-    return sv.Detections(
-        mask=masks,
-        xyxy=sv.mask_to_xyxy(masks=masks)
-    )
+    return sv.Detections(mask=masks, xyxy=sv.mask_to_xyxy(masks=masks))
 
 
 def refine_marks(
@@ -198,10 +178,9 @@ def refine_marks(
     maximum_hole_area: float = 0.01,
     maximum_island_area: float = 0.01,
     minimum_mask_area: float = 0.02,
-    maximum_mask_area: float = 1.0
+    maximum_mask_area: float = 1.0,
 ) -> sv.Detections:
-    """
-    Refines a set of masks by removing small islands and holes, and filtering by mask
+    """Refines a set of masks by removing small islands and holes, and filtering by mask
     area.
 
     Parameters:
@@ -221,21 +200,15 @@ def refine_marks(
     result_masks = []
     for mask in marks.mask:
         mask = adjust_mask_features_by_relative_area(
-            mask=mask,
-            area_threshold=maximum_island_area,
-            feature_type=FeatureType.ISLAND)
+            mask=mask, area_threshold=maximum_island_area, feature_type=FeatureType.ISLAND
+        )
         mask = adjust_mask_features_by_relative_area(
-            mask=mask,
-            area_threshold=maximum_hole_area,
-            feature_type=FeatureType.HOLE)
+            mask=mask, area_threshold=maximum_hole_area, feature_type=FeatureType.HOLE
+        )
         if np.any(mask):
             result_masks.append(mask)
     result_masks = np.array(result_masks)
     result_masks = filter_masks_by_relative_area(
-        masks=result_masks,
-        minimum_area=minimum_mask_area,
-        maximum_area=maximum_mask_area)
-    return sv.Detections(
-        mask=result_masks,
-        xyxy=sv.mask_to_xyxy(masks=result_masks)
+        masks=result_masks, minimum_area=minimum_mask_area, maximum_area=maximum_mask_area
     )
+    return sv.Detections(mask=result_masks, xyxy=sv.mask_to_xyxy(masks=result_masks))

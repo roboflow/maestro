@@ -1,17 +1,14 @@
 import os
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from transformers import AutoModelForCausalLM, AutoProcessor
 
-from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, \
-    DEFAULT_CUDA_DEVICE
+from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
 
 DEFAULT_FLORENCE2_MODEL_ID = "microsoft/Florence-2-base-ft"
 DEFAULT_FLORENCE2_MODEL_REVISION = "refs/pr/20"
-DEVICE = torch.device("cpu") \
-    if not torch.cuda.is_available() \
-    else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
+DEVICE = torch.device("cpu") if not torch.cuda.is_available() else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
 
 
 class CheckpointManager:
@@ -26,18 +23,18 @@ class CheckpointManager:
         best_checkpoint_dir (str): Directory for the best checkpoint.
     """
 
-    def __init__(self, training_dir: str):
+    def __init__(self, training_dir: str) -> None:
         """Initializes the CheckpointManager.
 
         Args:
             training_dir (str): Directory where checkpoints will be saved.
         """
         self.training_dir = training_dir
-        self.best_val_loss = float('inf')
+        self.best_val_loss = float("inf")
         self.latest_checkpoint_dir = os.path.join(training_dir, "checkpoints", "latest")
         self.best_checkpoint_dir = os.path.join(training_dir, "checkpoints", "best")
 
-    def save_latest(self, processor: AutoProcessor, model: AutoModelForCausalLM):
+    def save_latest(self, processor: AutoProcessor, model: AutoModelForCausalLM) -> None:
         """Saves the latest model checkpoint.
 
         Args:
@@ -46,7 +43,7 @@ class CheckpointManager:
         """
         save_model(self.latest_checkpoint_dir, processor, model)
 
-    def save_best(self, processor: AutoProcessor, model: AutoModelForCausalLM, val_loss: float):
+    def save_best(self, processor: AutoProcessor, model: AutoModelForCausalLM, val_loss: float) -> None:
         """Saves the best model checkpoint if the validation loss improves.
 
         Args:
@@ -90,7 +87,7 @@ def load_model(
     revision: str = DEFAULT_FLORENCE2_MODEL_REVISION,
     device: torch.device = DEVICE,
     cache_dir: Optional[str] = None,
-) -> Tuple[AutoProcessor, AutoModelForCausalLM]:
+) -> tuple[AutoProcessor, AutoModelForCausalLM]:
     """Loads a Florence-2 model and its associated processor.
 
     Args:
