@@ -2,16 +2,13 @@ import os
 from typing import Optional, Tuple
 
 import torch
-from transformers import PaliGemmaForConditionalGeneration, AutoProcessor
+from transformers import AutoProcessor, PaliGemmaForConditionalGeneration
 
-from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, \
-    DEFAULT_CUDA_DEVICE
+from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
 
 DEFAULT_PALIGEMMA_MODEL_ID = "google/paligemma-3b-pt-224"
 DEFAULT_PALIGEMMA_MODEL_REVISION = "float16"
-DEVICE = torch.device("cpu") \
-    if not torch.cuda.is_available() \
-    else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
+DEVICE = torch.device("cpu") if not torch.cuda.is_available() else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
 
 
 class CheckpointManager:
@@ -33,7 +30,7 @@ class CheckpointManager:
             training_dir (str): Directory where checkpoints will be saved.
         """
         self.training_dir = training_dir
-        self.best_val_loss = float('inf')
+        self.best_val_loss = float("inf")
         self.latest_checkpoint_dir = os.path.join(training_dir, "checkpoints", "latest")
         self.best_checkpoint_dir = os.path.join(training_dir, "checkpoints", "best")
 

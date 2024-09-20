@@ -1,7 +1,7 @@
 import logging
 import os
 from functools import partial
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
 
 import torch
 from PIL import Image
