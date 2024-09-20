@@ -7,12 +7,12 @@ import json
 import os
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Any, Optional, List, Dict
+from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import supervision as sv
+from jiwer import cer, wer
 from PIL import Image
-from jiwer import wer, cer
 from supervision.metrics.mean_average_precision import MeanAveragePrecision
 
 
@@ -47,10 +47,11 @@ class BaseMetric(ABC):
 
 class MeanAveragePrecisionMetric(BaseMetric):
     """A class used to compute the Mean Average Precision (mAP) metric.
-    
+
     mAP is a popular metric for object detection tasks, measuring the average precision
     across all classes and IoU thresholds.
     """
+
     name = "mean_average_precision"
 
     def describe(self) -> List[str]:
@@ -78,10 +79,11 @@ class MeanAveragePrecisionMetric(BaseMetric):
 
 class WordErrorRateMetric(BaseMetric):
     """A class used to compute the Word Error Rate (WER) metric.
-    
+
     WER measures the edit distance between predicted and reference transcriptions
     at the word level, commonly used in speech recognition and machine translation.
     """
+
     name = "word_error_rate"
 
     def describe(self) -> List[str]:
@@ -118,10 +120,11 @@ class WordErrorRateMetric(BaseMetric):
 
 class CharacterErrorRateMetric(BaseMetric):
     """A class used to compute the Character Error Rate (CER) metric.
-    
+
     CER is similar to WER but operates at the character level, making it useful for
     tasks like optical character recognition (OCR) and handwriting recognition.
     """
+
     name = "character_error_rate"
 
     def describe(self) -> List[str]:

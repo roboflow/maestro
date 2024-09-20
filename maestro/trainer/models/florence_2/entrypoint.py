@@ -7,19 +7,16 @@ import typer
 
 from maestro.trainer.common.utils.metrics import (
     BaseMetric,
+    CharacterErrorRateMetric,
     MeanAveragePrecisionMetric,
     WordErrorRateMetric,
-    CharacterErrorRateMetric
 )
 from maestro.trainer.models.florence_2.checkpoints import (
     DEFAULT_FLORENCE2_MODEL_ID,
     DEFAULT_FLORENCE2_MODEL_REVISION,
     DEVICE,
 )
-from maestro.trainer.models.florence_2.core import (
-    LoraInitLiteral,
-    Configuration
-)
+from maestro.trainer.models.florence_2.core import Configuration, LoraInitLiteral
 from maestro.trainer.models.florence_2.core import evaluate as florence2_evaluate
 from maestro.trainer.models.florence_2.core import train as florence2_train
 
@@ -45,8 +42,7 @@ def parse_metrics(metrics: list[str]) -> list[BaseMetric]:
 
 
 @florence_2_app.command(
-    help="Train Florence 2 model",
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+    help="Train Florence 2 model", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
 )
 def train(
     dataset: Annotated[
@@ -99,10 +95,7 @@ def train(
     ] = 0,
     val_num_workers: Annotated[
         Optional[int],
-        typer.Option(
-            "--val_num_workers",
-            help="Number of workers for validation data loading"
-        ),
+        typer.Option("--val_num_workers", help="Number of workers for validation data loading"),
     ] = None,
     lora_r: Annotated[
         int,
@@ -161,11 +154,7 @@ def train(
         output_dir=output_dir,
         metrics=metric_objects,
     )
-    typer.echo(typer.style(
-        text="Training configuration",
-        fg=typer.colors.BRIGHT_GREEN,
-        bold=True
-    ))
+    typer.echo(typer.style(text="Training configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))
     rich.print(dataclasses.asdict(config))
     florence2_train(config=config)
 
@@ -202,10 +191,7 @@ def evaluate(
     ] = 0,
     val_num_workers: Annotated[
         Optional[int],
-        typer.Option(
-            "--val_num_workers",
-            help="Number of workers for validation data loading"
-        ),
+        typer.Option("--val_num_workers", help="Number of workers for validation data loading"),
     ] = None,
     output_dir: Annotated[
         str,
@@ -229,10 +215,6 @@ def evaluate(
         output_dir=output_dir,
         metrics=metric_objects,
     )
-    typer.echo(typer.style(
-        text="Evaluation configuration",
-        fg=typer.colors.BRIGHT_GREEN,
-        bold=True
-    ))
+    typer.echo(typer.style(text="Evaluation configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))
     rich.print(dataclasses.asdict(config))
     florence2_evaluate(config=config)
