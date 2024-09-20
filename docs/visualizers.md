@@ -1,3 +1,0 @@
-## MarkVisualizer
-
-:::maestro.visualizers.MarkVisualizer

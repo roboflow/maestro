@@ -34,8 +34,8 @@ from maestro.trainer.models.paligemma.training import LoraInitLiteral
 
 
 @dataclass(frozen=True)
-class TrainingConfiguration:
-    """Configuration for training a Florence-2 model.
+class Configuration:
+    """Configuration for a Florence-2 model.
 
     This class encapsulates all the parameters needed for training a Florence-2 model,
     including dataset paths, model specifications, training hyperparameters, and output
@@ -90,7 +90,22 @@ class TrainingConfiguration:
     metrics: list[BaseMetric] = field(default_factory=list)
 
 
-def train(config: TrainingConfiguration) -> None:
+def train(config: Configuration) -> None:
+    """Train a Florence-2 model using the provided configuration.
+
+    This function sets up the training environment, prepares the model and data loaders,
+    and runs the training loop. It also handles metric tracking and checkpoint saving.
+
+    Args:
+        config (Configuration): The configuration object containing all necessary
+            parameters for training.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If an unsupported optimizer is specified in the configuration.
+    """
     make_it_reproducible(avoid_non_deterministic_algorithms=False)
     run_dir = create_new_run_directory(
         base_output_dir=config.output_dir,
@@ -192,7 +207,7 @@ def run_training_loop(
         processor: AutoProcessor,
         model: PeftModel,
         data_loaders: tuple[DataLoader, Optional[DataLoader]],
-        config: TrainingConfiguration,
+        config: Configuration,
         training_metrics_tracker: MetricsTracker,
         validation_metrics_tracker: MetricsTracker,
         checkpoint_manager: CheckpointManager,
@@ -228,7 +243,7 @@ def run_training_epoch(
         train_loader: DataLoader,
         val_loader: Optional[DataLoader],
         epoch: int,
-        config: TrainingConfiguration,
+        config: Configuration,
         optimizer: Optimizer,
         lr_scheduler: LRScheduler,
         training_metrics_tracker: MetricsTracker,
@@ -300,7 +315,7 @@ def run_validation_epoch(
         processor: AutoProcessor,
         model: Union[PeftModel, AutoModelForCausalLM],
         loader: DataLoader,
-        config: TrainingConfiguration,
+        config: Configuration,
         metrics_tracker: MetricsTracker,
         epoch_number: int,
 ) -> None:
@@ -384,7 +399,7 @@ def run_validation_epoch(
         display_results(questions, expected_answers, generated_answers, images)
 
 
-def get_optimizer(model: PeftModel, config: TrainingConfiguration) -> Optimizer:
+def get_optimizer(model: PeftModel, config: Configuration) -> Optimizer:
     optimizer_type = config.optimizer.lower()
     if optimizer_type == "adamw":
         return AdamW(model.parameters(), lr=config.lr)
@@ -395,7 +410,19 @@ def get_optimizer(model: PeftModel, config: TrainingConfiguration) -> Optimizer:
     raise ValueError(f"Unsupported optimizer: {config.optimizer}")
 
 
-def evaluate(config: TrainingConfiguration) -> None:
+def evaluate(config: Configuration) -> None:
+    """Evaluate a Florence-2 model using the provided configuration.
+
+    This function loads the model and data, runs predictions on the evaluation dataset,
+    computes specified metrics, and saves the results.
+
+    Args:
+        config (Configuration): The configuration object containing all necessary
+            parameters for evaluation.
+
+    Returns:
+        None
+    """
     processor, model = load_model(
         model_id_or_path=config.model_id,
         revision=config.revision,

@@ -1,11 +1,11 @@
-site_name: multimodal-maestro
+site_name: maestro
 site_url: https://roboflow.github.io/multimodal-maestro/
 site_author: Roboflow
-site_description: Effective prompting for Large Multimodal Models like GPT-4 Vision or LLaVA. 🔥
+site_description: 'Streamline the fine-tuning process for multimodal models: PaliGemma, Florence-2, Qwen2-VL.'
 repo_name: roboflow/multimodal-maestro
 repo_url: https://github.com/roboflow/multimodal-maestro
 edit_uri: https://github.com/roboflow/multimodal-maestro/tree/main/docs
-copyright: Roboflow 2023. All rights reserved.
+copyright: Roboflow 2024. All rights reserved.
 
 extra:
   social:
@@ -19,12 +19,13 @@ extra:
       link: https://twitter.com/roboflow
 
 nav:
-  - Home: index.md
-  - Get Started: get_started.md
-  - API:
-    - LMMs: lmms.md
-    - Markers: markers.md
-    - Visualizers: visualizers.md
+  - Maestro: index.md
+  - Reference - Code API:
+    - Models:
+      - Florence-2: florence-2.md
+    - Tasks: tasks.md
+    - Metrics: metrics.md
+  - Release Notes: changelog.md
 
 
 theme:
@@ -53,3 +54,12 @@ theme:
 plugins:
   - mkdocstrings
   - search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences

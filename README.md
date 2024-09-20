@@ -11,7 +11,7 @@
 **maestro** is a tool designed to streamline and accelerate the fine-tuning process for
 multimodal models. It provides ready-to-use recipes for fine-tuning popular
 vision-language models (VLMs) such as **Florence-2**, **PaliGemma**, and
-**Phi-3.5 Vision** on downstream vision-language tasks.
+**Qwen2-VL** on downstream vision-language tasks.
 
 ## 💻 install
 
@@ -40,9 +40,9 @@ arguments as the CLI example above:
 
 ```python
 from maestro.trainer.common import MeanAveragePrecisionMetric
-from maestro.trainer.models.florence_2 import train, TrainingConfiguration
+from maestro.trainer.models.florence_2 import train, Configuration
 
-config = TrainingConfiguration(
+config = Configuration(
     dataset='<DATASET_PATH>',
     epochs=10,
     batch_size=8,
