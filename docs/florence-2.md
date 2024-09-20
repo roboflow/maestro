@@ -11,6 +11,23 @@ answering (VQA) and document understanding, demonstrating significant improvemen
 performance post-tuning. Its ability to adapt quickly makes it an attractive choice for
 resource-constrained environments.
 
+<iframe loading="lazy" width="720" height="405" src="https://www.youtube.com/embed/i3KjYgxNH6w" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen> </iframe>
+Watch: Florence-2 Fine-tuning Overview
+
+## Fine-tuning Examples
+
+=== "Object Detection"
+
+    ```txt
+    
+    ```
+
+=== "Visual Question Answering"
+
+    ```txt
+
+    ```
+
 ## Dataset Format
 
 The Florence-2 model expects a specific dataset structure for training and evaluation.
