@@ -7,7 +7,7 @@ import json
 import os
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import matplotlib.pyplot as plt
 import supervision as sv
@@ -54,7 +54,7 @@ class MeanAveragePrecisionMetric(BaseMetric):
 
     name = "mean_average_precision"
 
-    def describe(self) -> List[str]:
+    def describe(self) -> list[str]:
         """Returns a list of metric names that this class will compute.
 
         Returns:
@@ -62,7 +62,7 @@ class MeanAveragePrecisionMetric(BaseMetric):
         """
         return ["map50:95", "map50", "map75"]
 
-    def compute(self, targets: List[sv.Detections], predictions: List[sv.Detections]) -> Dict[str, float]:
+    def compute(self, targets: list[sv.Detections], predictions: list[sv.Detections]) -> dict[str, float]:
         """Computes the mAP metrics based on the targets and predictions.
 
         Args:
@@ -86,7 +86,7 @@ class WordErrorRateMetric(BaseMetric):
 
     name = "word_error_rate"
 
-    def describe(self) -> List[str]:
+    def describe(self) -> list[str]:
         """Returns a list of metric names that this class will compute.
 
         Returns:
@@ -94,7 +94,7 @@ class WordErrorRateMetric(BaseMetric):
         """
         return ["wer"]
 
-    def compute(self, targets: List[str], predictions: List[str]) -> Dict[str, float]:
+    def compute(self, targets: list[str], predictions: list[str]) -> dict[str, float]:
         """Computes the WER metric based on the targets and predictions.
 
         Args:
@@ -127,7 +127,7 @@ class CharacterErrorRateMetric(BaseMetric):
 
     name = "character_error_rate"
 
-    def describe(self) -> List[str]:
+    def describe(self) -> list[str]:
         """Returns a list of metric names that this class will compute.
 
         Returns:
@@ -135,7 +135,7 @@ class CharacterErrorRateMetric(BaseMetric):
         """
         return ["cer"]
 
-    def compute(self, targets: List[str], predictions: List[str]) -> Dict[str, float]:
+    def compute(self, targets: list[str], predictions: list[str]) -> dict[str, float]:
         """Computes the CER metric based on the targets and predictions.
 
         Args:
