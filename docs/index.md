@@ -1,24 +1,51 @@
-## 👋 hello
+<div align="center">
 
-Multimodal-Maestro gives you more control over large multimodal models to get the
-outputs you want. With more effective prompting tactics, you can get multimodal models
-to do tasks you didn't know (or think!) were possible. Curious how it works? Try our
-HF [space](https://huggingface.co/spaces/Roboflow/SoM)!
+  <h1>maestro</h1>
 
-🚧 The project is still under construction and the API is prone to change.
+  <p>coming: when it's ready...</p>
 
-## 💻 install
+</div>
 
-⚠️ Our package has been renamed to `maestro`. Install package in a
-[**3.11>=Python>=3.8**](https://www.python.org/) environment.
+**maestro** is a tool designed to streamline and accelerate the fine-tuning process for
+multimodal models. It provides ready-to-use recipes for fine-tuning popular
+vision-language models (VLMs) such as **Florence-2**, **PaliGemma**, and
+**Qwen2-VL** on downstream vision-language tasks.
+
+## install
+
+Pip install the supervision package in a
+[**Python>=3.8**](https://www.python.org/) environment.
 
 ```bash
 pip install maestro
 ```
 
-## 🦸 contribution
+## quickstart
 
-We would love your help in making this repository even better! If you noticed any bug,
-or if you have any suggestions for improvement, feel free to open an
-[issue](https://github.com/roboflow/multimodal-maestro/issues) or submit a
-[pull request](https://github.com/roboflow/multimodal-maestro/pulls).
+### CLI
+
+VLMs can be fine-tuned on downstream tasks directly from the command line with
+`maestro` command:
+
+```bash
+maestro florence2 train --dataset='<DATASET_PATH>' --epochs=10 --batch-size=8
+```
+
+### SDK
+
+Alternatively, you can fine-tune VLMs using the Python SDK, which accepts the same
+arguments as the CLI example above:
+
+```python
+from maestro.trainer.common import MeanAveragePrecisionMetric
+from maestro.trainer.models.florence_2 import train, Configuration
+
+config = Configuration(
+    dataset='<DATASET_PATH>',
+    epochs=10,
+    batch_size=8,
+    metrics=[MeanAveragePrecisionMetric()]
+)
+
+train(config)
+```

@@ -7,10 +7,11 @@ import json
 import os
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import supervision as sv
+from jiwer import cer, wer
 from PIL import Image
 from supervision.metrics.mean_average_precision import MeanAveragePrecision
 
@@ -45,9 +46,15 @@ class BaseMetric(ABC):
 
 
 class MeanAveragePrecisionMetric(BaseMetric):
-    """A class used to compute the Mean Average Precision (mAP) metric."""
+    """A class used to compute the Mean Average Precision (mAP) metric.
 
-    def describe(self) -> list[str]:
+    mAP is a popular metric for object detection tasks, measuring the average precision
+    across all classes and IoU thresholds.
+    """
+
+    name = "mean_average_precision"
+
+    def describe(self) -> List[str]:
         """Returns a list of metric names that this class will compute.
 
         Returns:
@@ -55,7 +62,7 @@ class MeanAveragePrecisionMetric(BaseMetric):
         """
         return ["map50:95", "map50", "map75"]
 
-    def compute(self, targets: list[sv.Detections], predictions: list[sv.Detections]) -> dict[str, float]:
+    def compute(self, targets: List[sv.Detections], predictions: List[sv.Detections]) -> Dict[str, float]:
         """Computes the mAP metrics based on the targets and predictions.
 
         Args:
@@ -68,6 +75,88 @@ class MeanAveragePrecisionMetric(BaseMetric):
         """
         result = MeanAveragePrecision().update(targets=targets, predictions=predictions).compute()
         return {"map50:95": result.map50_95, "map50": result.map50, "map75": result.map75}
+
+
+class WordErrorRateMetric(BaseMetric):
+    """A class used to compute the Word Error Rate (WER) metric.
+
+    WER measures the edit distance between predicted and reference transcriptions
+    at the word level, commonly used in speech recognition and machine translation.
+    """
+
+    name = "word_error_rate"
+
+    def describe(self) -> List[str]:
+        """Returns a list of metric names that this class will compute.
+
+        Returns:
+            List[str]: A list of metric names.
+        """
+        return ["wer"]
+
+    def compute(self, targets: List[str], predictions: List[str]) -> Dict[str, float]:
+        """Computes the WER metric based on the targets and predictions.
+
+        Args:
+            targets (List[str]): The ground truth texts.
+            predictions (List[str]): The predicted texts.
+
+        Returns:
+            Dict[str, float]: A dictionary of computed WER metrics with metric names as
+                keys and their values.
+        """
+        if len(targets) != len(predictions):
+            raise ValueError("The number of targets and predictions must be the same.")
+
+        total_wer = 0.0
+        count = len(targets)
+
+        for target, prediction in zip(targets, predictions):
+            total_wer += wer(target, prediction)
+
+        average_wer = total_wer / count if count > 0 else 0.0
+        return {"wer": average_wer}
+
+
+class CharacterErrorRateMetric(BaseMetric):
+    """A class used to compute the Character Error Rate (CER) metric.
+
+    CER is similar to WER but operates at the character level, making it useful for
+    tasks like optical character recognition (OCR) and handwriting recognition.
+    """
+
+    name = "character_error_rate"
+
+    def describe(self) -> List[str]:
+        """Returns a list of metric names that this class will compute.
+
+        Returns:
+            List[str]: A list of metric names.
+        """
+        return ["cer"]
+
+    def compute(self, targets: List[str], predictions: List[str]) -> Dict[str, float]:
+        """Computes the CER metric based on the targets and predictions.
+
+        Args:
+            targets (List[str]): The ground truth texts.
+            predictions (List[str]): The predicted texts.
+
+        Returns:
+            Dict[str, float]: A dictionary of computed CER metrics with metric names as
+                keys and their values.
+        """
+        if len(targets) != len(predictions):
+            raise ValueError("The number of targets and predictions must be the same.")
+
+        total_cer = 0.0
+        count = len(targets)
+
+        for target, prediction in zip(targets, predictions):
+            total_cer += cer(target, prediction)
+
+        average_cer = total_cer / count if count > 0 else 0.0
+        return {"cer": average_cer}
 
 
 class MetricsTracker:
