@@ -1,4 +1,4 @@
-name: Docs WorkFlow - Develop Tag 📚
+name: Maestro Develop Documentation Workflow 📚
 
 on:
   push:

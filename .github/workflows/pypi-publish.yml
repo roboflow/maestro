@@ -1,4 +1,4 @@
-name: Multimodal Maestro Releases to PyPi
+name: Maestro Releases to PyPi
 on:
   push:
     tags:
@@ -28,11 +28,11 @@ jobs:
           python -m pip install --upgrade build twine
           python -m build
           twine check --strict dist/*
-      - name: 🚀 Publish to PyPi
+      - name: 🚀 Publish to PyPi - Release
         uses: pypa/gh-action-pypi-publish@release/v1.10
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-      - name: 🚀 Publish to Test-PyPi
+      - name: 🚀 Publish to Test-PyPi - Release
         uses: pypa/gh-action-pypi-publish@release/v1.10
         with:
           repository-url: https://test.pypi.org/legacy/
