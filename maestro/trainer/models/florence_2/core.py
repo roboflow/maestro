@@ -3,13 +3,14 @@ from dataclasses import dataclass, field, replace
 from typing import Literal, Optional, Union
 
 import torch
-from peft import LoraConfig, PeftModel, get_peft_model
+from peft import PeftModel
 from torch.optim import SGD, Adam, AdamW, Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
+from maestro.trainer.common.peft import LoraInitLiteral, prepare_peft_model
 from maestro.trainer.common.utils.file_system import create_new_run_directory
 from maestro.trainer.common.utils.metrics import (
     BaseMetric,
@@ -18,7 +19,6 @@ from maestro.trainer.common.utils.metrics import (
     display_results,
     save_metric_plots,
 )
-from maestro.trainer.common.peft import prepare_peft_model, LoraInitLiteral
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.florence_2.checkpoints import (
     DEFAULT_FLORENCE2_MODEL_ID,

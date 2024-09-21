@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Annotated, Literal, Optional, Union
+from typing import Annotated, Dict, List, Optional, Type
 
 import rich
 import torch
@@ -36,8 +36,7 @@ def parse_metrics(metrics: list[str]) -> list[BaseMetric]:
 
 
 @paligemma_app.command(
-    help="Train PaliGemma model",
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+    help="Train PaliGemma model", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
 )
 def train(
     dataset: Annotated[
@@ -147,13 +146,9 @@ def train(
         use_rslora=use_rslora,
         init_lora_weights=init_lora_weights,
         output_dir=output_dir,
-        metrics=metric_objects
+        metrics=metric_objects,
     )
-    typer.echo(typer.style(
-        text="Training configuration",
-        fg=typer.colors.BRIGHT_GREEN,
-        bold=True
-    ))
+    typer.echo(typer.style(text="Training configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))
     rich.print(dataclasses.asdict(config))
     paligemma_train(config=config)
 
