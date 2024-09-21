@@ -1,17 +1,17 @@
 import dataclasses
-from typing import Annotated, Dict, List, Optional, Type
+from typing import Annotated, Optional
 
 import rich
 import torch
 import typer
 
+from maestro.trainer.common.peft import LoraInitLiteral
 from maestro.trainer.common.utils.metrics import BaseMetric, MeanAveragePrecisionMetric
 from maestro.trainer.models.paligemma.checkpoints import (
     DEFAULT_PALIGEMMA_MODEL_ID,
-    DEFAULT_PALIGEMMA_MODEL_REVISION, 
+    DEFAULT_PALIGEMMA_MODEL_REVISION,
     DEVICE,
 )
-from maestro.trainer.common.peft import LoraInitLiteral
 from maestro.trainer.models.paligemma.core import TrainingConfiguration
 from maestro.trainer.models.paligemma.core import evaluate as paligemma_evaluate
 from maestro.trainer.models.paligemma.core import train as paligemma_train

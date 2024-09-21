@@ -107,5 +107,7 @@ def collate_fn(
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     questions, answers, images = zip(*batch)
     # TO DO : Need to check i
-    inputs = processor(text=list(questions), images=list(images), suffix=list(answers), return_tensors="pt", padding="longest").to(device)
+    inputs = processor(
+        text=list(questions), images=list(images), suffix=list(answers), return_tensors="pt", padding="longest"
+    ).to(device)
     return inputs

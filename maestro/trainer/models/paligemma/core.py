@@ -238,7 +238,7 @@ def run_training_epoch(
 
     with tqdm(total=len(train_loader), desc=f"Epoch {epoch}/{config.epochs}", unit="batch") as pbar:
         for step_id, batch in enumerate(train_loader):
-            # TO DO : Need to check the batch 
+            # TO DO : Need to check the batch
             outputs = model(**batch)
             loss = outputs.loss
             loss.backward()
