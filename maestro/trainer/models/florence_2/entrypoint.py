@@ -11,7 +11,8 @@ from maestro.trainer.models.florence_2.checkpoints import (
     DEFAULT_FLORENCE2_MODEL_REVISION,
     DEVICE,
 )
-from maestro.trainer.models.florence_2.core import LoraInitLiteral, TrainingConfiguration
+from maestro.trainer.common.peft import LoraInitLiteral
+from maestro.trainer.models.florence_2.core import TrainingConfiguration
 from maestro.trainer.models.florence_2.core import evaluate as florence2_evaluate
 from maestro.trainer.models.florence_2.core import train as florence2_train
 

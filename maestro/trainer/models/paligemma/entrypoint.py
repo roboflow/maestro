@@ -1,26 +1,30 @@
 import dataclasses
-from typing import Optional, Annotated, List, Dict, Type
+from typing import Annotated, Literal, Optional, Union
 
 import rich
 import torch
 import typer
 
-from maestro.trainer.models.paligemma.checkpoints import DEFAULT_PALIGEMMA_MODEL_ID, \
-    DEFAULT_PALIGEMMA_MODEL_REVISION, DEVICE
-from maestro.trainer.models.paligemma.core import TrainingConfiguration
-from maestro.trainer.models.paligemma.core import train as paligemma_train
-from maestro.trainer.models.paligemma.core import evaluate as paligemma_evaluate
 from maestro.trainer.common.utils.metrics import BaseMetric, MeanAveragePrecisionMetric
+from maestro.trainer.models.paligemma.checkpoints import (
+    DEFAULT_PALIGEMMA_MODEL_ID,
+    DEFAULT_PALIGEMMA_MODEL_REVISION, 
+    DEVICE,
+)
+from maestro.trainer.common.peft import LoraInitLiteral
+from maestro.trainer.models.paligemma.core import TrainingConfiguration
+from maestro.trainer.models.paligemma.core import evaluate as paligemma_evaluate
+from maestro.trainer.models.paligemma.core import train as paligemma_train
 
 paligemma_app = typer.Typer(help="Fine-tune and evaluate PaliGemma model")
 
 
-METRIC_CLASSES: Dict[str, Type[BaseMetric]] = {
+METRIC_CLASSES: dict[str, type[BaseMetric]] = {
     "mean_average_precision": MeanAveragePrecisionMetric,
 }
 
 
-def parse_metrics(metrics: List[str]) -> List[BaseMetric]:
+def parse_metrics(metrics: list[str]) -> list[BaseMetric]:
     metric_objects = []
     for metric_name in metrics:
         metric_class = METRIC_CLASSES.get(metric_name.lower())
@@ -42,7 +46,7 @@ def train(
     ],
     model_id: Annotated[
         str,
-        typer.Option("--model_id", help="Identifier for the PaliGemma model"),
+        typer.Option("--model_id", help="Identifier for the Florence-2 model"),
     ] = DEFAULT_PALIGEMMA_MODEL_ID,
     revision: Annotated[
         str,
@@ -61,7 +65,7 @@ def train(
         typer.Option("--epochs", help="Number of training epochs"),
     ] = 10,
     optimizer: Annotated[
-        str,
+        Literal["sgd", "adamw", "adam"],
         typer.Option("--optimizer", help="Optimizer to use for training"),
     ] = "adamw",
     lr: Annotated[
@@ -69,7 +73,7 @@ def train(
         typer.Option("--lr", help="Learning rate for the optimizer"),
     ] = 1e-5,
     lr_scheduler: Annotated[
-        str,
+        Literal["linear", "cosine", "polynomial"],
         typer.Option("--lr_scheduler", help="Learning rate scheduler"),
     ] = "linear",
     batch_size: Annotated[
@@ -101,7 +105,7 @@ def train(
         typer.Option("--lora_dropout", help="Dropout probability for LoRA layers"),
     ] = 0.05,
     bias: Annotated[
-        str,
+        Literal["none", "all", "lora_only"],
         typer.Option("--bias", help="Which bias to train"),
     ] = "none",
     use_rslora: Annotated[
@@ -109,16 +113,16 @@ def train(
         typer.Option("--use_rslora/--no_use_rslora", help="Whether to use RSLoRA"),
     ] = True,
     init_lora_weights: Annotated[
-        str,
+        Union[bool, LoraInitLiteral],
         typer.Option("--init_lora_weights", help="How to initialize LoRA weights"),
     ] = "gaussian",
     output_dir: Annotated[
         str,
         typer.Option("--output_dir", help="Directory to save output files"),
-    ] = "./training/paligemma",
+    ] = "./training/florence-2",
     metrics: Annotated[
-        List[str],
-        typer.Option("--metrics", help="List of metrics to track during training"),
+        list[str],
+        typer.Option("--metrics", help="list of metrics to track during training"),
     ] = [],
 ) -> None:
     metric_objects = parse_metrics(metrics)
@@ -193,8 +197,8 @@ def evaluate(
         typer.Option("--output_dir", help="Directory to save output files"),
     ] = "./evaluation/paligemma",
     metrics: Annotated[
-        List[str],
-        typer.Option("--metrics", help="List of metrics to track during evaluation"),
+        list[str],
+        typer.Option("--metrics", help="list of metrics to track during evaluation"),
     ] = [],
 ) -> None:
     metric_objects = parse_metrics(metrics)
@@ -208,12 +212,8 @@ def evaluate(
         num_workers=num_workers,
         val_num_workers=val_num_workers,
         output_dir=output_dir,
-        metrics=metric_objects
+        metrics=metric_objects,
     )
-    typer.echo(typer.style(
-        text="Evaluation configuration",
-        fg=typer.colors.BRIGHT_GREEN,
-        bold=True
-    ))
+    typer.echo(typer.style(text="Evaluation configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))
     rich.print(dataclasses.asdict(config))
     paligemma_evaluate(config=config)

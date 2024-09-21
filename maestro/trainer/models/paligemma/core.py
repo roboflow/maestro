@@ -237,16 +237,9 @@ def run_training_epoch(
     training_losses: List[float] = []
     
     with tqdm(total=len(train_loader), desc=f"Epoch {epoch}/{config.epochs}", unit="batch") as pbar:
-        for step_id, (inputs, answers) in enumerate(train_loader):
-            input_ids = inputs["input_ids"]
-            pixel_values = inputs["pixel_values"]
-            labels = processor.tokenizer(
-                text=answers, 
-                return_tensors="pt", 
-                padding=True, 
-                return_token_type_ids=False
-            ).input_ids.to(config.device)
-            outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
+        for step_id, batch in enumerate(train_loader):
+            # TO DO : Need to check the batch 
+            outputs = model(**batch)
             loss = outputs.loss
             loss.backward()
             optimizer.step()
