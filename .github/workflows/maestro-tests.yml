@@ -1,4 +1,4 @@
-name: Test WorkFlow
+name: Maestro PyTest WorkFlow 🧪
 
 on:
   pull_request:
@@ -40,5 +40,5 @@ jobs:
           pip install .
           pip install pytest
 
-      - name: 🧪 Test
+      - name: 🧪 Run Tests
         run: "python -m pytest ./test"

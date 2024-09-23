@@ -26,18 +26,19 @@ from maestro.trainer.models.florence_2.checkpoints import (
     CheckpointManager,
     load_model,
 )
-from maestro.trainer.models.florence_2.data_loading import prepare_data_loaders
+from maestro.trainer.models.florence_2.inference import run_predictions
+from maestro.trainer.models.florence_2.loaders import create_data_loaders
 from maestro.trainer.models.florence_2.metrics import (
-    extract_unique_detection_dataset_classes,
-    postprocess_florence2_output_for_mean_average_precision,
-    run_predictions,
+    get_unique_detection_classes,
+    process_output_for_detection_metric,
+    process_output_for_text_metric,
 )
 from maestro.trainer.models.paligemma.training import LoraInitLiteral
 
 
 @dataclass(frozen=True)
-class TrainingConfiguration:
-    """Configuration for training a Florence-2 model.
+class Configuration:
+    """Configuration for a Florence-2 model.
 
     This class encapsulates all the parameters needed for training a Florence-2 model,
     including dataset paths, model specifications, training hyperparameters, and output
@@ -92,7 +93,22 @@ class TrainingConfiguration:
     metrics: list[BaseMetric] = field(default_factory=list)
 
 
-def train(config: TrainingConfiguration) -> None:
+def train(config: Configuration) -> None:
+    """Train a Florence-2 model using the provided configuration.
+
+    This function sets up the training environment, prepares the model and data loaders,
+    and runs the training loop. It also handles metric tracking and checkpoint saving.
+
+    Args:
+        config (Configuration): The configuration object containing all necessary
+            parameters for training.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If an unsupported optimizer is specified in the configuration.
+    """
     make_it_reproducible(avoid_non_deterministic_algorithms=False)
     run_dir = create_new_run_directory(
         base_output_dir=config.output_dir,
@@ -109,7 +125,7 @@ def train(config: TrainingConfiguration) -> None:
         device=config.device,
         cache_dir=config.cache_dir,
     )
-    train_loader, val_loader, test_loader = prepare_data_loaders(
+    train_loader, val_loader, test_loader = create_data_loaders(
         dataset_location=config.dataset,
         train_batch_size=config.batch_size,
         processor=processor,
@@ -190,7 +206,7 @@ def run_training_loop(
     processor: AutoProcessor,
     model: PeftModel,
     data_loaders: tuple[DataLoader, Optional[DataLoader]],
-    config: TrainingConfiguration,
+    config: Configuration,
     training_metrics_tracker: MetricsTracker,
     validation_metrics_tracker: MetricsTracker,
     checkpoint_manager: CheckpointManager,
@@ -226,7 +242,7 @@ def run_training_epoch(
     train_loader: DataLoader,
     val_loader: Optional[DataLoader],
     epoch: int,
-    config: TrainingConfiguration,
+    config: Configuration,
     optimizer: Optimizer,
     lr_scheduler: LRScheduler,
     training_metrics_tracker: MetricsTracker,
@@ -234,39 +250,37 @@ def run_training_epoch(
     checkpoint_manager: CheckpointManager,
 ) -> None:
     model.train()
-    training_losses: list[float] = []
-
-    with tqdm(total=len(train_loader), desc=f"Epoch {epoch}/{config.epochs}", unit="batch") as pbar:
-        for step_id, (inputs, answers) in enumerate(train_loader):
-            input_ids = inputs["input_ids"]
-            pixel_values = inputs["pixel_values"]
+    loss_values: list[float] = []
+    progress_bar = tqdm(total=len(train_loader), desc=f"training {epoch}/{config.epochs}", unit="batch")
+    with progress_bar:
+        for batch_id, (inputs, _, answers, _) in enumerate(train_loader):
             labels = processor.tokenizer(
                 text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
             ).input_ids.to(config.device)
-            outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
+            outputs = model(input_ids=inputs["input_ids"], pixel_values=inputs["pixel_values"], labels=labels)
+
             loss = outputs.loss
             loss.backward()
             optimizer.step()
             lr_scheduler.step()
             optimizer.zero_grad()
             loss = loss.item()
+
             training_metrics_tracker.register(
                 metric="loss",
                 epoch=epoch,
-                step=step_id + 1,
+                step=batch_id + 1,
                 value=loss,
             )
-            training_losses.append(loss)
+            loss_values.append(loss)
+            average_loss = sum(loss_values) / len(loss_values) if loss_values else 0.0
 
-            # Update progress bar
-            last_100_losses = training_losses[-100:]
-            loss_moving_average = sum(last_100_losses) / len(last_100_losses) if last_100_losses else 0.0
-            pbar.set_postfix({"Loss": f"{loss_moving_average:.4f}"})
-            pbar.update(1)
+            progress_bar.set_postfix({"loss": f"{average_loss: .4f}"})
+            progress_bar.update(1)
 
     # Save checkpoints based on training loss if no validation loader
     if val_loader is None or len(val_loader) == 0:
-        train_loss = sum(training_losses) / len(training_losses)
+        train_loss = sum(loss_values) / len(loss_values) if loss_values else 0.0
         checkpoint_manager.save_latest(processor, model)
         checkpoint_manager.save_best(processor, model, train_loss)
         return
@@ -289,44 +303,39 @@ def run_validation_epoch(
     processor: AutoProcessor,
     model: Union[PeftModel, AutoModelForCausalLM],
     loader: DataLoader,
-    config: TrainingConfiguration,
+    config: Configuration,
     metrics_tracker: MetricsTracker,
     epoch_number: int,
 ) -> None:
-    val_loss = 0.0
+    loss_values: list[float] = []
     with torch.no_grad():
-        for inputs, targets in loader:
-            input_ids = inputs["input_ids"]
-            pixel_values = inputs["pixel_values"]
+        progress_bar = tqdm(loader, desc="running validation", unit="batch")
+        for inputs, questions, answers, images in progress_bar:
             labels = processor.tokenizer(
-                text=targets, return_tensors="pt", padding=True, return_token_type_ids=False
+                text=answers, return_tensors="pt", padding=True, return_token_type_ids=False
             ).input_ids.to(config.device)
-            outputs = model(input_ids=input_ids, pixel_values=pixel_values, labels=labels)
-            loss = outputs.loss
-            val_loss += loss.item()
-        avg_val_loss = val_loss / len(loader)
+            outputs = model(input_ids=inputs["input_ids"], pixel_values=inputs["pixel_values"], labels=labels)
+            loss_values.append(outputs.loss.item())
+        average_loss = sum(loss_values) / len(loss_values) if loss_values else 0.0
         metrics_tracker.register(
             metric="loss",
             epoch=epoch_number,
             step=1,
-            value=avg_val_loss,
+            value=average_loss,
         )
         # Run inference once for all metrics
-        prompts, expected_responses, generated_texts, images = run_predictions(
-            dataset=loader.dataset,
-            processor=processor,
-            model=model,
-            device=config.device,
+        questions, expected_answers, generated_answers, images = run_predictions(
+            loader=loader, processor=processor, model=model
         )
 
-        metrics_results = {"loss": avg_val_loss}
+        metrics_results = {"loss": average_loss}
 
         for metric in config.metrics:
             if isinstance(metric, MeanAveragePrecisionMetric):
-                classes = extract_unique_detection_dataset_classes(loader.dataset)
-                targets, predictions = postprocess_florence2_output_for_mean_average_precision(
-                    expected_responses=expected_responses,
-                    generated_texts=generated_texts,
+                classes = get_unique_detection_classes(loader.dataset)
+                targets, predictions = process_output_for_detection_metric(
+                    expected_answers=expected_answers,
+                    generated_answers=generated_answers,
                     images=images,
                     classes=classes,
                     processor=processor,
@@ -340,14 +349,29 @@ def run_validation_epoch(
                         value=value,
                     )
                     metrics_results[key] = value
+            else:
+                predictions = process_output_for_text_metric(
+                    generated_answers=generated_answers,
+                    images=images,
+                    processor=processor,
+                )
+                result = metric.compute(predictions=predictions, targets=expected_answers)
+                for key, value in result.items():
+                    metrics_tracker.register(
+                        metric=key,
+                        epoch=epoch_number,
+                        step=1,
+                        value=value,
+                    )
+                    metrics_results[key] = value
 
         print("Validation Metrics:", ", ".join([f"{k}: {v:.4f}" for k, v in metrics_results.items()]))
 
         # Display inference results in IPython environments
-        display_results(prompts, expected_responses, generated_texts, images)
+        display_results(questions, expected_answers, generated_answers, images)
 
 
-def get_optimizer(model: PeftModel, config: TrainingConfiguration) -> Optimizer:
+def get_optimizer(model: PeftModel, config: Configuration) -> Optimizer:
     optimizer_type = config.optimizer.lower()
     if optimizer_type == "adamw":
         return AdamW(model.parameters(), lr=config.lr)
@@ -358,14 +382,26 @@ def get_optimizer(model: PeftModel, config: TrainingConfiguration) -> Optimizer:
     raise ValueError(f"Unsupported optimizer: {config.optimizer}")
 
 
-def evaluate(config: TrainingConfiguration) -> None:
+def evaluate(config: Configuration) -> None:
+    """Evaluate a Florence-2 model using the provided configuration.
+
+    This function loads the model and data, runs predictions on the evaluation dataset,
+    computes specified metrics, and saves the results.
+
+    Args:
+        config (Configuration): The configuration object containing all necessary
+            parameters for evaluation.
+
+    Returns:
+        None
+    """
     processor, model = load_model(
         model_id_or_path=config.model_id,
         revision=config.revision,
         device=config.device,
         cache_dir=config.cache_dir,
     )
-    train_loader, val_loader, test_loader = prepare_data_loaders(
+    train_loader, val_loader, test_loader = create_data_loaders(
         dataset_location=config.dataset,
         train_batch_size=config.batch_size,
         processor=processor,
@@ -381,24 +417,35 @@ def evaluate(config: TrainingConfiguration) -> None:
     evaluation_metrics_tracker = MetricsTracker.init(metrics=metrics)
 
     # Run inference once for all metrics
-    _, expected_responses, generated_texts, images = run_predictions(
-        dataset=evaluation_loader.dataset,
-        processor=processor,
-        model=model,
-        device=config.device,
+    _, expected_answers, generated_answers, images = run_predictions(
+        loader=evaluation_loader, processor=processor, model=model
     )
 
     for metric in config.metrics:
         if isinstance(metric, MeanAveragePrecisionMetric):
-            classes = extract_unique_detection_dataset_classes(train_loader.dataset)
-            targets, predictions = postprocess_florence2_output_for_mean_average_precision(
-                expected_responses=expected_responses,
-                generated_texts=generated_texts,
+            classes = get_unique_detection_classes(train_loader.dataset)
+            targets, predictions = process_output_for_detection_metric(
+                expected_answers=expected_answers,
+                generated_answers=generated_answers,
                 images=images,
                 classes=classes,
                 processor=processor,
             )
             result = metric.compute(targets=targets, predictions=predictions)
+            for key, value in result.items():
+                evaluation_metrics_tracker.register(
+                    metric=key,
+                    epoch=1,
+                    step=1,
+                    value=value,
+                )
+        else:
+            predictions = process_output_for_text_metric(
+                generated_answers=generated_answers,
+                images=images,
+                processor=processor,
+            )
+            result = metric.compute(targets=expected_answers, predictions=predictions)
             for key, value in result.items():
                 evaluation_metrics_tracker.register(
                     metric=key,
