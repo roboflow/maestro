@@ -20,12 +20,10 @@ extra:
 
 nav:
   - Maestro: index.md
-  - Reference - Code API:
-    - Models:
-      - Florence-2: florence-2.md
-    - Tasks: tasks.md
-    - Metrics: metrics.md
-  - Release Notes: changelog.md
+  - Models:
+    - Florence-2: florence-2.md
+  - Tasks: tasks.md
+  - Metrics: metrics.md
 
 
 theme:
