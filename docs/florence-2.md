@@ -1,17 +1,17 @@
 ## Overview
 
-Florence-2 is a lightweight vision-language model open-sourced by Microsoft under the 
-MIT license. The model demonstrates strong zero-shot and fine-tuning capabilities 
-across tasks such as captioning, object detection, grounding, and segmentation. 
+Florence-2 is a lightweight vision-language model open-sourced by Microsoft under the
+MIT license. The model demonstrates strong zero-shot and fine-tuning capabilities
+across tasks such as captioning, object detection, grounding, and segmentation.
 
 <iframe loading="lazy" width="720" height="405" src="https://www.youtube.com/embed/i3KjYgxNH6w" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen> </iframe>
 *Florence-2: Fine-tune Microsoft’s Multimodal Model.*
 
 ## Architecture
 
-The model takes images and task prompts as input, generating the desired results in 
-text format. It uses a DaViT vision encoder to convert images into visual token 
-embeddings. These are then concatenated with BERT-generated text embeddings and 
+The model takes images and task prompts as input, generating the desired results in
+text format. It uses a DaViT vision encoder to convert images into visual token
+embeddings. These are then concatenated with BERT-generated text embeddings and
 processed by a transformer-based multi-modal encoder-decoder to generate the response.
 
 ![florence-2-architecture](https://storage.googleapis.com/com-roboflow-marketing/maestro/florence-2-architecture.webp)
@@ -45,14 +45,14 @@ dataset/
     └── annotations.jsonl
 ```
 
-Depending on the vision task being performed, the structure of the `annotations.jsonl` 
+Depending on the vision task being performed, the structure of the `annotations.jsonl`
 file will vary slightly.
 
 !!! warning
-    The dataset samples shown below are formatted for improved readability, with each 
-    JSON structure spread across multiple lines. In practice, the `annotations.jsonl` 
-    file must contain each JSON object on a single line, without any line breaks 
-    between the key-value pairs. Make sure to adhere to this structure to avoid parsing 
+    The dataset samples shown below are formatted for improved readability, with each
+    JSON structure spread across multiple lines. In practice, the `annotations.jsonl`
+    file must contain each JSON object on a single line, without any line breaks
+    between the key-value pairs. Make sure to adhere to this structure to avoid parsing
     errors during model training.
 
 === "Object Detection"
@@ -106,19 +106,19 @@ file will vary slightly.
 ### CLI
 
 !!! tip
-    Depending on the GPU you are using, you may need to adjust the `batch-size` to 
-    ensure that your model trains within memory limits. For larger GPUs with more 
+    Depending on the GPU you are using, you may need to adjust the `batch-size` to
+    ensure that your model trains within memory limits. For larger GPUs with more
     memory, you can increase the batch size for better performance.
 
 !!! tip
-    Depending on the vision task you are executing, you may need to select different 
-    vision metrics. For example, tasks like object detection typically use 
-    `mean_average_precision`, while VQA and OCR tasks use metrics like 
+    Depending on the vision task you are executing, you may need to select different
+    vision metrics. For example, tasks like object detection typically use
+    `mean_average_precision`, while VQA and OCR tasks use metrics like
     `word_error_rate` and `character_error_rate`.
 
 !!! tip
-    You may need to use different learning rates depending on the task. We have found 
-    that lower learning rates work better for tasks like OCR or VQA, as these tasks 
+    You may need to use different learning rates depending on the task. We have found
+    that lower learning rates work better for tasks like OCR or VQA, as these tasks
     require more precision.
 
 
@@ -152,7 +152,7 @@ file will vary slightly.
     ```python
     from maestro.trainer.common import MeanAveragePrecisionMetric
     from maestro.trainer.models.florence_2 import train, Configuration
-    
+
     config = Configuration(
         dataset='<DATASET_PATH>',
         epochs=10,
@@ -160,7 +160,7 @@ file will vary slightly.
         lr=5e-6,
         metrics=[MeanAveragePrecisionMetric()]
     )
-    
+
     train(config)
     ```
 
@@ -169,7 +169,7 @@ file will vary slightly.
     ```python
     from maestro.trainer.common import WordErrorRateMetric, CharacterErrorRateMetric
     from maestro.trainer.models.florence_2 import train, Configuration
-    
+
     config = Configuration(
         dataset='<DATASET_PATH>',
         epochs=10,
@@ -177,7 +177,7 @@ file will vary slightly.
         lr=1e-6,
         metrics=[WordErrorRateMetric(), CharacterErrorRateMetric()]
     )
-    
+
     train(config)
     ```
 
@@ -186,7 +186,7 @@ file will vary slightly.
     ```python
     from maestro.trainer.common import WordErrorRateMetric, CharacterErrorRateMetric
     from maestro.trainer.models.florence_2 import train, Configuration
-    
+
     config = Configuration(
         dataset='<DATASET_PATH>',
         epochs=10,
@@ -194,7 +194,7 @@ file will vary slightly.
         lr=1e-6,
         metrics=[WordErrorRateMetric(), CharacterErrorRateMetric()]
     )
-    
+
     train(config)
     ```
 
