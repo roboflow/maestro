@@ -138,9 +138,9 @@ def train(
         device=torch.device(device),
         cache_dir=cache_dir,
         epochs=epochs,
-        optimizer=optimizer,
+        optimizer=optimizer,  # type: ignore
         lr=lr,
-        lr_scheduler=lr_scheduler,
+        lr_scheduler=lr_scheduler,  # type: ignore
         batch_size=batch_size,
         val_batch_size=val_batch_size,
         num_workers=num_workers,
@@ -148,9 +148,9 @@ def train(
         lora_r=lora_r,
         lora_alpha=lora_alpha,
         lora_dropout=lora_dropout,
-        bias=bias,
+        bias=bias,  # type: ignore
         use_rslora=use_rslora,
-        init_lora_weights=init_lora_weights,
+        init_lora_weights=init_lora_weights,  # type: ignore
         output_dir=output_dir,
         metrics=metric_objects,
     )
