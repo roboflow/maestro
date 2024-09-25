@@ -7,8 +7,23 @@ import torch
 from PIL import Image
 from torch.utils.data import DataLoader
 from transformers import AutoProcessor
+from transformers.pipelines.base import Dataset
 
-from maestro.trainer.common.data_loaders.datasets import DetectionDataset
+from maestro.trainer.common.data_loaders.datasets import JSONLDataset
+
+
+class Florence2Dataset(Dataset):
+    def __init__(self, jsonl_file_path: str, image_directory_path: str) -> None:
+        self.dataset = JSONLDataset(jsonl_file_path, image_directory_path)
+
+    def __len__(self) -> int:
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        image, data = self.dataset[idx]
+        prefix = data["prefix"]
+        suffix = data["suffix"]
+        return prefix, suffix, image
 
 
 def create_data_loaders(
@@ -85,7 +100,7 @@ def create_split_data_loader(
 def load_split_dataset(
     dataset_location: str,
     split_name: str,
-) -> Optional[DetectionDataset]:
+) -> Optional[Florence2Dataset]:
     image_directory_path = os.path.join(dataset_location, split_name)
     jsonl_file_path = os.path.join(dataset_location, split_name, "annotations.jsonl")
     if not os.path.exists(image_directory_path):
@@ -94,7 +109,7 @@ def load_split_dataset(
     if not os.path.exists(jsonl_file_path):
         logging.warning(f"Could not find JSONL file: {jsonl_file_path}")
         return None
-    return DetectionDataset(
+    return Florence2Dataset(
         jsonl_file_path=jsonl_file_path,
         image_directory_path=image_directory_path,
     )

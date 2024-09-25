@@ -3,7 +3,6 @@ import os
 from typing import Any
 
 from PIL import Image
-from transformers.pipelines.base import Dataset
 
 
 class JSONLDataset:
@@ -34,18 +33,4 @@ class JSONLDataset:
         except FileNotFoundError:
             raise FileNotFoundError(f"Image file {image_path} not found.")
         else:
-            return (image, entry)
-
-
-class DetectionDataset(Dataset):
-    def __init__(self, jsonl_file_path: str, image_directory_path: str) -> None:
-        self.dataset = JSONLDataset(jsonl_file_path, image_directory_path)
-
-    def __len__(self) -> int:
-        return len(self.dataset)
-
-    def __getitem__(self, idx):
-        image, data = self.dataset[idx]
-        prefix = data["prefix"]
-        suffix = data["suffix"]
-        return prefix, suffix, image
+            return image, entry
