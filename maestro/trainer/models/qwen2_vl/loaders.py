@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 from transformers.pipelines.base import Dataset
 
 from maestro.trainer.common.data_loaders.datasets import JSONLDataset
@@ -9,7 +7,7 @@ START_TOKEN_2 = 77091
 END_TOKEN = 151645
 
 
-def extract_assistant_content_ranges(token_list: List[int]) -> List[Tuple[int, int]]:
+def extract_assistant_content_ranges(token_list: list[int]) -> list[tuple[int, int]]:
     """
     Identify the start and end indexes of assistant content ranges within a list of
     tokens.
@@ -18,10 +16,10 @@ def extract_assistant_content_ranges(token_list: List[int]) -> List[Tuple[int, i
     in the tokenized list, returning the corresponding index ranges.
 
     Args:
-        token_list (List[int]): A list of tokens to search.
+        token_list (list[int]): A list of tokens to search.
 
     Returns:
-        List[Tuple[int, int]]: A list of (start_index, end_index) tuples indicating the
+        list[tuple[int, int]]: A list of (start_index, end_index) tuples indicating the
         assistant content ranges in the input list.
 
     Note:
