@@ -14,9 +14,22 @@ class Qwen2VLDataset(Dataset):
         image, data = self.dataset[idx]
         prefix = data["prefix"]
         suffix = data["suffix"]
+        # fmt: off
         return {
             "messages": [
-                {"role": "user", "content": [{"type": "image", "image": image}, {"type": "text", "text": prefix}]},
-                {"role": "assistant", "content": [{"type": "text", "text": suffix}]},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "image": image},
+                        {"type": "text", "text": prefix}
+                    ]
+                },
+                {
+                    "role": "assistant",
+                    "content": [
+                        {"type": "text", "text": suffix}
+                    ]
+                }
             ]
         }
+        # fmt: on
