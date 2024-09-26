@@ -61,7 +61,7 @@ and code examples to help you get started quickly.
 | model and task | colab | video                                                                                  |
 |----------------|-------|----------------------------------------------------------------------------------------|
 | [Fine-tune Florence-2 for object detection](https://github.com/roboflow/multimodal-maestro/blob/develop/cookbooks/maestro_florence2_object_detection.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/develop/cookbooks/maestro_florence2_object_detection.ipynb) | [![YouTube](https://badges.aleen42.com/src/youtube.svg)](https://youtu.be/i3KjYgxNH6w) |
-
+| [Fine-tune Florence-2 for visual question answering (VQA)](https://github.com/roboflow/multimodal-maestro/blob/develop/cookbooks/maestro_florence2_visual_question_answering.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/multimodal-maestro/blob/develop/cookbooks/maestro_florence2_visual_question_answering.ipynb) | [![YouTube](https://badges.aleen42.com/src/youtube.svg)](https://youtu.be/i3KjYgxNH6w) |
 
 ## 🦸 contribution
 
