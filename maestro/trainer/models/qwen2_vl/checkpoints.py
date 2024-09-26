@@ -1,0 +1,1 @@
+DEFAULT_FLORENCE2_MODEL_ID = "Qwen/Qwen2-VL-2B-Instruct"
