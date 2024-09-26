@@ -1,5 +1,4 @@
 import re
-from typing import List, Tuple
 
 import numpy as np
 import supervision as sv
@@ -14,12 +13,12 @@ DETECTION_CLASS_PATTERN = r"([a-zA-Z0-9 -]+)<loc_\d+>"
 
 
 def postprocess_paligemma_output_for_mean_average_precision(
-    expected_responses: List[str],
-    generated_texts: List[str],
-    images: List[Image.Image],
-    classes: List[str],
+    expected_responses: list[str],
+    generated_texts: list[str],
+    images: list[Image.Image],
+    classes: list[str],
     processor: AutoProcessor,
-) -> Tuple[List[sv.Detections], List[sv.Detections]]:
+) -> tuple[list[sv.Detections], list[sv.Detections]]:
     targets = []
     predictions = []
 
@@ -52,7 +51,7 @@ def run_predictions(
     processor: AutoProcessor,
     model: AutoModelForCausalLM,
     device: torch.device,
-) -> Tuple[List[str], List[str], List[str], List[Image.Image]]:
+) -> tuple[list[str], list[str], list[str], list[Image.Image]]:
     prompts = []
     expected_responses = []
     generated_texts = []
@@ -77,7 +76,7 @@ def run_predictions(
     return prompts, expected_responses, generated_texts, images
 
 
-def extract_unique_detection_dataset_classes(dataset: DetectionDataset) -> List[str]:
+def extract_unique_detection_dataset_classes(dataset: DetectionDataset) -> list[str]:
     class_set = set()
     for i in range(len(dataset)):
         _, suffix, _ = dataset[i]

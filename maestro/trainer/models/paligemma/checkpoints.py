@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from transformers import AutoProcessor, PaliGemmaForConditionalGeneration
@@ -87,7 +87,7 @@ def load_model(
     revision: str = DEFAULT_PALIGEMMA_MODEL_REVISION,
     device: torch.device = DEVICE,
     cache_dir: Optional[str] = None,
-) -> Tuple[AutoProcessor, PaliGemmaForConditionalGeneration]:
+) -> tuple[AutoProcessor, PaliGemmaForConditionalGeneration]:
     """Loads a PaliGemma model and its associated processor.
 
     Args:

@@ -1,9 +1,9 @@
 import os
 from dataclasses import dataclass, field, replace
-from typing import List, Literal, Optional, Tuple, Union
+from typing import Literal, Optional, Union
 
 import torch
-from peft import LoraConfig, PeftModel, get_peft_model
+from peft import PeftModel
 from torch.optim import SGD, Adam, AdamW, Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
@@ -36,7 +36,7 @@ from maestro.trainer.models.paligemma.metrics import (
 
 
 @dataclass(frozen=True)
-class TrainingConfiguration:
+class Configuration:
     """Configuration for training a PaliGemma model.
 
     This class encapsulates all the parameters needed for training a PaliGemma model,
@@ -66,7 +66,7 @@ class TrainingConfiguration:
         init_lora_weights (Union[bool, LoraInitLiteral]): How to initialize LoRA
             weights.
         output_dir (str): Directory to save output files.
-        metrics (List[BaseMetric]): List of metrics to track during training.
+        metrics (list[BaseMetric]): list of metrics to track during training.
     """
 
     dataset: str
@@ -89,10 +89,10 @@ class TrainingConfiguration:
     use_rslora: bool = True
     init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian"
     output_dir: str = "./training/florence-2"
-    metrics: List[BaseMetric] = field(default_factory=list)
+    metrics: list[BaseMetric] = field(default_factory=list)
 
 
-def train(config: TrainingConfiguration) -> None:
+def train(config: Configuration) -> None:
     make_it_reproducible(avoid_non_deterministic_algorithms=False)
     run_dir = create_new_run_directory(
         base_output_dir=config.output_dir,
@@ -158,39 +158,11 @@ def train(config: TrainingConfiguration) -> None:
     print(f"Best checkpoint saved at: {checkpoint_manager.best_checkpoint_dir}")
 
 
-def prepare_peft_model(
-    model: PaliGemmaForConditionalGeneration,
-    r: int = 8,
-    lora_alpha: int = 8,
-    lora_dropout: float = 0.05,
-    bias: Literal["none", "all", "lora_only"] = "none",
-    inference_mode: bool = False,
-    use_rslora: bool = True,
-    init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian",
-    revision: str = DEFAULT_PALIGEMMA_MODEL_REVISION,
-) -> PeftModel:
-    config = LoraConfig(
-        r=r,
-        lora_alpha=lora_alpha,
-        target_modules=["q_proj", "o_proj", "k_proj", "v_proj", "gate_proj", "up_proj", "down_proj"],
-        task_type="CAUSAL_LM",
-        lora_dropout=lora_dropout,
-        bias=bias,
-        inference_mode=inference_mode,
-        use_rslora=use_rslora,
-        init_lora_weights=init_lora_weights,
-        revision=revision,
-    )
-    peft_model = get_peft_model(model, config)
-    peft_model.print_trainable_parameters()
-    return peft_model.to(model.device)
-
-
 def run_training_loop(
     processor: AutoProcessor,
     model: PeftModel,
-    data_loaders: Tuple[DataLoader, Optional[DataLoader]],
-    config: TrainingConfiguration,
+    data_loaders: tuple[DataLoader, Optional[DataLoader]],
+    config: Configuration,
     training_metrics_tracker: MetricsTracker,
     validation_metrics_tracker: MetricsTracker,
     checkpoint_manager: CheckpointManager,
@@ -226,7 +198,7 @@ def run_training_epoch(
     train_loader: DataLoader,
     val_loader: Optional[DataLoader],
     epoch: int,
-    config: TrainingConfiguration,
+    config: Configuration,
     optimizer: Optimizer,
     lr_scheduler: LRScheduler,
     training_metrics_tracker: MetricsTracker,
@@ -234,7 +206,7 @@ def run_training_epoch(
     checkpoint_manager: CheckpointManager,
 ) -> None:
     model.train()
-    training_losses: List[float] = []
+    training_losses: list[float] = []
 
     with tqdm(total=len(train_loader), desc=f"Epoch {epoch}/{config.epochs}", unit="batch") as pbar:
         for step_id, batch in enumerate(train_loader):
@@ -285,7 +257,7 @@ def run_validation_epoch(
     processor: AutoProcessor,
     model: Union[PeftModel, PaliGemmaForConditionalGeneration],
     loader: DataLoader,
-    config: TrainingConfiguration,
+    config: Configuration,
     metrics_tracker: MetricsTracker,
     epoch_number: int,
 ) -> None:
@@ -343,7 +315,7 @@ def run_validation_epoch(
         display_results(prompts, expected_responses, generated_texts, images)
 
 
-def get_optimizer(model: PeftModel, config: TrainingConfiguration) -> Optimizer:
+def get_optimizer(model: PeftModel, config: Configuration) -> Optimizer:
     optimizer_type = config.optimizer.lower()
     if optimizer_type == "adamw":
         return AdamW(model.parameters(), lr=config.lr)
@@ -354,7 +326,7 @@ def get_optimizer(model: PeftModel, config: TrainingConfiguration) -> Optimizer:
     raise ValueError(f"Unsupported optimizer: {config.optimizer}")
 
 
-def evaluate(config: TrainingConfiguration) -> None:
+def evaluate(config: Configuration) -> None:
     processor, model = load_model(
         model_id_or_path=config.model_id,
         revision=config.revision,

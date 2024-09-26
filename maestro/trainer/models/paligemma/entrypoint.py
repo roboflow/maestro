@@ -5,14 +5,16 @@ import rich
 import torch
 import typer
 
-from maestro.trainer.common.peft import LoraInitLiteral
-from maestro.trainer.common.utils.metrics import BaseMetric, MeanAveragePrecisionMetric
+from maestro.trainer.common.utils.metrics import (
+    BaseMetric,
+    MeanAveragePrecisionMetric,
+)
 from maestro.trainer.models.paligemma.checkpoints import (
     DEFAULT_PALIGEMMA_MODEL_ID,
     DEFAULT_PALIGEMMA_MODEL_REVISION,
     DEVICE,
 )
-from maestro.trainer.models.paligemma.core import TrainingConfiguration
+from maestro.trainer.models.paligemma.core import Configuration
 from maestro.trainer.models.paligemma.core import evaluate as paligemma_evaluate
 from maestro.trainer.models.paligemma.core import train as paligemma_train
 
@@ -64,7 +66,7 @@ def train(
         typer.Option("--epochs", help="Number of training epochs"),
     ] = 10,
     optimizer: Annotated[
-        Literal["sgd", "adamw", "adam"],
+        str,
         typer.Option("--optimizer", help="Optimizer to use for training"),
     ] = "adamw",
     lr: Annotated[
@@ -72,7 +74,7 @@ def train(
         typer.Option("--lr", help="Learning rate for the optimizer"),
     ] = 1e-5,
     lr_scheduler: Annotated[
-        Literal["linear", "cosine", "polynomial"],
+        str,
         typer.Option("--lr_scheduler", help="Learning rate scheduler"),
     ] = "linear",
     batch_size: Annotated[
@@ -104,7 +106,7 @@ def train(
         typer.Option("--lora_dropout", help="Dropout probability for LoRA layers"),
     ] = 0.05,
     bias: Annotated[
-        Literal["none", "all", "lora_only"],
+        str,
         typer.Option("--bias", help="Which bias to train"),
     ] = "none",
     use_rslora: Annotated[
@@ -112,7 +114,7 @@ def train(
         typer.Option("--use_rslora/--no_use_rslora", help="Whether to use RSLoRA"),
     ] = True,
     init_lora_weights: Annotated[
-        Union[bool, LoraInitLiteral],
+        str,
         typer.Option("--init_lora_weights", help="How to initialize LoRA weights"),
     ] = "gaussian",
     output_dir: Annotated[
@@ -125,16 +127,16 @@ def train(
     ] = [],
 ) -> None:
     metric_objects = parse_metrics(metrics)
-    config = TrainingConfiguration(
+    config = Configuration(
         dataset=dataset,
         model_id=model_id,
         revision=revision,
         device=torch.device(device),
         cache_dir=cache_dir,
         epochs=epochs,
-        optimizer=optimizer,
+        optimizer=optimizer,  # type: ignore
         lr=lr,
-        lr_scheduler=lr_scheduler,
+        lr_scheduler=lr_scheduler,  # type: ignore
         batch_size=batch_size,
         val_batch_size=val_batch_size,
         num_workers=num_workers,
@@ -142,9 +144,9 @@ def train(
         lora_r=lora_r,
         lora_alpha=lora_alpha,
         lora_dropout=lora_dropout,
-        bias=bias,
+        bias=bias,  # type: ignore
         use_rslora=use_rslora,
-        init_lora_weights=init_lora_weights,
+        init_lora_weights=init_lora_weights,  # type: ignore
         output_dir=output_dir,
         metrics=metric_objects,
     )
@@ -197,7 +199,7 @@ def evaluate(
     ] = [],
 ) -> None:
     metric_objects = parse_metrics(metrics)
-    config = TrainingConfiguration(
+    config = Configuration(
         dataset=dataset,
         model_id=model_id,
         revision=revision,

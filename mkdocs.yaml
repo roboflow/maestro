@@ -1,11 +1,11 @@
-site_name: multimodal-maestro
+site_name: maestro
 site_url: https://roboflow.github.io/multimodal-maestro/
 site_author: Roboflow
-site_description: Effective prompting for Large Multimodal Models like GPT-4 Vision or LLaVA. 🔥
+site_description: 'Streamline the fine-tuning process for multimodal models: PaliGemma, Florence-2, Qwen2-VL.'
 repo_name: roboflow/multimodal-maestro
 repo_url: https://github.com/roboflow/multimodal-maestro
 edit_uri: https://github.com/roboflow/multimodal-maestro/tree/main/docs
-copyright: Roboflow 2023. All rights reserved.
+copyright: Roboflow 2024. All rights reserved.
 
 extra:
   social:
@@ -17,14 +17,16 @@ extra:
       link: https://www.linkedin.com/company/roboflow-ai/mycompany/
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/roboflow
+  version:
+    provider: mike
+
 
 nav:
-  - Home: index.md
-  - Get Started: get_started.md
-  - API:
-    - LMMs: lmms.md
-    - Markers: markers.md
-    - Visualizers: visualizers.md
+  - Maestro: index.md
+  - Models:
+    - Florence-2: florence-2.md
+  - Tasks: tasks.md
+  - Metrics: metrics.md
 
 
 theme:
@@ -51,5 +53,43 @@ theme:
     code: Roboto Mono
 
 plugins:
-  - mkdocstrings
   - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            parameter_headings: true
+            paths: [maestro]
+            load_external_modules: true
+            allow_inspection: true
+            show_bases: true
+            group_by_category: true
+            docstring_style: google
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_category_heading: true
+          domains: [std, py]
+
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - attr_list
+  - md_in_html
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true

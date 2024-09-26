@@ -1,1 +1,1 @@
-from maestro.trainer.models.paligemma.core import TrainingConfiguration, train
+from maestro.trainer.models.paligemma.core import Configuration, train

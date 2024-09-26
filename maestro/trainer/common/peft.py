@@ -1,7 +1,7 @@
 from typing import Literal, Union
 
 from peft import LoraConfig, PeftModel, get_peft_model
-from transformers import AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, PaliGemmaForConditionalGeneration
 
 LoraInitLiteral = Literal["gaussian", "olora", "pissa", "pissa_niter_[number of iters]", "loftq"]
 # TO DO
@@ -9,7 +9,7 @@ LoraInitLiteral = Literal["gaussian", "olora", "pissa", "pissa_niter_[number of 
 
 
 def prepare_peft_model(
-    model: AutoModelForCausalLM,
+    model: Union[AutoModelForCausalLM, PaliGemmaForConditionalGeneration],
     r: int = 8,
     lora_alpha: int = 8,
     lora_dropout: float = 0.05,

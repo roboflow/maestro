@@ -1,7 +1,7 @@
 import logging
 import os
 from functools import partial
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import torch
 from PIL import Image
@@ -19,7 +19,7 @@ def prepare_data_loaders(
     num_workers: int = 0,
     test_batch_size: Optional[int] = None,
     test_loaders_workers: Optional[int] = None,
-) -> Tuple[
+) -> tuple[
     DataLoader,
     Optional[DataLoader],
     Optional[DataLoader],
@@ -101,10 +101,10 @@ def prepare_detection_dataset(
 
 
 def collate_fn(
-    batch: Tuple[List[str], List[str], List[Image.Image]],
+    batch: tuple[list[str], list[str], list[Image.Image]],
     processor: AutoProcessor,
     device: torch.device,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor]:
     questions, answers, images = zip(*batch)
     # TO DO : Need to check i
     inputs = processor(
