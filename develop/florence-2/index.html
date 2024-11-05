@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="https://media.roboflow.com/open-source/supervision/supervision-lenny.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.43">
     
     
       
@@ -30,7 +30,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8c3ca2c6.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -938,7 +938,7 @@ settings.</p>
           <tr class="doc-section-item">
             <td><code><span title="maestro.trainer.models.florence_2.core.Configuration.device">device</span></code></td>
             <td>
-                  <code>device</code>
+                  <code><span title="torch.device">device</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -949,7 +949,7 @@ settings.</p>
           <tr class="doc-section-item">
             <td><code><span title="maestro.trainer.models.florence_2.core.Configuration.cache_dir">cache_dir</span></code></td>
             <td>
-                  <code>Optional[str]</code>
+                  <code><span title="typing.Optional">Optional</span>[str]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -971,7 +971,7 @@ settings.</p>
           <tr class="doc-section-item">
             <td><code><span title="maestro.trainer.models.florence_2.core.Configuration.optimizer">optimizer</span></code></td>
             <td>
-                  <code>Literal[&#39;sgd&#39;, &#39;adamw&#39;, &#39;adam&#39;]</code>
+                  <code><span title="typing.Literal">Literal</span>[&#39;sgd&#39;, &#39;adamw&#39;, &#39;adam&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -993,7 +993,7 @@ settings.</p>
           <tr class="doc-section-item">
             <td><code><span title="maestro.trainer.models.florence_2.core.Configuration.lr_scheduler">lr_scheduler</span></code></td>
             <td>
-                  <code>Literal[&#39;linear&#39;, &#39;cosine&#39;, &#39;polynomial&#39;]</code>
+                  <code><span title="typing.Literal">Literal</span>[&#39;linear&#39;, &#39;cosine&#39;, &#39;polynomial&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1016,7 +1016,7 @@ scheduler.</p>
           <tr class="doc-section-item">
             <td><code><span title="maestro.trainer.models.florence_2.core.Configuration.val_batch_size">val_batch_size</span></code></td>
             <td>
-                  <code>Optional[int]</code>
+                  <code><span title="typing.Optional">Optional</span>[int]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1038,7 +1038,7 @@ scheduler.</p>
           <tr class="doc-section-item">
             <td><code><span title="maestro.trainer.models.florence_2.core.Configuration.val_num_workers">val_num_workers</span></code></td>
             <td>
-                  <code>Optional[int]</code>
+                  <code><span title="typing.Optional">Optional</span>[int]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1082,7 +1082,7 @@ scheduler.</p>
           <tr class="doc-section-item">
             <td><code><span title="maestro.trainer.models.florence_2.core.Configuration.bias">bias</span></code></td>
             <td>
-                  <code>Literal[&#39;none&#39;, &#39;all&#39;, &#39;lora_only&#39;]</code>
+                  <code><span title="typing.Literal">Literal</span>[&#39;none&#39;, &#39;all&#39;, &#39;lora_only&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1104,7 +1104,7 @@ scheduler.</p>
           <tr class="doc-section-item">
             <td><code><span title="maestro.trainer.models.florence_2.core.Configuration.init_lora_weights">init_lora_weights</span></code></td>
             <td>
-                  <code>Union[bool, LoraInitLiteral]</code>
+                  <code><span title="typing.Union">Union</span>[bool, <span title="maestro.trainer.models.paligemma.training.LoraInitLiteral">LoraInitLiteral</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1127,7 +1127,7 @@ weights.</p>
           <tr class="doc-section-item">
             <td><code><span title="maestro.trainer.models.florence_2.core.Configuration.metrics">metrics</span></code></td>
             <td>
-                  <code>List[BaseMetric]</code>
+                  <code>List[<span title="maestro.trainer.common.utils.metrics.BaseMetric">BaseMetric</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1309,7 +1309,7 @@ and runs the training loop. It also handles metric tracking and checkpoint savin
 <h2 id="maestro.trainer.models.florence_2.core.train(config)" class="doc doc-heading doc-heading-parameter">                  <code>config</code>
 <a href="#maestro.trainer.models.florence_2.core.train(config)" class="headerlink" title="Permanent link">&para;</a></h2>            </td>
             <td>
-                  <code>Configuration</code>
+                  <code><a class="autorefs autorefs-internal" title="maestro.trainer.models.florence_2.core.Configuration" href="#maestro.trainer.models.florence_2.core.Configuration">Configuration</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1567,7 +1567,7 @@ computes specified metrics, and saves the results.</p>
 <h2 id="maestro.trainer.models.florence_2.core.evaluate(config)" class="doc doc-heading doc-heading-parameter">                  <code>config</code>
 <a href="#maestro.trainer.models.florence_2.core.evaluate(config)" class="headerlink" title="Permanent link">&para;</a></h2>            </td>
             <td>
-                  <code>Configuration</code>
+                  <code><a class="autorefs autorefs-internal" title="maestro.trainer.models.florence_2.core.Configuration" href="#maestro.trainer.models.florence_2.core.Configuration">Configuration</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1862,7 +1862,7 @@ parameters for evaluation.</p>
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.525ec568.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
     
   </body>
