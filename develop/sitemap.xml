@@ -2,18 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://roboflow.github.io/multimodal-maestro/develop/</loc>
-         <lastmod>2024-11-05</lastmod>
+         <lastmod>2024-11-22</lastmod>
     </url>
     <url>
          <loc>https://roboflow.github.io/multimodal-maestro/develop/florence-2/</loc>
-         <lastmod>2024-11-05</lastmod>
+         <lastmod>2024-11-22</lastmod>
     </url>
     <url>
          <loc>https://roboflow.github.io/multimodal-maestro/develop/metrics/</loc>
-         <lastmod>2024-11-05</lastmod>
+         <lastmod>2024-11-22</lastmod>
     </url>
     <url>
          <loc>https://roboflow.github.io/multimodal-maestro/develop/tasks/</loc>
-         <lastmod>2024-11-05</lastmod>
+         <lastmod>2024-11-22</lastmod>
     </url>
 </urlset>
