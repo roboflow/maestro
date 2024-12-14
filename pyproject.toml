@@ -36,7 +36,7 @@ classifiers = [
 dependencies = [
     "supervision>=0.24,<0.27",
     "requests>=2.31.0,<=2.32.3",
-    "transformers>=4.44.2,<4.46.0",
+    "transformers>=4.44.2,<4.48.0",
     "torch~=2.4.0",
     "accelerate>=0.33,<1.1",
     "sentencepiece~=0.2.0",
