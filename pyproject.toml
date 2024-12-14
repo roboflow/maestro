@@ -34,7 +34,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "supervision~=0.24.0rc1",
+    "supervision>=0.24,<0.27",
     "requests>=2.31.0,<=2.32.3",
     "transformers>=4.44.2,<4.46.0",
     "torch~=2.4.0",
@@ -66,8 +66,8 @@ docs = [
 dev = [
     "pytest~=8.3.2",
     "pre-commit>=3.8,<4.1",
-    "mypy>=1.11.2,<1.13.0",
-    "ruff~=0.6.5",
+    "mypy>=1.11.2,<1.14.0",
+    "ruff>=0.6.5,<0.8.0",
     "tox>=4.18.1,<4.24.0"
 ]
 
