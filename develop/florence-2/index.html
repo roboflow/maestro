@@ -825,8 +825,8 @@ require more precision.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="3:3"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Object Detection</label><label for="__tabbed_3_2">Visual Question Answering (VQA)</label><label for="__tabbed_3_3">Object Character Recognition (OCR)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span> <span class="nn">maestro.trainer.common</span> <span class="kn">import</span> <span class="n">MeanAveragePrecisionMetric</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span> <span class="nn">maestro.trainer.models.florence_2</span> <span class="kn">import</span> <span class="n">train</span><span class="p">,</span> <span class="n">Configuration</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">maestro.trainer.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeanAveragePrecisionMetric</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">maestro.trainer.models.florence_2</span><span class="w"> </span><span class="kn">import</span> <span class="n">train</span><span class="p">,</span> <span class="n">Configuration</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
 </span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span>
 </span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;&lt;DATASET_PATH&gt;&#39;</span><span class="p">,</span>
@@ -840,8 +840,8 @@ require more precision.</p>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span> <span class="nn">maestro.trainer.common</span> <span class="kn">import</span> <span class="n">WordErrorRateMetric</span><span class="p">,</span> <span class="n">CharacterErrorRateMetric</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span> <span class="nn">maestro.trainer.models.florence_2</span> <span class="kn">import</span> <span class="n">train</span><span class="p">,</span> <span class="n">Configuration</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">maestro.trainer.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">WordErrorRateMetric</span><span class="p">,</span> <span class="n">CharacterErrorRateMetric</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">maestro.trainer.models.florence_2</span><span class="w"> </span><span class="kn">import</span> <span class="n">train</span><span class="p">,</span> <span class="n">Configuration</span>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span>
 </span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;&lt;DATASET_PATH&gt;&#39;</span><span class="p">,</span>
@@ -855,8 +855,8 @@ require more precision.</p>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span> <span class="nn">maestro.trainer.common</span> <span class="kn">import</span> <span class="n">WordErrorRateMetric</span><span class="p">,</span> <span class="n">CharacterErrorRateMetric</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span> <span class="nn">maestro.trainer.models.florence_2</span> <span class="kn">import</span> <span class="n">train</span><span class="p">,</span> <span class="n">Configuration</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">maestro.trainer.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">WordErrorRateMetric</span><span class="p">,</span> <span class="n">CharacterErrorRateMetric</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">maestro.trainer.models.florence_2</span><span class="w"> </span><span class="kn">import</span> <span class="n">train</span><span class="p">,</span> <span class="n">Configuration</span>
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
 </span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span>
 </span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;&lt;DATASET_PATH&gt;&#39;</span><span class="p">,</span>
@@ -1200,7 +1200,7 @@ weights.</p>
 <span class="normal"><a href="#__codelineno-0-91">91</a></span>
 <span class="normal"><a href="#__codelineno-0-92">92</a></span>
 <span class="normal"><a href="#__codelineno-0-93">93</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="k">class</span> <span class="nc">Configuration</span><span class="p">:</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="k">class</span><span class="w"> </span><span class="nc">Configuration</span><span class="p">:</span>
 </span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for a Florence-2 model.</span>
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>
 </span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">    This class encapsulates all the parameters needed for training a Florence-2 model,</span>
@@ -1450,7 +1450,7 @@ parameters for training.</p>
 <span class="normal"><a href="#__codelineno-0-171">171</a></span>
 <span class="normal"><a href="#__codelineno-0-172">172</a></span>
 <span class="normal"><a href="#__codelineno-0-173">173</a></span>
-<span class="normal"><a href="#__codelineno-0-174">174</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Configuration</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal"><a href="#__codelineno-0-174">174</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Configuration</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="__span-0-97"><a id="__codelineno-0-97" name="__codelineno-0-97"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Train a Florence-2 model using the provided configuration.</span>
 </span><span id="__span-0-98"><a id="__codelineno-0-98" name="__codelineno-0-98"></a>
 </span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99"></a><span class="sd">    This function sets up the training environment, prepares the model and data loaders,</span>
@@ -1681,7 +1681,7 @@ parameters for evaluation.</p>
 <span class="normal"><a href="#__codelineno-0-456">456</a></span>
 <span class="normal"><a href="#__codelineno-0-457">457</a></span>
 <span class="normal"><a href="#__codelineno-0-458">458</a></span>
-<span class="normal"><a href="#__codelineno-0-459">459</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-385"><a id="__codelineno-0-385" name="__codelineno-0-385"></a><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Configuration</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal"><a href="#__codelineno-0-459">459</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-385"><a id="__codelineno-0-385" name="__codelineno-0-385"></a><span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Configuration</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="__span-0-386"><a id="__codelineno-0-386" name="__codelineno-0-386"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluate a Florence-2 model using the provided configuration.</span>
 </span><span id="__span-0-387"><a id="__codelineno-0-387" name="__codelineno-0-387"></a>
 </span><span id="__span-0-388"><a id="__codelineno-0-388" name="__codelineno-0-388"></a><span class="sd">    This function loads the model and data, runs predictions on the evaluation dataset,</span>
