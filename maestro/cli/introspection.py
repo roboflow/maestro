@@ -14,12 +14,12 @@ def find_training_recipes(app: typer.Typer) -> None:
     except Exception:
         _warn_about_recipe_import_error(model_name="Florence 2")
 
-    try:
-        from maestro.trainer.models.paligemma.entrypoint import paligemma_app
-
-        app.add_typer(paligemma_app, name="paligemma")
-    except Exception:
-        _warn_about_recipe_import_error(model_name="PaliGemma")
+    # try:
+    #     from maestro.trainer.models.paligemma.entrypoint import paligemma_app
+    #
+    #     app.add_typer(paligemma_app, name="paligemma")
+    # except Exception:
+    #     _warn_about_recipe_import_error(model_name="PaliGemma")
 
 
 def _warn_about_recipe_import_error(model_name: str) -> None:
