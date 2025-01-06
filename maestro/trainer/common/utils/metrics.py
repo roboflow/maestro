@@ -11,6 +11,7 @@ from typing import Any, Optional
 
 import matplotlib.pyplot as plt
 import supervision as sv
+from evaluate import load
 from jiwer import cer, wer
 from PIL import Image
 from supervision.metrics.mean_average_precision import MeanAveragePrecision
@@ -98,12 +99,13 @@ class WordErrorRateMetric(BaseMetric):
         """Computes the WER metric based on the targets and predictions.
 
         Args:
-            targets (List[str]): The ground truth texts.
-            predictions (List[str]): The predicted texts.
+            targets (List[str]): The ground truth texts (references), where each element
+                represents the reference text for the corresponding prediction.
+            predictions (List[str]): The predicted texts (hypotheses) to be evaluated.
 
         Returns:
-            Dict[str, float]: A dictionary of computed WER metrics with metric names as
-                keys and their values.
+            Dict[str, float]: A dictionary containing the computed WER score, with the
+                metric name ("wer") as the key and its value as the score.
         """
         if len(targets) != len(predictions):
             raise ValueError("The number of targets and predictions must be the same.")
@@ -139,12 +141,13 @@ class CharacterErrorRateMetric(BaseMetric):
         """Computes the CER metric based on the targets and predictions.
 
         Args:
-            targets (List[str]): The ground truth texts.
-            predictions (List[str]): The predicted texts.
+            targets (List[str]): The ground truth texts (references), where each element
+                represents the reference text for the corresponding prediction.
+            predictions (List[str]): The predicted texts (hypotheses) to be evaluated.
 
         Returns:
-            Dict[str, float]: A dictionary of computed CER metrics with metric names as
-                keys and their values.
+            Dict[str, float]: A dictionary containing the computed CER score, with the
+                metric name ("cer") as the key and its value as the score.
         """
         if len(targets) != len(predictions):
             raise ValueError("The number of targets and predictions must be the same.")
@@ -157,6 +160,92 @@ class CharacterErrorRateMetric(BaseMetric):
 
         average_cer = total_cer / count if count > 0 else 0.0
         return {"cer": average_cer}
+
+
+class TranslationErrorRateMetric(BaseMetric):
+    """A class used to compute the Translation Error Rate (TER) metric.
+
+    TER measures the minimum number of edits (insertions, deletions, substitutions, and shifts)
+    needed to transform a predicted text into its reference text, making it useful for
+    evaluating machine translation and other text generation tasks.
+    """
+
+    name = "translation_error_rate"
+
+    def __init__(self, case_sensitive: bool = True):
+        """Initialize the TER metric.
+
+        Args:
+            case_sensitive (bool, optional): Whether to perform case-sensitive comparison.
+                Defaults to True.
+        """
+        self.ter = load("ter")
+        self.case_sensitive = case_sensitive
+
+    def describe(self) -> list[str]:
+        """Returns a list of metric names that this class will compute.
+
+        Returns:
+            List[str]: A list of metric names.
+        """
+        return ["ter"]
+
+    def compute(self, targets: list[str], predictions: list[str]) -> dict[str, float]:
+        """Computes the TER metric based on the targets and predictions.
+
+        Args:
+            targets (List[str]): The ground truth texts (references), where each element
+                represents the reference text for the corresponding prediction.
+            predictions (List[str]): The predicted texts (hypotheses) to be evaluated.
+
+        Returns:
+            Dict[str, float]: A dictionary containing the computed TER score, with the
+                metric name ("ter") as the key and its value as the score.
+        """
+        if len(targets) != len(predictions):
+            raise ValueError("The number of targets and predictions must be the same.")
+
+        results = self.ter.compute(predictions=predictions, references=targets, case_sensitive=self.case_sensitive)
+        return {"ter": results["score"]}
+
+
+class BLEUMetric(BaseMetric):
+    """A class used to compute the BLEU (Bilingual Evaluation Understudy) metric.
+
+    BLEU is a popular metric for evaluating the quality of text predictions in natural
+    language processing tasks, particularly machine translation. It measures the
+    similarity between the predicted text and one or more reference texts based on
+    n-gram precision, brevity penalty, and other factors.
+    """
+
+    bleu = load("bleu")
+    name = "bleu"
+
+    def describe(self) -> list[str]:
+        """Returns a list of metric names that this class will compute.
+
+        Returns:
+            List[str]: A list of metric names.
+        """
+        return ["bleu"]
+
+    def compute(self, targets: list[str], predictions: list[str]) -> dict[str, float]:
+        """Computes the BLEU metric based on the targets and predictions.
+
+        Args:
+            targets (List[str]): The ground truth texts (references), where each element
+                represents the reference text for the corresponding prediction.
+            predictions (List[str]): The predicted texts (hypotheses) to be evaluated.
+
+        Returns:
+            Dict[str, float]: A dictionary containing the computed BLEU score, with the
+                metric name ("bleu") as the key and its value as the score.
+        """
+        if len(targets) != len(predictions):
+            raise ValueError("The number of targets and predictions must be the same.")
+
+        results = self.bleu.compute(predictions=predictions, references=targets)
+        return {"bleu": results["bleu"]}
 
 
 class MetricsTracker:

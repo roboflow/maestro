@@ -7,8 +7,10 @@ import typer
 
 from maestro.trainer.common.utils.metrics import (
     BaseMetric,
+    BLEUMetric,
     CharacterErrorRateMetric,
     MeanAveragePrecisionMetric,
+    TranslationErrorRateMetric,
     WordErrorRateMetric,
 )
 from maestro.trainer.models.florence_2.checkpoints import (
@@ -27,6 +29,8 @@ METRIC_CLASSES: dict[str, type[BaseMetric]] = {
     MeanAveragePrecisionMetric.name: MeanAveragePrecisionMetric,
     WordErrorRateMetric.name: WordErrorRateMetric,
     CharacterErrorRateMetric.name: CharacterErrorRateMetric,
+    BLEUMetric.name: BLEUMetric,
+    TranslationErrorRateMetric.name: TranslationErrorRateMetric,
 }
 
 
