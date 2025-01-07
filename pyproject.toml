@@ -63,7 +63,7 @@ Changelog = "https://github.com/roboflow/multimodal-maestro/blob/main/CHANGELOG.
 [project.optional-dependencies]
 docs = [
     "mkdocs-material~=9.5.35",
-    "mkdocstrings[python]>=0.20.0,<0.26.3",
+    "mkdocstrings[python]>=0.20.0,<0.27.1",
     "mike~=2.1.3",
 
 ]
