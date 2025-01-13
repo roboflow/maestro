@@ -82,7 +82,9 @@ florence2 = [
     "flash-attn>=2.7.0.post2; sys_platform != 'darwin'"
 ]
 paligemma2 = [
-
+    "peft>=0.12,<0.14",
+    "torch>=2.4.0",
+    "transformers>=4.48.0"
 ]
 
 [project.scripts]
