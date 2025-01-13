@@ -9,7 +9,7 @@ def collate_fn(
     batch: list[tuple[Image.Image, dict[str, Any]]],
     processor: AutoProcessor,
     device: torch.device,
-) -> tuple[torch.Tensor, list[str], list[str], list[Image.Image]]:
+):
     images, data = zip(*batch)
     prefixes = [entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
