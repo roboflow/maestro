@@ -8,6 +8,7 @@ from maestro.cli.utils import str2bool
 
 def find_training_recipes(app: typer.Typer) -> None:
     from maestro.trainer.models.florence_2.entrypoint import florence_2_app
+
     app.add_typer(florence_2_app, name="florence2")
 
     # try:
