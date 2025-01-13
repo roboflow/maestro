@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass, field, replace
+from functools import partial
 from typing import Literal, Optional, Union
 
 import torch
@@ -10,6 +11,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoProcessor, get_scheduler
 
+from maestro.trainer.common.data_loaders.datasets import create_data_loaders
 from maestro.trainer.common.utils.file_system import create_new_run_directory
 from maestro.trainer.common.utils.metrics import (
     BaseMetric,
@@ -27,14 +29,14 @@ from maestro.trainer.models.florence_2.checkpoints import (
     load_model,
 )
 from maestro.trainer.models.florence_2.inference import run_predictions
-from maestro.trainer.models.florence_2.loaders import create_data_loaders
+from maestro.trainer.models.florence_2.loaders import process_batch
 from maestro.trainer.models.florence_2.metrics import (
     get_unique_detection_classes,
     process_output_for_detection_metric,
     process_output_for_text_metric,
 )
-from maestro.trainer.models.paligemma.training import LoraInitLiteral
 
+LoraInitLiteral = Literal["gaussian", "olora", "pissa", "pissa_niter_[number of iters]", "loftq"]
 
 @dataclass(frozen=True)
 class Configuration:
@@ -128,10 +130,8 @@ def train(config: Configuration) -> None:
     train_loader, val_loader, test_loader = create_data_loaders(
         dataset_location=config.dataset,
         train_batch_size=config.batch_size,
-        processor=processor,
-        device=config.device,
-        num_workers=config.num_workers,
-        test_loaders_workers=config.val_num_workers,
+        train_collect_fn=partial(process_batch, processor=processor, device=config.device),
+        train_num_workers=config.num_workers
     )
     peft_model = prepare_peft_model(
         model=model,
