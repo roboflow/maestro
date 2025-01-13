@@ -29,7 +29,7 @@ from maestro.trainer.models.florence_2.checkpoints import (
     load_model,
 )
 from maestro.trainer.models.florence_2.inference import run_predictions
-from maestro.trainer.models.florence_2.loaders import process_batch
+from maestro.trainer.models.florence_2.loaders import collate_fn
 from maestro.trainer.models.florence_2.metrics import (
     get_unique_detection_classes,
     process_output_for_detection_metric,
@@ -130,7 +130,7 @@ def train(config: Configuration) -> None:
     train_loader, val_loader, test_loader = create_data_loaders(
         dataset_location=config.dataset,
         train_batch_size=config.batch_size,
-        train_collect_fn=partial(process_batch, processor=processor, device=config.device),
+        train_collect_fn=partial(collate_fn, processor=processor, device=config.device),
         train_num_workers=config.num_workers
     )
     peft_model = prepare_peft_model(

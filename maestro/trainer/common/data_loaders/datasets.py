@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from typing import Optional, Callable, Any, List, Tuple
+from typing import Optional, Callable, Any
 
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
@@ -31,7 +31,7 @@ class RoboflowJSONLDataset(Dataset):
         self.entries = self._load_entries(jsonl_file_path)
 
     @staticmethod
-    def _load_entries(jsonl_file_path: str) -> List[dict]:
+    def _load_entries(jsonl_file_path: str) -> list[dict]:
         with open(jsonl_file_path, 'r') as file:
             try:
                 return [json.loads(line) for line in file]
@@ -42,7 +42,7 @@ class RoboflowJSONLDataset(Dataset):
     def __len__(self) -> int:
         return len(self.entries)
 
-    def __getitem__(self, idx: int) -> Tuple[Image.Image, dict]:
+    def __getitem__(self, idx: int) -> tuple[Image.Image, dict]:
         if idx >= len(self.entries):
             raise IndexError("Index out of range")
 
@@ -86,12 +86,12 @@ def load_split_dataset(
 def create_data_loaders(
         dataset_location: str,
         train_batch_size: int,
-        train_collect_fn: Callable[[List[Any]], Any],
+        train_collect_fn: Callable[[list[Any]], Any],
         train_num_workers: int = 0,
         test_batch_size: Optional[int] = None,
-        test_collect_fn: Optional[Callable[[List[Any]], Any]] = None,
+        test_collect_fn: Optional[Callable[[list[Any]], Any]] = None,
         test_num_workers: Optional[int] = None,
-) -> Tuple[DataLoader, Optional[DataLoader], Optional[DataLoader]]:
+) -> tuple[DataLoader, Optional[DataLoader], Optional[DataLoader]]:
     """
     Create DataLoader instances for training, validation, and testing datasets.
 

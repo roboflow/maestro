@@ -1,15 +1,15 @@
-from typing import List, Tuple, Dict, Any
+from typing import Any
 
 import torch
 from PIL import Image
 from transformers import AutoProcessor
 
 
-def process_batch(
-    batch: List[Tuple[Image.Image, Dict[str, Any]]],
+def collate_fn(
+    batch: list[tuple[Image.Image, dict[str, Any]]],
     processor: AutoProcessor,
     device: torch.device,
-) -> Tuple[torch.Tensor, List[str], List[str], List[Image.Image]]:
+) -> tuple[torch.Tensor, list[str], list[str], list[Image.Image]]:
     images, data = zip(*batch)
     prefixes = [entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
