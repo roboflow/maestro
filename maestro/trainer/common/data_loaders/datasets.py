@@ -35,8 +35,8 @@ class RoboflowJSONLDataset(Dataset):
         with open(jsonl_file_path) as file:
             try:
                 return [json.loads(line) for line in file]
-            except json.JSONDecodeError as e:
-                logging.exception(f"Error parsing JSONL file.")
+            except json.JSONDecodeError:
+                logging.exception("Error parsing JSONL file.")
                 raise
 
     def __len__(self) -> int:

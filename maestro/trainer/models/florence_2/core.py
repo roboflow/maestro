@@ -135,7 +135,7 @@ def train(config: Configuration) -> None:
         train_num_workers=config.num_workers,
         test_batch_size=config.val_batch_size,
         test_collect_fn=partial(collate_fn, processor=processor, device=config.device),
-        test_num_workers=config.val_num_workers
+        test_num_workers=config.val_num_workers,
     )
     peft_model = prepare_peft_model(
         model=model,
@@ -412,7 +412,7 @@ def evaluate(config: Configuration) -> None:
         train_num_workers=config.num_workers,
         test_batch_size=config.val_batch_size,
         test_collect_fn=partial(collate_fn, processor=processor, device=config.device),
-        test_num_workers=config.val_num_workers
+        test_num_workers=config.val_num_workers,
     )
     evaluation_loader = test_loader if test_loader is not None else val_loader
 
