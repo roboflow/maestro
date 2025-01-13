@@ -38,6 +38,7 @@ from maestro.trainer.models.florence_2.metrics import (
 
 LoraInitLiteral = Literal["gaussian", "olora", "pissa", "pissa_niter_[number of iters]", "loftq"]
 
+
 @dataclass(frozen=True)
 class Configuration:
     """Configuration for a Florence-2 model.
@@ -131,7 +132,7 @@ def train(config: Configuration) -> None:
         dataset_location=config.dataset,
         train_batch_size=config.batch_size,
         train_collect_fn=partial(collate_fn, processor=processor, device=config.device),
-        train_num_workers=config.num_workers
+        train_num_workers=config.num_workers,
     )
     peft_model = prepare_peft_model(
         model=model,

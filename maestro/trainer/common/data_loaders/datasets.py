@@ -1,15 +1,15 @@
 import json
 import logging
 import os
-from typing import Optional, Callable, Any
+from typing import Any, Callable, Optional
 
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 ROBOFLOW_JSONL_FILENAME = "annotations.jsonl"
 
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 class RoboflowJSONLDataset(Dataset):
@@ -32,11 +32,11 @@ class RoboflowJSONLDataset(Dataset):
 
     @staticmethod
     def _load_entries(jsonl_file_path: str) -> list[dict]:
-        with open(jsonl_file_path, 'r') as file:
+        with open(jsonl_file_path) as file:
             try:
                 return [json.loads(line) for line in file]
             except json.JSONDecodeError as e:
-                logging.error(f"Error parsing JSONL file: {e}")
+                logging.exception(f"Error parsing JSONL file: {e}")
                 raise
 
     def __len__(self) -> int:
@@ -59,10 +59,7 @@ class RoboflowJSONLDataset(Dataset):
         return image, entry
 
 
-def load_split_dataset(
-        dataset_location: str,
-        split_name: str
-) -> Optional[Dataset]:
+def load_split_dataset(dataset_location: str, split_name: str) -> Optional[Dataset]:
     """
     Load a dataset split from the specified location.
 
@@ -84,13 +81,13 @@ def load_split_dataset(
 
 
 def create_data_loaders(
-        dataset_location: str,
-        train_batch_size: int,
-        train_collect_fn: Callable[[list[Any]], Any],
-        train_num_workers: int = 0,
-        test_batch_size: Optional[int] = None,
-        test_collect_fn: Optional[Callable[[list[Any]], Any]] = None,
-        test_num_workers: Optional[int] = None,
+    dataset_location: str,
+    train_batch_size: int,
+    train_collect_fn: Callable[[list[Any]], Any],
+    train_num_workers: int = 0,
+    test_batch_size: Optional[int] = None,
+    test_collect_fn: Optional[Callable[[list[Any]], Any]] = None,
+    test_num_workers: Optional[int] = None,
 ) -> tuple[DataLoader, Optional[DataLoader], Optional[DataLoader]]:
     """
     Create DataLoader instances for training, validation, and testing datasets.
@@ -133,22 +130,37 @@ def create_data_loaders(
         raise ValueError("No dataset splits found. Ensure the dataset is correctly structured.")
 
     train_loader = (
-        DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True,
-                   num_workers=train_num_workers, collate_fn=train_collect_fn)
+        DataLoader(
+            train_dataset,
+            batch_size=train_batch_size,
+            shuffle=True,
+            num_workers=train_num_workers,
+            collate_fn=train_collect_fn,
+        )
         if train_dataset
         else None
     )
 
     valid_loader = (
-        DataLoader(valid_dataset, batch_size=test_batch_size, shuffle=False,
-                   num_workers=test_num_workers, collate_fn=test_collect_fn)
+        DataLoader(
+            valid_dataset,
+            batch_size=test_batch_size,
+            shuffle=False,
+            num_workers=test_num_workers,
+            collate_fn=test_collect_fn,
+        )
         if valid_dataset
         else None
     )
 
     test_loader = (
-        DataLoader(test_dataset, batch_size=test_batch_size, shuffle=False,
-                   num_workers=test_num_workers, collate_fn=test_collect_fn)
+        DataLoader(
+            test_dataset,
+            batch_size=test_batch_size,
+            shuffle=False,
+            num_workers=test_num_workers,
+            collate_fn=test_collect_fn,
+        )
         if test_dataset
         else None
     )
