@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Any
+from typing import Any, Dict, List, Tuple
 
 import torch
 from PIL import Image
