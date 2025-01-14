@@ -9,7 +9,9 @@ from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.paligemma_2.checpoints import (
     DEFAULT_PALIGEMMA2_MODEL_ID,
     DEFAULT_PALIGEMMA2_MODEL_REVISION,
-    DEVICE, load_model, OptimizationStrategy,
+    DEVICE,
+    OptimizationStrategy,
+    load_model,
 )
 
 
