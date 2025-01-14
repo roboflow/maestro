@@ -84,7 +84,8 @@ florence2 = [
 paligemma2 = [
     "peft>=0.12,<0.14",
     "torch>=2.4.0",
-    "transformers>=4.48.0"
+    "transformers>=4.48.0",
+    "bitsandbytes>=0.45.0"
 ]
 
 [project.scripts]

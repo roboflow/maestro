@@ -9,7 +9,7 @@ from maestro.trainer.common.utils.reproducibility import make_it_reproducible
 from maestro.trainer.models.paligemma_2.checpoints import (
     DEFAULT_PALIGEMMA2_MODEL_ID,
     DEFAULT_PALIGEMMA2_MODEL_REVISION,
-    DEVICE,
+    DEVICE, load_model, OptimizationStrategy,
 )
 
 
@@ -66,4 +66,12 @@ def train(config: Configuration) -> None:
     config = replace(
         config,
         output_dir=run_dir,
+    )
+
+    processor, model = load_model(
+        model_id_or_path=config.model_id,
+        revision=config.revision,
+        device=config.device,
+        optimization_strategy=OptimizationStrategy(config.optimization_strategy),
+        cache_dir=config.cache_dir,
     )

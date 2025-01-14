@@ -1,12 +1,12 @@
 from typing import Any
 
 from PIL import Image
-from transformers import AutoProcessor
+from transformers import PaliGemmaProcessor
 
 MAX_LENGTH = 512
 
 
-def train_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: AutoProcessor):
+def train_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor):
     images, data = zip(*batch)
     prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
@@ -30,7 +30,7 @@ def train_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor:
     return input_ids, attention_mask, token_type_ids, pixel_values, labels
 
 
-def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: AutoProcessor):
+def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor):
     images, data = zip(*batch)
     prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
