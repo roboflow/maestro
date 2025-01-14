@@ -1,13 +1,16 @@
 from dataclasses import dataclass, field, replace
-from typing import Optional, Literal
+from typing import Literal, Optional
 
 import torch
 
 from maestro.trainer.common.utils.file_system import create_new_run_directory
 from maestro.trainer.common.utils.metrics import BaseMetric
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
-from maestro.trainer.models.paligemma_2.checpoints import DEFAULT_PALIGEMMA2_MODEL_ID, \
-    DEFAULT_PALIGEMMA2_MODEL_REVISION, DEVICE
+from maestro.trainer.models.paligemma_2.checpoints import (
+    DEFAULT_PALIGEMMA2_MODEL_ID,
+    DEFAULT_PALIGEMMA2_MODEL_REVISION,
+    DEVICE,
+)
 
 
 @dataclass(frozen=True)
@@ -27,6 +30,7 @@ class Configuration:
         cache_dir (Optional[str]): Directory to cache the model.
         epochs (int): Number of training epochs.
     """
+
     dataset: str
     model_id: str = DEFAULT_PALIGEMMA2_MODEL_ID
     revision: str = DEFAULT_PALIGEMMA2_MODEL_REVISION

@@ -3,9 +3,8 @@ from enum import Enum
 from typing import Optional
 
 import torch
-from peft import get_peft_model, LoraConfig
-from transformers import BitsAndBytesConfig
-from transformers import PaliGemmaProcessor, PaliGemmaForConditionalGeneration
+from peft import LoraConfig, get_peft_model
+from transformers import BitsAndBytesConfig, PaliGemmaForConditionalGeneration, PaliGemmaProcessor
 
 from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
 
@@ -16,6 +15,7 @@ DEVICE = torch.device("cpu") if not torch.cuda.is_available() else os.getenv(CUD
 
 class OptimizationStrategy(Enum):
     """Enumeration for optimization strategies."""
+
     LORA = "lora"
     QLORA = "qlora"
     FREEZE = "freeze"
@@ -53,11 +53,11 @@ def load_model(
             target_modules=["q_proj", "o_proj", "k_proj", "v_proj", "gate_proj", "up_proj", "down_proj"],
             task_type="CAUSAL_LM",
         )
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_type=torch.bfloat16
-        ) if optimization_strategy == OptimizationStrategy.QLORA else None
+        bnb_config = (
+            BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_type=torch.bfloat16)
+            if optimization_strategy == OptimizationStrategy.QLORA
+            else None
+        )
 
         model = PaliGemmaForConditionalGeneration.from_pretrained(
             pretrained_model_name_or_path=model_id_or_path,
@@ -65,16 +65,13 @@ def load_model(
             device_map="auto",
             quantization_config=bnb_config,
             torch_dtype=torch.bfloat16,
-            cache_dir=cache_dir
+            cache_dir=cache_dir,
         )
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
     else:
         model = PaliGemmaForConditionalGeneration.from_pretrained(
-            pretrained_model_name_or_path=model_id_or_path,
-            revision=revision,
-            device_map="auto",
-            cache_dir=cache_dir
+            pretrained_model_name_or_path=model_id_or_path, revision=revision, device_map="auto", cache_dir=cache_dir
         ).to(device)
 
         if optimization_strategy == OptimizationStrategy.FREEZE:

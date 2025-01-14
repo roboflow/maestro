@@ -9,7 +9,6 @@ from maestro.trainer.common.utils.metrics import (
     WordErrorRateMetric,
 )
 
-
 florence_2_app = typer.Typer(help="Fine-tune and evaluate PaliGemma 2 model")
 
 
