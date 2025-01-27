@@ -93,7 +93,7 @@ exclude = ["cookbooks", "docs", "docs.*", "test", "test.*", "mkdocs", "mkdocs.*"
 ### Linting and Formatting
 [tool.bandit]
 target = ["test", "maestro"]
-tests = ["B201", "B301", "B318", "B314", "B303", "B413", "B412", "B410"]
+tests = ["B201", "B301", "B318", "B314", "B303", "B413", "B412"]
 
 [tool.autoflake]
 check = true

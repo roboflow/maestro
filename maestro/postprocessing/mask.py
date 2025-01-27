@@ -34,8 +34,7 @@ def compute_mask_iou_vectorized(masks: np.ndarray) -> np.ndarray:
     """
     if np.any(masks.sum(axis=(1, 2)) == 0):
         raise ValueError(
-            "One or more masks are empty. Please filter out empty masks before using "
-            "`compute_iou_vectorized` function."
+            "One or more masks are empty. Please filter out empty masks before using `compute_iou_vectorized` function."
         )
 
     masks_bool = masks.astype(bool)
