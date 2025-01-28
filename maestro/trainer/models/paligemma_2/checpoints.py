@@ -39,7 +39,7 @@ def load_model(
         cache_dir (Optional[str]): Directory to cache the downloaded model files.
 
     Returns:
-        Tuple[PaliGemmaProcessor, PaliGemmaForConditionalGeneration]:
+        (PaliGemmaProcessor, PaliGemmaForConditionalGeneration):
             A tuple containing the loaded processor and model.
 
     Raises:
