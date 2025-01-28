@@ -44,7 +44,8 @@ dependencies = [
 #    "timm>=1.0.9",
 
     # core
-    "supervision>=0.26.0rc3",
+    "lightning>=2.4.0",
+    "supervision>=0.20.0,<0.26.0",
     "requests>=2.31.0,<=2.32.3",
     "typer>=0.12.5",
     "jiwer>=3.0.4",
@@ -75,17 +76,25 @@ dev = [
     "ruff>=0.6.5,<0.10.0",
     "tox>=4.18.1,<4.24.0"
 ]
-florence2 = [
-    "peft>=0.12,<0.14",
+florence_2 = [
+    "peft>=0.12",
     "transformers>=4.43.0",
     "torch>=2.4.0",
     "flash-attn>=2.7.0.post2; sys_platform != 'darwin'"
 ]
-paligemma2 = [
-    "peft>=0.12,<0.14",
+paligemma_2 = [
+    "peft>=0.12",
     "torch>=2.4.0",
     "transformers>=4.48.0",
     "bitsandbytes>=0.45.0"
+]
+qwen_2_5_vl = [
+    "accelerate>=1.2.1",
+    "peft>=0.12",
+    "torch>=2.4.0",
+    "transformers @ git+https://github.com/huggingface/transformers",
+    "bitsandbytes>=0.45.0",
+    "qwen-vl-utils==0.0.8"
 ]
 
 [project.scripts]
