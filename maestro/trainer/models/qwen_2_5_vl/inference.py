@@ -30,12 +30,11 @@ def predict_with_inputs(
             for input_sequence, generated_sequence
             in zip(input_ids, generated_ids)
         ]
-        output_text = processor.batch_decode(
+        return processor.batch_decode(
             generated_ids,
             skip_special_tokens=True,
             clean_up_tokenization_spaces=False
         )
-        return output_text
 
 
 def predict(

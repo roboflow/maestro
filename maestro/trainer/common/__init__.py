@@ -1,4 +1,4 @@
-from maestro.trainer.common.utils.metrics import (
+from maestro.trainer.common.metrics import (
     BLEUMetric,
     CharacterErrorRateMetric,
     MeanAveragePrecisionMetric,

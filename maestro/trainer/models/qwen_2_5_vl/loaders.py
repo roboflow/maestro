@@ -1,10 +1,16 @@
 from typing import Any
+
 from PIL import Image
-from transformers import Qwen2_5_VLProcessor
 from qwen_vl_utils import process_vision_info
+from transformers import Qwen2_5_VLProcessor
 
 
-def format_conversation(image: str | bytes | Image.Image, prefix: str, suffix: str | None = None, system_message: str | None = None) -> list[dict]:
+def format_conversation(
+        image: str | bytes | Image.Image,
+        prefix: str,
+        suffix: str | None = None,
+        system_message: str | None = None
+) -> list[dict]:
     messages = []
     
     if system_message is not None:
@@ -36,9 +42,17 @@ def format_conversation(image: str | bytes | Image.Image, prefix: str, suffix: s
     return messages
 
 
-def train_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: Qwen2_5_VLProcessor, system_message: str | None = None):
+def train_collate_fn(
+        batch: list[tuple[Image.Image, dict[str, Any]]],
+        processor: Qwen2_5_VLProcessor,
+        system_message: str | None = None
+):
     images, data = zip(*batch)
-    conversations = [format_conversation(image, entry["prefix"], entry["suffix"], system_message) for image, entry in zip(images, data)]
+    conversations = [
+        format_conversation(image, entry["prefix"], entry["suffix"], system_message)
+        for image, entry
+        in zip(images, data)
+    ]
 
     texts = [
         processor.apply_chat_template(conversation=conversation, tokenize=False)
@@ -72,11 +86,19 @@ def train_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor:
     return input_ids, attention_mask, pixel_values, image_grid_thw, labels
 
 
-def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: Qwen2_5_VLProcessor, system_message: str | None = None):
+def evaluation_collate_fn(
+        batch: list[tuple[Image.Image, dict[str, Any]]],
+        processor: Qwen2_5_VLProcessor,
+        system_message: str | None = None
+):
     images, data = zip(*batch)
     prefixes = [entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
-    conversations = [format_conversation(image, entry["prefix"], system_message=system_message) for image, entry in zip(images, data)]
+    conversations = [
+        format_conversation(image, entry["prefix"], system_message=system_message)
+        for image, entry
+        in zip(images, data)
+    ]
 
     texts = [
         processor.apply_chat_template(conversation=conversation, tokenize=False)

@@ -4,10 +4,10 @@ from typing import Literal, Optional
 
 import torch
 
-from maestro.trainer.common.data_loaders.datasets import create_data_loaders
-from maestro.trainer.common.utils.file_system import create_new_run_directory
-from maestro.trainer.common.utils.metrics import BaseMetric
-from maestro.trainer.common.utils.reproducibility import make_it_reproducible
+from maestro.trainer.common.datasets import create_data_loaders
+from maestro.trainer.common.utils.path import create_new_run_directory
+from maestro.trainer.common.metrics import BaseMetric
+from maestro.trainer.common.utils.seed import make_it_reproducible
 from maestro.trainer.models.paligemma_2.checkpoints import (
     DEFAULT_PALIGEMMA2_MODEL_ID,
     DEFAULT_PALIGEMMA2_MODEL_REVISION,

@@ -6,7 +6,7 @@ import torch
 from peft import LoraConfig, get_peft_model
 from transformers import BitsAndBytesConfig, PaliGemmaForConditionalGeneration, PaliGemmaProcessor
 
-from maestro.trainer.common.configuration.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
+from maestro.trainer.common.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
 
 DEFAULT_PALIGEMMA2_MODEL_ID = "google/paligemma2-3b-pt-224"
 DEFAULT_PALIGEMMA2_MODEL_REVISION = "refs/heads/main"
