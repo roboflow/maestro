@@ -21,7 +21,7 @@ class OptimizationStrategy(Enum):
     NONE = "none"
 
 
-def load_qwen2_5_vl_model(
+def load_model(
     model_id_or_path: str = DEFAULT_QWEN2_5_VL_MODEL_ID,
     revision: str = DEFAULT_QWEN2_5_VL_MODEL_REVISION,
     device: torch.device = DEVICE,

@@ -3,6 +3,7 @@ from typing import Any
 from PIL import Image
 from transformers import PaliGemmaProcessor
 
+
 MAX_LENGTH = 512
 
 

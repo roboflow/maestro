@@ -8,28 +8,23 @@ from maestro.trainer.common.data_loaders.datasets import create_data_loaders
 from maestro.trainer.common.utils.file_system import create_new_run_directory
 from maestro.trainer.common.utils.metrics import BaseMetric
 from maestro.trainer.common.utils.reproducibility import make_it_reproducible
-from maestro.trainer.models.paligemma_2.checkpoints import (
-    DEFAULT_PALIGEMMA2_MODEL_ID,
-    DEFAULT_PALIGEMMA2_MODEL_REVISION,
-    DEVICE,
-    OptimizationStrategy,
-    load_model,
-)
-from maestro.trainer.models.paligemma_2.loaders import train_collate_fn, evaluation_collate_fn
+from maestro.trainer.models.qwen_2_5_vl.checkpoints import DEFAULT_QWEN2_5_VL_MODEL_ID, \
+    DEFAULT_QWEN2_5_VL_MODEL_REVISION, DEVICE, OptimizationStrategy, load_model
+from maestro.trainer.models.qwen_2_5_vl.loaders import train_collate_fn, evaluation_collate_fn
 
 
 @dataclass(frozen=True)
 class Configuration:
     """
-    Configuration for a Paligemma 2 model.
+    Configuration for a Qwen2.5-VL model.
 
-    This class encapsulates all the parameters needed for training a Paligemma 2 model,
+    This class encapsulates all the parameters needed for training a Qwen2.5-VL model,
     including dataset paths, model specifications, training hyperparameters, and output
     settings.
 
     Attributes:
         dataset (str): Path to the dataset used for training.
-        model_id (str): Identifier for the Paligemma 2 model.
+        model_id (str): Identifier for the Qwen2.5-VL model.
         revision (str): Revision of the model to use.
         device (torch.device): Device to use for training.
         cache_dir (Optional[str]): Directory to cache the model.
@@ -41,13 +36,16 @@ class Configuration:
         val_num_workers (Optional[int]): Number of workers for validation data loading.
         output_dir (str): Directory to save output files.
         metrics (List[BaseMetric]): List of metrics to track during training.
+        system_message (Optional[str]): Optional system message to prepend to all examples.
+        min_pixels (int): Minimum number of pixels for input images.
+        max_pixels (int): Maximum number of pixels for input images.
     """
 
     dataset: str
-    model_id: str = DEFAULT_PALIGEMMA2_MODEL_ID
-    revision: str = DEFAULT_PALIGEMMA2_MODEL_REVISION
+    model_id: str = DEFAULT_QWEN2_5_VL_MODEL_ID
+    revision: str = DEFAULT_QWEN2_5_VL_MODEL_REVISION
     device: torch.device = DEVICE
-    optimization_strategy: Literal["lora", "qlora", "freeze", "none"] = "lora"
+    optimization_strategy: Literal["lora", "qlora", "none"] = "lora"
     cache_dir: Optional[str] = None
     epochs: int = 10
     lr: float = 1e-5
@@ -56,8 +54,11 @@ class Configuration:
     num_workers: int = 0
     val_num_workers: Optional[int] = None
 
-    output_dir: str = "./training/paligemma_2"
+    output_dir: str = "./training/qwen2_5_vl"
     metrics: list[BaseMetric] = field(default_factory=list)
+    system_message: Optional[str] = None
+    min_pixels: int = 256 * 28 * 28,
+    max_pixels: int = 1280 * 28 * 28,
 
 
 def train(config: Configuration) -> None:
@@ -91,13 +92,16 @@ def train(config: Configuration) -> None:
         device=config.device,
         optimization_strategy=OptimizationStrategy(config.optimization_strategy),
         cache_dir=config.cache_dir,
+        min_pixels=config.min_pixels,
+        max_pixels=config.max_pixels,
     )
+
     train_loader, val_loader, test_loader = create_data_loaders(
         dataset_location=config.dataset,
         train_batch_size=config.batch_size,
-        train_collect_fn=partial(train_collate_fn, processor=processor),
+        train_collect_fn=partial(train_collate_fn, processor=processor, system_message=config.system_message),
         train_num_workers=config.num_workers,
         test_batch_size=config.val_batch_size,
-        test_collect_fn=partial(evaluation_collate_fn, processor=processor),
+        test_collect_fn=partial(evaluation_collate_fn, processor=processor, system_message=config.system_message),
         test_num_workers=config.val_num_workers,
     )

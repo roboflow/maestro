@@ -92,7 +92,7 @@ class Configuration:
     bias: Literal["none", "all", "lora_only"] = "none"
     use_rslora: bool = True
     init_lora_weights: Union[bool, LoraInitLiteral] = "gaussian"
-    output_dir: str = "./training/florence2"
+    output_dir: str = "./training/florence_2"
     metrics: list[BaseMetric] = field(default_factory=list)
 
 
