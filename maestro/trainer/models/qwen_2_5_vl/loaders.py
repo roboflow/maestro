@@ -45,7 +45,11 @@ def train_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor:
         for conversation
         in conversations
     ]
-    image_inputs, _ = process_vision_info(conversations=conversations)
+    image_inputs = [
+        process_vision_info(conversation)[0]
+        for conversation
+        in conversations
+    ]
     model_inputs = processor(
         text=texts,
         images=image_inputs,
@@ -79,7 +83,11 @@ def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], proce
         for conversation
         in conversations
     ]
-    image_inputs, _ = process_vision_info(conversations=conversations)
+    image_inputs = [
+        process_vision_info(conversation)[0]
+        for conversation
+        in conversations
+    ]
     model_inputs = processor(
         text=texts,
         images=image_inputs,
