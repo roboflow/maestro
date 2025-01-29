@@ -82,3 +82,22 @@ def load_model(
                 param.requires_grad = False
 
     return processor, model
+
+
+def save_model(
+    target_dir: str,
+    processor: PaliGemmaProcessor,
+    model: PaliGemmaForConditionalGeneration,
+) -> None:
+    """
+    Save a PaliGemma 2 model and its processor to disk.
+
+    Args:
+        target_dir: Directory path where the model and processor will be saved.
+            Will be created if it doesn't exist.
+        processor: The PaliGemma 2 processor to save.
+        model: The PaliGemma 2model to save.
+    """
+    os.makedirs(target_dir, exist_ok=True)
+    processor.save_pretrained(target_dir)
+    model.save_pretrained(target_dir)

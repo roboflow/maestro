@@ -98,3 +98,22 @@ def load_model(
         model.to(device)
 
     return processor, model
+
+
+def save_model(
+    target_dir: str,
+    processor: Qwen2_5_VLProcessor,
+    model: Qwen2_5_VLForConditionalGeneration,
+) -> None:
+    """
+    Save a Qwen2.5-VL model and its processor to disk.
+
+    Args:
+        target_dir: Directory path where the model and processor will be saved.
+            Will be created if it doesn't exist.
+        processor: The Qwen2.5-VL processor to save.
+        model: The Qwen2.5-VL model to save.
+    """
+    os.makedirs(target_dir, exist_ok=True)
+    processor.save_pretrained(target_dir)
+    model.save_pretrained(target_dir)

@@ -3,6 +3,7 @@ from functools import partial
 from typing import Literal, Optional
 
 import torch
+import lightning as L
 
 from maestro.trainer.common.data_loaders.datasets import create_data_loaders
 from maestro.trainer.common.utils.file_system import create_new_run_directory
@@ -54,7 +55,7 @@ class Configuration:
     num_workers: int = 0
     val_num_workers: Optional[int] = None
 
-    output_dir: str = "./training/qwen2_5_vl"
+    output_dir: str = "./training/qwen_2_5_vl"
     metrics: list[BaseMetric] = field(default_factory=list)
     system_message: Optional[str] = None
     min_pixels: int = 256 * 28 * 28,
@@ -62,21 +63,6 @@ class Configuration:
 
 
 def train(config: Configuration) -> None:
-    """Train a PaliGemma 2 model using the provided configuration.
-
-    This function sets up the training environment, prepares the model and data loaders,
-    and runs the training loop. It also handles metric tracking and checkpoint saving.
-
-    Args:
-        config (Configuration): The configuration object containing all necessary
-            parameters for training.
-
-    Returns:
-        None
-
-    Raises:
-        ValueError: If an unsupported optimizer is specified in the configuration.
-    """
     make_it_reproducible(avoid_non_deterministic_algorithms=False)
     run_dir = create_new_run_directory(
         base_output_dir=config.output_dir,

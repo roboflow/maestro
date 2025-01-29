@@ -4,7 +4,7 @@ from transformers import Qwen2_5_VLProcessor
 from qwen_vl_utils import process_vision_info
 
 
-def format_data(image: str | bytes | Image.Image, prefix: str, suffix: str | None = None, system_message: str | None = None) -> list[dict]:
+def format_conversation(image: str | bytes | Image.Image, prefix: str, suffix: str | None = None, system_message: str | None = None) -> list[dict]:
     messages = []
     
     if system_message is not None:
@@ -38,19 +38,14 @@ def format_data(image: str | bytes | Image.Image, prefix: str, suffix: str | Non
 
 def train_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: Qwen2_5_VLProcessor, system_message: str | None = None):
     images, data = zip(*batch)
-    examples = [format_data(image, entry["prefix"], entry["suffix"], system_message) for image, entry in zip(images, data)]
+    conversations = [format_conversation(image, entry["prefix"], entry["suffix"], system_message) for image, entry in zip(images, data)]
 
     texts = [
-        processor.apply_chat_template(example, tokenize=False)
-        for example
-        in examples
+        processor.apply_chat_template(conversation=conversation, tokenize=False)
+        for conversation
+        in conversations
     ]
-    image_inputs = [
-        process_vision_info(example)[0]
-        for example
-        in examples
-    ]
-
+    image_inputs, _ = process_vision_info(conversations=conversations)
     model_inputs = processor(
         text=texts,
         images=image_inputs,
@@ -77,19 +72,14 @@ def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], proce
     images, data = zip(*batch)
     prefixes = [entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
-    examples = [format_data(image, entry["prefix"], system_message=system_message) for image, entry in zip(images, data)]
+    conversations = [format_conversation(image, entry["prefix"], system_message=system_message) for image, entry in zip(images, data)]
 
     texts = [
-        processor.apply_chat_template(example, tokenize=False)
-        for example
-        in examples
+        processor.apply_chat_template(conversation=conversation, tokenize=False)
+        for conversation
+        in conversations
     ]
-    image_inputs = [
-        process_vision_info(example)[0]
-        for example
-        in examples
-    ]
-
+    image_inputs, _ = process_vision_info(conversations=conversations)
     model_inputs = processor(
         text=texts,
         images=image_inputs,
