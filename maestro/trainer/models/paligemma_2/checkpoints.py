@@ -6,11 +6,10 @@ import torch
 from peft import LoraConfig, get_peft_model
 from transformers import BitsAndBytesConfig, PaliGemmaForConditionalGeneration, PaliGemmaProcessor
 
-from maestro.trainer.common.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
+from maestro.trainer.common.utils.device import parse_device_spec
 
 DEFAULT_PALIGEMMA2_MODEL_ID = "google/paligemma2-3b-pt-224"
 DEFAULT_PALIGEMMA2_MODEL_REVISION = "refs/heads/main"
-DEVICE = torch.device("cpu") if not torch.cuda.is_available() else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
 
 
 class OptimizationStrategy(Enum):
@@ -25,7 +24,7 @@ class OptimizationStrategy(Enum):
 def load_model(
     model_id_or_path: str = DEFAULT_PALIGEMMA2_MODEL_ID,
     revision: str = DEFAULT_PALIGEMMA2_MODEL_REVISION,
-    device: torch.device = DEVICE,
+    device: str | torch.device = "auto",
     optimization_strategy: OptimizationStrategy = OptimizationStrategy.LORA,
     cache_dir: Optional[str] = None,
 ) -> tuple[PaliGemmaProcessor, PaliGemmaForConditionalGeneration]:
@@ -45,6 +44,7 @@ def load_model(
     Raises:
         ValueError: If the model or processor cannot be loaded.
     """
+    device = parse_device_spec(device)
     processor = PaliGemmaProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
 
     if optimization_strategy in {OptimizationStrategy.LORA, OptimizationStrategy.QLORA}:

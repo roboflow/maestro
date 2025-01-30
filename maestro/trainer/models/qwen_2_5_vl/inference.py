@@ -106,6 +106,7 @@ def predict(
     return predict_with_inputs(
         **inputs,
         model=model,
+        processor=processor,
         device=device,
         max_new_tokens=max_new_tokens
     )[0]
