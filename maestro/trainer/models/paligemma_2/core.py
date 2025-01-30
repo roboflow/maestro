@@ -7,7 +7,7 @@ import torch
 from maestro.trainer.common.datasets import create_data_loaders
 from maestro.trainer.common.utils.path import create_new_run_directory
 from maestro.trainer.common.metrics import BaseMetric
-from maestro.trainer.common.utils.seed import make_it_reproducible
+from maestro.trainer.common.utils.seed import ensure_reproducibility
 from maestro.trainer.models.paligemma_2.checkpoints import (
     DEFAULT_PALIGEMMA2_MODEL_ID,
     DEFAULT_PALIGEMMA2_MODEL_REVISION,
@@ -76,7 +76,7 @@ def train(config: Configuration) -> None:
     Raises:
         ValueError: If an unsupported optimizer is specified in the configuration.
     """
-    make_it_reproducible(avoid_non_deterministic_algorithms=False)
+    ensure_reproducibility(avoid_non_deterministic_algorithms=False)
     run_dir = create_new_run_directory(
         base_output_dir=config.output_dir,
     )

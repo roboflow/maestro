@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 from typing import Any, Callable, Optional
 
@@ -7,9 +6,6 @@ from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
 ROBOFLOW_JSONL_FILENAME = "annotations.jsonl"
-
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 class RoboflowJSONLDataset(Dataset):
@@ -36,7 +32,7 @@ class RoboflowJSONLDataset(Dataset):
             try:
                 return [json.loads(line) for line in file]
             except json.JSONDecodeError:
-                logging.exception("Error parsing JSONL file.")
+                print("Error parsing JSONL file.")
                 raise
 
     def __len__(self) -> int:
@@ -74,7 +70,7 @@ def load_split_dataset(dataset_location: str, split_name: str) -> Optional[Datas
     image_directory_path = os.path.join(dataset_location, split_name)
 
     if not os.path.exists(jsonl_file_path) or not os.path.exists(image_directory_path):
-        logging.warning(f"Dataset split {split_name} not found at {dataset_location}")
+        print(f"Dataset split {split_name} not found at {dataset_location}")
         return None
 
     return RoboflowJSONLDataset(jsonl_file_path, image_directory_path)

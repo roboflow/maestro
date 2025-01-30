@@ -3,6 +3,21 @@ from glob import glob
 
 
 def create_new_run_directory(base_output_dir: str) -> str:
+    """Creates a new sequentially numbered run directory.
+
+        This function ensures that a new directory is created inside `base_output_dir`,
+        following a numeric naming convention (e.g., `1`, `2`, `3`, etc.). It scans
+        existing directories in `base_output_dir`, determines the highest existing
+        number, and creates a new directory with an incremented number.
+
+        Args:
+            base_output_dir (str):
+                The base directory where the new run directory will be created.
+                If it does not exist, it will be created.
+
+        Returns:
+            str: The absolute path to the newly created run directory.
+        """
     base_output_dir = os.path.abspath(base_output_dir)
     os.makedirs(base_output_dir, exist_ok=True)
     

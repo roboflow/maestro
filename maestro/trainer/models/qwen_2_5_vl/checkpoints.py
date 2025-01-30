@@ -6,11 +6,10 @@ import torch
 from peft import LoraConfig, get_peft_model
 from transformers import BitsAndBytesConfig, Qwen2_5_VLForConditionalGeneration, Qwen2_5_VLProcessor
 
-from maestro.trainer.common.env import CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE
+from maestro.trainer.common.utils.device import parse_device_spec
 
 DEFAULT_QWEN2_5_VL_MODEL_ID = "Qwen/Qwen2.5-VL-3B-Instruct"
 DEFAULT_QWEN2_5_VL_MODEL_REVISION = "refs/heads/main"
-DEVICE = torch.device("cpu") if not torch.cuda.is_available() else os.getenv(CUDA_DEVICE_ENV, DEFAULT_CUDA_DEVICE)
 
 
 class OptimizationStrategy(Enum):
@@ -24,7 +23,7 @@ class OptimizationStrategy(Enum):
 def load_model(
     model_id_or_path: str = DEFAULT_QWEN2_5_VL_MODEL_ID,
     revision: str = DEFAULT_QWEN2_5_VL_MODEL_REVISION,
-    device: torch.device = DEVICE,
+    device: str | torch.device = "auto",
     optimization_strategy: OptimizationStrategy = OptimizationStrategy.LORA,
     cache_dir: Optional[str] = None,
     min_pixels: int = 256 * 28 * 28,
@@ -36,7 +35,7 @@ def load_model(
     Args:
         model_id_or_path (str): The model name or path.
         revision (str): The model revision to load.
-        device (torch.device): The device to load the model onto.
+        device (str | torch.device): The device to load the model onto.
         optimization_strategy (OptimizationStrategy): LORA, QLORA, or NONE.
         cache_dir (Optional[str]): Directory to cache downloaded model files.
         min_pixels (int): Minimum number of pixels allowed in the resized image.
@@ -46,7 +45,7 @@ def load_model(
         (Qwen2_5_VLProcessor, Qwen2_5_VLForConditionalGeneration):
             A tuple containing the loaded processor and model.
     """
-
+    device = parse_device_spec(device)
     processor = Qwen2_5_VLProcessor.from_pretrained(
         model_id_or_path,
         revision=revision,
