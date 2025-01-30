@@ -109,8 +109,11 @@ class BLEUMetric(BaseMetric):
         if len(targets) != len(predictions):
             raise ValueError("The number of targets and predictions must be the same.")
 
-        results = self.bleu.compute(predictions=predictions, references=targets)
-        return {"bleu": results["bleu"]}
+        try:
+            results = self.bleu.compute(predictions=predictions, references=targets)
+            return {"bleu": results["bleu"]}
+        except ZeroDivisionError:
+            return {"bleu": 0.0}
 
 
 class EditDistanceMetric(BaseMetric):
