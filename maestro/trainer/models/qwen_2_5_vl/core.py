@@ -38,8 +38,8 @@ class Qwen25VLConfiguration:
     output_dir: str = "./training/qwen_2_5_vl"
     metrics: list[BaseMetric] = field(default_factory=list)
     system_message: Optional[str] = None
-    min_pixels: int = 256 * 28 * 28,
-    max_pixels: int = 1280 * 28 * 28,
+    min_pixels: int = 256 * 28 * 28
+    max_pixels: int = 1280 * 28 * 28
     max_new_tokens: int = 1024
 
 
@@ -139,5 +139,4 @@ def train(config: Qwen25VLConfiguration | dict) -> None:
         log_every_n_steps=10,
         callbacks=[save_checkpoint_callback],
     )
-
     trainer.fit(pl_module)

@@ -127,7 +127,15 @@ def create_data_loaders(
     test_dataset = load_split_dataset(dataset_location, "test")
 
     if not any([train_dataset, valid_dataset, test_dataset]):
-        raise ValueError("No dataset splits found. Ensure the dataset is correctly structured.")
+        raise ValueError(f"No dataset splits found at {dataset_location}. Ensure the dataset is correctly structured.")
+    else:
+        print(f"Found dataset splits at {dataset_location}:")
+        if train_dataset:
+            print(f"  - train: {len(train_dataset)} samples")
+        if valid_dataset:
+            print(f"  - valid: {len(valid_dataset)} samples") 
+        if test_dataset:
+            print(f"  - test: {len(test_dataset)} samples")
 
     train_loader = (
         DataLoader(

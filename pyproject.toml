@@ -85,6 +85,7 @@ qwen_2_5_vl = [
     "accelerate>=1.2.1",
     "peft>=0.12",
     "torch>=2.4.0",
+    "torchvision>=0.20.0",
     "transformers @ git+https://github.com/huggingface/transformers",
     "bitsandbytes>=0.45.0",
     "qwen-vl-utils==0.0.8"
