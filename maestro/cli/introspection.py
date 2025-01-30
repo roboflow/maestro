@@ -21,13 +21,16 @@ def find_training_recipes(app: typer.Typer) -> None:
     except Exception:
         _warn_about_recipe_import_error(model_name="PaliGemma 2")
 
-    try:
-        from maestro.trainer.models.qwen_2_5_vl.entrypoint import qwen_2_5_vl_app
+    # try:
+    #     from maestro.trainer.models.qwen_2_5_vl.entrypoint import qwen_2_5_vl_app
+    #
+    #     app.add_typer(qwen_2_5_vl_app, name="qwen_2_5_vl")
+    # except Exception:
+    #     _warn_about_recipe_import_error(model_name="Qwen2.5-VL")
 
-        app.add_typer(qwen_2_5_vl_app, name="qwen_2_5_vl")
-    except Exception:
-        _warn_about_recipe_import_error(model_name="Qwen2.5-VL")
+    from maestro.trainer.models.qwen_2_5_vl.entrypoint import qwen_2_5_vl_app
 
+    app.add_typer(qwen_2_5_vl_app, name="qwen_2_5_vl")
 
 def _warn_about_recipe_import_error(model_name: str) -> None:
     disable_warnings = str2bool(
