@@ -2,6 +2,7 @@ from dataclasses import dataclass, field, replace
 from functools import partial
 from typing import Literal, Optional
 
+import os
 import dacite
 import lightning as L
 import torch
@@ -11,7 +12,7 @@ from transformers import Qwen2_5_VLForConditionalGeneration, Qwen2_5_VLProcessor
 
 from maestro.trainer.common.callbacks import SaveCheckpoint
 from maestro.trainer.common.datasets import create_data_loaders
-from maestro.trainer.common.metrics import BaseMetric
+from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, save_metric_plots
 from maestro.trainer.common.training import MaestroTrainer
 from maestro.trainer.common.utils.path import create_new_run_directory
 from maestro.trainer.common.utils.seed import make_it_reproducible
@@ -55,6 +56,12 @@ class Qwen25VLTrainer(MaestroTrainer):
         super().__init__(processor, model, train_loader, valid_loader)
         self.config = config
 
+        self.train_metrics_tracker = MetricsTracker.init(metrics=["loss"])
+        metrics = ["loss"]
+        for metric in config.metrics:
+            metrics += metric.describe()
+        self.valid_metrics_tracker = MetricsTracker.init(metrics=metrics)
+
     def training_step(self, batch, batch_idx):
         input_ids, attention_mask, pixel_values, image_grid_thw, labels = batch
         outputs = self.model(
@@ -66,9 +73,10 @@ class Qwen25VLTrainer(MaestroTrainer):
         )
         loss = outputs.loss
         self.log("train_loss", loss, prog_bar=True, logger=True)
+        self.train_metrics_tracker.register("loss", epoch=self.current_epoch, step=batch_idx, value=loss)
         return loss
 
-    def validation_step(self, batch, batch_idx, dataset_idx=0):
+    def validation_step(self, batch, batch_idx):
         input_ids, attention_mask, pixel_values, image_grid_thw, prefixes, suffixes = batch
         generated_suffixes = predict_with_inputs(
             model=self.model,
@@ -79,24 +87,27 @@ class Qwen25VLTrainer(MaestroTrainer):
             image_grid_thw=image_grid_thw,
         )
 
-        scores = []
-        for generated_suffix, suffix in zip(generated_suffixes, suffixes):
-            # score = edit_distance(generated_suffix, suffix)
-            # score = score / max(len(generated_suffix), len(suffix))
-            # scores.append(score)
-
-            print("generated_suffix", generated_suffix)
-            print("suffix", suffix)
-            # print("score", score)
-
-        # score = sum(scores) / len(scores)
-        # self.log("val_edit_distance", score, prog_bar=True, logger=True, batch_size=self.config.batch_size)
-        return scores
+        for metric in self.config.metrics:
+            result = metric.compute(predictions=generated_suffixes, targets=suffixes)
+            for key, value in result.items():
+                self.valid_metrics_tracker.register(
+                    metric=key,
+                    epoch=self.current_epoch,
+                    step=batch_idx,
+                    value=value,
+                )
+                self.log(key, value, prog_bar=True, logger=True)
 
     def configure_optimizers(self):
         optimizer = AdamW(self.model.parameters(), lr=self.config.lr)
         return optimizer
 
+    def on_fit_end(self) -> None:
+        save_metric_plots(
+            training_tracker=self.train_metrics_tracker,
+            validation_tracker=self.valid_metrics_tracker,
+            output_dir=os.path.join(self.config.output_dir, "metrics"),
+        )
 
 def train(config: Qwen25VLConfiguration | dict) -> None:
     if isinstance(config, dict):
