@@ -42,8 +42,8 @@ dependencies = [
     "supervision>=0.20.0,<0.26.0",
     "requests>=2.31.0,<=2.32.3",
     "typer>=0.12.5",
-    "jiwer>=3.0.4",
     "evaluate>=0.4.3",
+    "nltk>=3.9.0",
     "sacrebleu>=2.3.0",
     "pillow>=9.4",
 ]

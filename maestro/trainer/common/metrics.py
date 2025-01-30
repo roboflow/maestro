@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import base64
-import html
-import io
 import json
 import os
 from abc import ABC, abstractmethod
@@ -12,9 +9,8 @@ from typing import Any, Optional
 import matplotlib.pyplot as plt
 import supervision as sv
 from evaluate import load
-from jiwer import cer, wer
-from PIL import Image
 from supervision.metrics.mean_average_precision import MeanAveragePrecision
+from nltk import edit_distance
 
 
 class BaseMetric(ABC):
@@ -78,137 +74,6 @@ class MeanAveragePrecisionMetric(BaseMetric):
         return {"map50:95": result.map50_95, "map50": result.map50, "map75": result.map75}
 
 
-class WordErrorRateMetric(BaseMetric):
-    """A class used to compute the Word Error Rate (WER) metric.
-
-    WER measures the edit distance between predicted and reference transcriptions
-    at the word level, commonly used in speech recognition and machine translation.
-    """
-
-    name = "word_error_rate"
-
-    def describe(self) -> list[str]:
-        """Returns a list of metric names that this class will compute.
-
-        Returns:
-            List[str]: A list of metric names.
-        """
-        return ["wer"]
-
-    def compute(self, targets: list[str], predictions: list[str]) -> dict[str, float]:
-        """Computes the WER metric based on the targets and predictions.
-
-        Args:
-            targets (List[str]): The ground truth texts (references), where each element
-                represents the reference text for the corresponding prediction.
-            predictions (List[str]): The predicted texts (hypotheses) to be evaluated.
-
-        Returns:
-            Dict[str, float]: A dictionary containing the computed WER score, with the
-                metric name ("wer") as the key and its value as the score.
-        """
-        if len(targets) != len(predictions):
-            raise ValueError("The number of targets and predictions must be the same.")
-
-        total_wer = 0.0
-        count = len(targets)
-
-        for target, prediction in zip(targets, predictions):
-            total_wer += wer(target, prediction)
-
-        average_wer = total_wer / count if count > 0 else 0.0
-        return {"wer": average_wer}
-
-
-class CharacterErrorRateMetric(BaseMetric):
-    """A class used to compute the Character Error Rate (CER) metric.
-
-    CER is similar to WER but operates at the character level, making it useful for
-    tasks like optical character recognition (OCR) and handwriting recognition.
-    """
-
-    name = "character_error_rate"
-
-    def describe(self) -> list[str]:
-        """Returns a list of metric names that this class will compute.
-
-        Returns:
-            List[str]: A list of metric names.
-        """
-        return ["cer"]
-
-    def compute(self, targets: list[str], predictions: list[str]) -> dict[str, float]:
-        """Computes the CER metric based on the targets and predictions.
-
-        Args:
-            targets (List[str]): The ground truth texts (references), where each element
-                represents the reference text for the corresponding prediction.
-            predictions (List[str]): The predicted texts (hypotheses) to be evaluated.
-
-        Returns:
-            Dict[str, float]: A dictionary containing the computed CER score, with the
-                metric name ("cer") as the key and its value as the score.
-        """
-        if len(targets) != len(predictions):
-            raise ValueError("The number of targets and predictions must be the same.")
-
-        total_cer = 0.0
-        count = len(targets)
-
-        for target, prediction in zip(targets, predictions):
-            total_cer += cer(target, prediction)
-
-        average_cer = total_cer / count if count > 0 else 0.0
-        return {"cer": average_cer}
-
-
-class TranslationErrorRateMetric(BaseMetric):
-    """A class used to compute the Translation Error Rate (TER) metric.
-
-    TER measures the minimum number of edits (insertions, deletions, substitutions, and shifts)
-    needed to transform a predicted text into its reference text, making it useful for
-    evaluating machine translation and other text generation tasks.
-    """
-
-    name = "translation_error_rate"
-
-    def __init__(self, case_sensitive: bool = True):
-        """Initialize the TER metric.
-
-        Args:
-            case_sensitive (bool, optional): Whether to perform case-sensitive comparison.
-                Defaults to True.
-        """
-        self.ter = load("ter")
-        self.case_sensitive = case_sensitive
-
-    def describe(self) -> list[str]:
-        """Returns a list of metric names that this class will compute.
-
-        Returns:
-            List[str]: A list of metric names.
-        """
-        return ["ter"]
-
-    def compute(self, targets: list[str], predictions: list[str]) -> dict[str, float]:
-        """Computes the TER metric based on the targets and predictions.
-
-        Args:
-            targets (List[str]): The ground truth texts (references), where each element
-                represents the reference text for the corresponding prediction.
-            predictions (List[str]): The predicted texts (hypotheses) to be evaluated.
-
-        Returns:
-            Dict[str, float]: A dictionary containing the computed TER score, with the
-                metric name ("ter") as the key and its value as the score.
-        """
-        if len(targets) != len(predictions):
-            raise ValueError("The number of targets and predictions must be the same.")
-
-        results = self.ter.compute(predictions=predictions, references=targets, case_sensitive=self.case_sensitive)
-        return {"ter": results["score"]}
-
-
 class BLEUMetric(BaseMetric):
     """A class used to compute the BLEU (Bilingual Evaluation Understudy) metric.
 
@@ -246,6 +111,48 @@ class BLEUMetric(BaseMetric):
 
         results = self.bleu.compute(predictions=predictions, references=targets)
         return {"bleu": results["bleu"]}
+
+
+class EditDistanceMetric(BaseMetric):
+    """A class used to compute the normalized Edit Distance metric.
+    
+    Edit Distance measures the minimum number of single-character edits required to change 
+    one string into another. This implementation normalizes the score by the length of the 
+    longer string to produce a value between 0 and 1.
+    """
+
+    name = "edit_distance"
+
+    def describe(self) -> list[str]:
+        """Returns a list of metric names that this class will compute.
+
+        Returns:
+            List[str]: A list of metric names.
+        """
+        return ["edit_distance"]
+
+    def compute(self, targets: list[str], predictions: list[str]) -> dict[str, float]:
+        """Computes the normalized Edit Distance metric based on the targets and predictions.
+
+        Args:
+            targets (List[str]): The ground truth texts.
+            predictions (List[str]): The predicted texts to be evaluated.
+
+        Returns:
+            Dict[str, float]: A dictionary containing the computed normalized Edit Distance,
+                with the metric name ("edit_distance") as the key and its value as the score.
+        """
+        if len(targets) != len(predictions):
+            raise ValueError("The number of targets and predictions must be the same.")
+
+        scores = []
+        for prediction, target in zip(predictions, targets):
+            score = edit_distance(prediction, target)
+            score = score / max(len(prediction), len(target))
+            scores.append(score)
+        
+        average_score = sum(scores) / len(scores)
+        return {"edit_distance": average_score}
 
 
 class MetricsTracker:
@@ -356,3 +263,21 @@ def save_metric_plots(training_tracker: MetricsTracker, validation_tracker: Metr
         plt.grid(True)
         plt.savefig(f"{output_dir}/{metric}_plot.png")
         plt.close()
+
+
+METRIC_CLASSES: dict[str, type[BaseMetric]] = {
+    MeanAveragePrecisionMetric.name: MeanAveragePrecisionMetric,
+    BLEUMetric.name: BLEUMetric,
+    EditDistanceMetric.name: EditDistanceMetric,
+}
+
+
+def parse_metrics(metrics: list[str]) -> list[BaseMetric]:
+    metric_objects = []
+    for metric_name in metrics:
+        metric_class = METRIC_CLASSES.get(metric_name.lower())
+        if metric_class:
+            metric_objects.append(metric_class())
+        else:
+            raise ValueError(f"Unsupported metric: {metric_name}")
+    return metric_objects

@@ -12,7 +12,7 @@ from transformers import Qwen2_5_VLForConditionalGeneration, Qwen2_5_VLProcessor
 
 from maestro.trainer.common.callbacks import SaveCheckpoint
 from maestro.trainer.common.datasets import create_data_loaders
-from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, save_metric_plots
+from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, save_metric_plots, parse_metrics
 from maestro.trainer.common.training import MaestroTrainer
 from maestro.trainer.common.utils.path import create_new_run_directory
 from maestro.trainer.common.utils.seed import make_it_reproducible
@@ -22,7 +22,7 @@ from maestro.trainer.models.qwen_2_5_vl.inference import predict_with_inputs
 from maestro.trainer.models.qwen_2_5_vl.loaders import train_collate_fn, evaluation_collate_fn
 
 
-@dataclass(frozen=True)
+@dataclass()
 class Qwen25VLConfiguration:
     dataset: str
     model_id: str = DEFAULT_QWEN2_5_VL_MODEL_ID
@@ -37,11 +37,21 @@ class Qwen25VLConfiguration:
     num_workers: int = 0
     val_num_workers: Optional[int] = None
     output_dir: str = "./training/qwen_2_5_vl"
-    metrics: list[BaseMetric] = field(default_factory=list)
+    metrics: list[BaseMetric] | list[str] = field(default_factory=list)
     system_message: Optional[str] = None
     min_pixels: int = 256 * 28 * 28
     max_pixels: int = 1280 * 28 * 28
     max_new_tokens: int = 1024
+
+    def __post_init__(self):
+        if self.val_batch_size is None:
+            self.val_batch_size = self.batch_size
+
+        if self.val_num_workers is None:
+            self.val_num_workers = self.num_workers
+
+        if isinstance(self.metrics, list) and all(isinstance(m, str) for m in self.metrics):
+            self.metrics = parse_metrics(self.metrics)
 
 
 class Qwen25VLTrainer(MaestroTrainer):
@@ -72,8 +82,8 @@ class Qwen25VLTrainer(MaestroTrainer):
             labels=labels
         )
         loss = outputs.loss
-        self.log("train_loss", loss, prog_bar=True, logger=True)
-        self.train_metrics_tracker.register("loss", epoch=self.current_epoch, step=batch_idx, value=loss)
+        self.log("train_loss", loss, prog_bar=True, logger=True, batch_size=self.config.batch_size)
+        self.train_metrics_tracker.register("loss", epoch=self.current_epoch, step=batch_idx, value=loss.item())
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -103,17 +113,19 @@ class Qwen25VLTrainer(MaestroTrainer):
         return optimizer
 
     def on_fit_end(self) -> None:
+        save_metrics_path = os.path.join(self.config.output_dir, "metrics")
         save_metric_plots(
             training_tracker=self.train_metrics_tracker,
             validation_tracker=self.valid_metrics_tracker,
-            output_dir=os.path.join(self.config.output_dir, "metrics"),
+            output_dir=save_metrics_path,
         )
 
 def train(config: Qwen25VLConfiguration | dict) -> None:
+    make_it_reproducible(avoid_non_deterministic_algorithms=False)
+
     if isinstance(config, dict):
         config = dacite.from_dict(data_class=Qwen25VLConfiguration, data=config)
 
-    make_it_reproducible(avoid_non_deterministic_algorithms=False)
     run_dir = create_new_run_directory(base_output_dir=config.output_dir)
     config = replace(config, output_dir=run_dir)
 
@@ -141,7 +153,8 @@ def train(config: Qwen25VLConfiguration | dict) -> None:
         valid_loader=valid_loader,
         config=config
     )
-    save_checkpoint_callback = SaveCheckpoint(result_path=config.output_dir, save_model_callback=save_model)
+    save_checkpoints_path = os.path.join(config.output_dir, "checkpoints")
+    save_checkpoint_callback = SaveCheckpoint(result_path=save_checkpoints_path, save_model_callback=save_model)
     trainer = L.Trainer(
         max_epochs=config.epochs,
         accumulate_grad_batches=config.accumulate_grad_batches,
