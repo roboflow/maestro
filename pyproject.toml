@@ -64,10 +64,10 @@ docs = [
 ]
 dev = [
     "pytest~=8.3.2",
-    "pre-commit>=3.8,<4.1",
+    "pre-commit>=3.8,<4.2",
     "mypy>=1.11.2,<1.15.0",
     "ruff>=0.6.5,<0.10.0",
-    "tox>=4.18.1,<4.24.0"
+    "tox>=4.18.1,<4.25.0"
 ]
 florence_2 = [
     "peft>=0.12",
@@ -104,7 +104,7 @@ exclude = ["cookbooks", "docs", "docs.*", "test", "test.*", "mkdocs", "mkdocs.*"
 ### Linting and Formatting
 [tool.bandit]
 target = ["test", "maestro"]
-tests = ["B201", "B301", "B318", "B314", "B303", "B413", "B412", "B410"]
+tests = ["B201", "B301", "B318", "B314", "B303", "B413", "B412"]
 
 [tool.autoflake]
 check = true
