@@ -96,6 +96,7 @@ class PaliGemma2Configuration:
 def train(config: PaliGemma2Configuration | dict) -> None:
     if isinstance(config, dict):
         config = dacite.from_dict(data_class=PaliGemma2Configuration, data=config)
+    assert isinstance(config, PaliGemma2Configuration)  # ensure mypy understands it's not a dict
 
     ensure_reproducibility(seed=config.random_seed, avoid_non_deterministic_algorithms=False)
     run_dir = create_new_run_directory(base_output_dir=config.output_dir)

@@ -4,7 +4,7 @@ from functools import partial
 from typing import Literal, Optional
 
 import dacite
-import lightning as L
+import lightning
 import torch
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
@@ -182,6 +182,7 @@ def train(config: Qwen25VLConfiguration | dict) -> None:
     """
     if isinstance(config, dict):
         config = dacite.from_dict(data_class=Qwen25VLConfiguration, data=config)
+    assert isinstance(config, Qwen25VLConfiguration)  # ensure mypy understands it's not a dict
 
     ensure_reproducibility(seed=config.random_seed, avoid_non_deterministic_algorithms=False)
     run_dir = create_new_run_directory(base_output_dir=config.output_dir)
@@ -209,7 +210,7 @@ def train(config: Qwen25VLConfiguration | dict) -> None:
     )
     save_checkpoints_path = os.path.join(config.output_dir, "checkpoints")
     save_checkpoint_callback = SaveCheckpoint(result_path=save_checkpoints_path, save_model_callback=save_model)
-    trainer = L.Trainer(
+    trainer = lightning.Trainer(
         max_epochs=config.epochs,
         accumulate_grad_batches=config.accumulate_grad_batches,
         check_val_every_n_epoch=1,
