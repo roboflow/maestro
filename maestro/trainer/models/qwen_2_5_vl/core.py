@@ -118,7 +118,7 @@ class Qwen25VLTrainer(MaestroTrainer):
         metrics = ["loss"]
         for metric in config.metrics:
             if isinstance(metric, BaseMetric):
-                metrics += metric.describe() # ensure mypy understands it's BaseMetric
+                metrics += metric.describe()  # ensure mypy understands it's BaseMetric
         self.valid_metrics_tracker = MetricsTracker.init(metrics=metrics)
 
     def training_step(self, batch, batch_idx):
