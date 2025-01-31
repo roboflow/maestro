@@ -129,7 +129,7 @@ def create_data_loaders(
         if train_dataset:
             print(f"  - train: {len(train_dataset)} samples")
         if valid_dataset:
-            print(f"  - valid: {len(valid_dataset)} samples") 
+            print(f"  - valid: {len(valid_dataset)} samples")
         if test_dataset:
             print(f"  - test: {len(test_dataset)} samples")
 

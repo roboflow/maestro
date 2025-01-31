@@ -1,11 +1,11 @@
-from typing import Callable
 import os
 import shutil
+from typing import Callable
 
 import lightning as L
 from lightning.pytorch.callbacks import Callback
 
-from maestro.trainer.common.training import MaestroTrainer, TProcessor, TModel
+from maestro.trainer.common.training import MaestroTrainer, TModel, TProcessor
 
 
 class SaveCheckpoint(Callback):

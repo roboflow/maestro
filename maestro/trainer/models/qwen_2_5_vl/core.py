@@ -12,15 +12,20 @@ from transformers import Qwen2_5_VLForConditionalGeneration, Qwen2_5_VLProcessor
 
 from maestro.trainer.common.callbacks import SaveCheckpoint
 from maestro.trainer.common.datasets import create_data_loaders
-from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, save_metric_plots, parse_metrics
+from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, parse_metrics, save_metric_plots
 from maestro.trainer.common.training import MaestroTrainer
 from maestro.trainer.common.utils.device import device_is_available, parse_device_spec
 from maestro.trainer.common.utils.path import create_new_run_directory
 from maestro.trainer.common.utils.seed import ensure_reproducibility
-from maestro.trainer.models.qwen_2_5_vl.checkpoints import DEFAULT_QWEN2_5_VL_MODEL_ID, \
-    DEFAULT_QWEN2_5_VL_MODEL_REVISION, OptimizationStrategy, load_model, save_model
+from maestro.trainer.models.qwen_2_5_vl.checkpoints import (
+    DEFAULT_QWEN2_5_VL_MODEL_ID,
+    DEFAULT_QWEN2_5_VL_MODEL_REVISION,
+    OptimizationStrategy,
+    load_model,
+    save_model,
+)
 from maestro.trainer.models.qwen_2_5_vl.inference import predict_with_inputs
-from maestro.trainer.models.qwen_2_5_vl.loaders import train_collate_fn, evaluation_collate_fn
+from maestro.trainer.models.qwen_2_5_vl.loaders import evaluation_collate_fn, train_collate_fn
 
 
 @dataclass()
@@ -49,6 +54,7 @@ class Qwen25VLConfiguration:
         max_new_tokens (int): Maximum number of new tokens generated during inference.
         random_seed (Optional[int]): Random seed for ensuring reproducibility. If `None`, no seed is set.
     """
+
     dataset: str
     model_id: str = DEFAULT_QWEN2_5_VL_MODEL_ID
     revision: str = DEFAULT_QWEN2_5_VL_MODEL_REVISION
@@ -87,7 +93,7 @@ class Qwen25VLConfiguration:
 class Qwen25VLTrainer(MaestroTrainer):
     """
     Trainer for fine-tuning the Qwen2.5-VL model.
-    
+
     Attributes:
         processor (Qwen2_5_VLProcessor): Tokenizer and processor for model inputs.
         model (Qwen2_5_VLForConditionalGeneration): Pre-trained Qwen2.5-VL model.
@@ -95,13 +101,14 @@ class Qwen25VLTrainer(MaestroTrainer):
         valid_loader (DataLoader): DataLoader for validation data.
         config (Qwen25VLConfiguration): Configuration object containing training parameters.
     """
+
     def __init__(
-            self,
-            processor: Qwen2_5_VLProcessor,
-            model: Qwen2_5_VLForConditionalGeneration,
-            train_loader: DataLoader,
-            valid_loader: DataLoader,
-            config: Qwen25VLConfiguration
+        self,
+        processor: Qwen2_5_VLProcessor,
+        model: Qwen2_5_VLForConditionalGeneration,
+        train_loader: DataLoader,
+        valid_loader: DataLoader,
+        config: Qwen25VLConfiguration,
     ):
         super().__init__(processor, model, train_loader, valid_loader)
         self.config = config
@@ -120,7 +127,7 @@ class Qwen25VLTrainer(MaestroTrainer):
             attention_mask=attention_mask,
             pixel_values=pixel_values,
             image_grid_thw=image_grid_thw,
-            labels=labels
+            labels=labels,
         )
         loss = outputs.loss
         self.log("train_loss", loss, prog_bar=True, logger=True, batch_size=self.config.batch_size)
@@ -136,7 +143,7 @@ class Qwen25VLTrainer(MaestroTrainer):
             attention_mask=attention_mask,
             pixel_values=pixel_values,
             image_grid_thw=image_grid_thw,
-            device=self.config.device
+            device=self.config.device,
         )
 
         for metric in self.config.metrics:
@@ -161,6 +168,7 @@ class Qwen25VLTrainer(MaestroTrainer):
             validation_tracker=self.valid_metrics_tracker,
             output_dir=save_metrics_path,
         )
+
 
 def train(config: Qwen25VLConfiguration | dict) -> None:
     """
@@ -197,11 +205,7 @@ def train(config: Qwen25VLConfiguration | dict) -> None:
         test_num_workers=config.val_num_workers,
     )
     pl_module = Qwen25VLTrainer(
-        processor=processor,
-        model=model,
-        train_loader=train_loader,
-        valid_loader=valid_loader,
-        config=config
+        processor=processor, model=model, train_loader=train_loader, valid_loader=valid_loader, config=config
     )
     save_checkpoints_path = os.path.join(config.output_dir, "checkpoints")
     save_checkpoint_callback = SaveCheckpoint(result_path=save_checkpoints_path, save_model_callback=save_model)

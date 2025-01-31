@@ -15,7 +15,7 @@ def predict_with_inputs(
     pixel_values: torch.Tensor,
     image_grid_thw: torch.Tensor,
     device: torch.device,
-    max_new_tokens: int = 1024
+    max_new_tokens: int = 1024,
 ) -> list[str]:
     """
     Generates predictions from the Qwen2.5-VL model using both textual and visual inputs.
@@ -47,18 +47,13 @@ def predict_with_inputs(
             attention_mask=attention_mask.to(device),
             pixel_values=pixel_values.to(device),
             image_grid_thw=image_grid_thw.to(device),
-            max_new_tokens=max_new_tokens
+            max_new_tokens=max_new_tokens,
         )
         generated_ids = [
-            generated_sequence[len(input_sequence):]
-            for input_sequence, generated_sequence
-            in zip(input_ids, generated_ids)
+            generated_sequence[len(input_sequence) :]
+            for input_sequence, generated_sequence in zip(input_ids, generated_ids)
         ]
-        return processor.batch_decode(
-            generated_ids,
-            skip_special_tokens=True,
-            clean_up_tokenization_spaces=False
-        )
+        return processor.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
 
 
 def predict(
@@ -68,7 +63,7 @@ def predict(
     prefix: str,
     system_message: str | None = None,
     device: str | torch.device = "auto",
-    max_new_tokens: int = 1024
+    max_new_tokens: int = 1024,
 ) -> str:
     """
     Generates a single prediction from the Qwen2.5-VL model given an image and prefix text.
@@ -104,9 +99,5 @@ def predict(
         return_tensors="pt",
     )
     return predict_with_inputs(
-        **inputs,
-        model=model,
-        processor=processor,
-        device=device,
-        max_new_tokens=max_new_tokens
+        **inputs, model=model, processor=processor, device=device, max_new_tokens=max_new_tokens
     )[0]

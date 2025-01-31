@@ -5,19 +5,12 @@ from torch.utils.data import DataLoader
 from transformers.modeling_utils import PreTrainedModel
 from transformers.processing_utils import ProcessorMixin
 
-
 TProcessor = TypeVar("TProcessor", bound=ProcessorMixin)
 TModel = TypeVar("TModel", bound=PreTrainedModel)
 
 
 class MaestroTrainer(L.LightningModule):
-    def __init__(
-        self,
-        processor: TProcessor,
-        model: TModel,
-        train_loader: DataLoader,
-        valid_loader: DataLoader
-    ):
+    def __init__(self, processor: TProcessor, model: TModel, train_loader: DataLoader, valid_loader: DataLoader):
         super().__init__()
         self.processor = processor
         self.model = model

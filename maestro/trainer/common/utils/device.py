@@ -1,5 +1,7 @@
 import re
+
 import torch
+
 
 def parse_device_spec(device_spec: str | torch.device) -> torch.device:
     """
@@ -36,16 +38,13 @@ def parse_device_spec(device_spec: str | torch.device) -> torch.device:
     elif device_str == "mps":
         return torch.device("mps")
     else:
-        match = re.match(r'^cuda:(\d+)$', device_str)
+        match = re.match(r"^cuda:(\d+)$", device_str)
         if match:
             index = int(match.group(1))
             if index < 0:
                 raise ValueError(f"GPU index must be non-negative, got {index}.")
             if index >= torch.cuda.device_count():
-                raise ValueError(
-                    f"Requested cuda:{index} but only {torch.cuda.device_count()} "
-                    "GPU(s) are available."
-                )
+                raise ValueError(f"Requested cuda:{index} but only {torch.cuda.device_count()} GPU(s) are available.")
             return torch.device(f"cuda:{index}")
 
         raise ValueError(f"Unrecognized device spec: {device_spec}")

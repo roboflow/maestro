@@ -7,7 +7,7 @@ import torch
 
 from maestro.trainer.common.datasets import create_data_loaders
 from maestro.trainer.common.metrics import BaseMetric, parse_metrics
-from maestro.trainer.common.utils.device import parse_device_spec, device_is_available
+from maestro.trainer.common.utils.device import device_is_available, parse_device_spec
 from maestro.trainer.common.utils.path import create_new_run_directory
 from maestro.trainer.common.utils.seed import ensure_reproducibility
 from maestro.trainer.models.paligemma_2.checkpoints import (
@@ -16,7 +16,7 @@ from maestro.trainer.models.paligemma_2.checkpoints import (
     OptimizationStrategy,
     load_model,
 )
-from maestro.trainer.models.paligemma_2.loaders import train_collate_fn, evaluation_collate_fn
+from maestro.trainer.models.paligemma_2.loaders import evaluation_collate_fn, train_collate_fn
 
 
 @dataclass()

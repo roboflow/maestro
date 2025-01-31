@@ -4,7 +4,7 @@
   <h1>maestro</h1>
 
   <br>
-  
+
   <div>
     <a href="https://example1.com" style="margin: 0 10px;">
       <img

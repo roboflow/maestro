@@ -9,8 +9,8 @@ from typing import Any, Optional
 import matplotlib.pyplot as plt
 import supervision as sv
 from evaluate import load
-from supervision.metrics.mean_average_precision import MeanAveragePrecision
 from nltk import edit_distance
+from supervision.metrics.mean_average_precision import MeanAveragePrecision
 
 
 class BaseMetric(ABC):
@@ -118,9 +118,9 @@ class BLEUMetric(BaseMetric):
 
 class EditDistanceMetric(BaseMetric):
     """A class used to compute the normalized Edit Distance metric.
-    
-    Edit Distance measures the minimum number of single-character edits required to change 
-    one string into another. This implementation normalizes the score by the length of the 
+
+    Edit Distance measures the minimum number of single-character edits required to change
+    one string into another. This implementation normalizes the score by the length of the
     longer string to produce a value between 0 and 1.
     """
 
@@ -153,7 +153,7 @@ class EditDistanceMetric(BaseMetric):
             score = edit_distance(prediction, target)
             score = score / max(len(prediction), len(target))
             scores.append(score)
-        
+
         average_score = sum(scores) / len(scores)
         return {"edit_distance": average_score}
 

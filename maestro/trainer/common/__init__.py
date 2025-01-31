@@ -1,4 +1,1 @@
-from maestro.trainer.common.metrics import (
-    BLEUMetric,
-    MeanAveragePrecisionMetric
-)
+from maestro.trainer.common.metrics import BLEUMetric, MeanAveragePrecisionMetric

@@ -32,6 +32,7 @@ def find_training_recipes(app: typer.Typer) -> None:
 
     app.add_typer(qwen_2_5_vl_app, name="qwen_2_5_vl")
 
+
 def _warn_about_recipe_import_error(model_name: str) -> None:
     disable_warnings = str2bool(
         os.getenv(
