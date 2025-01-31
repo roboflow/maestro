@@ -1,0 +1,1 @@
+HF_TOKEN_ENV = "HF_TOKEN"

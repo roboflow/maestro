@@ -10,16 +10,23 @@ def find_training_recipes(app: typer.Typer) -> None:
     try:
         from maestro.trainer.models.florence_2.entrypoint import florence_2_app
 
-        app.add_typer(florence_2_app, name="florence2")
+        app.add_typer(florence_2_app, name="florence_2")
     except Exception:
-        _warn_about_recipe_import_error(model_name="Florence 2")
+        _warn_about_recipe_import_error(model_name="Florence-2")
 
-    # try:
-    #     from maestro.trainer.models.paligemma.entrypoint import paligemma_app
-    #
-    #     app.add_typer(paligemma_app, name="paligemma")
-    # except Exception:
-    #     _warn_about_recipe_import_error(model_name="PaliGemma")
+    try:
+        from maestro.trainer.models.paligemma_2.entrypoint import paligemma_2_app
+
+        app.add_typer(paligemma_2_app, name="paligemma_2")
+    except Exception:
+        _warn_about_recipe_import_error(model_name="PaliGemma 2")
+
+    try:
+        from maestro.trainer.models.qwen_2_5_vl.entrypoint import qwen_2_5_vl_app
+
+        app.add_typer(qwen_2_5_vl_app, name="qwen_2_5_vl")
+    except Exception:
+        _warn_about_recipe_import_error(model_name="Qwen2.5-VL")
 
 
 def _warn_about_recipe_import_error(model_name: str) -> None:

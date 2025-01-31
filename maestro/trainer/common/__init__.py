@@ -1,7 +1,1 @@
-from maestro.trainer.common.utils.metrics import (
-    BLEUMetric,
-    CharacterErrorRateMetric,
-    MeanAveragePrecisionMetric,
-    TranslationErrorRateMetric,
-    WordErrorRateMetric,
-)
+from maestro.trainer.common.metrics import BLEUMetric, MeanAveragePrecisionMetric
