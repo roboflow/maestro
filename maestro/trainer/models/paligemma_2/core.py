@@ -66,7 +66,7 @@ class PaliGemma2Configuration:
             Directory to store training outputs.
         metrics (list[BaseMetric] | list[str]):
             Metrics to track during training. Can be a list of metric objects or metric names.
-        max_new_tokens (int): 
+        max_new_tokens (int):
             Maximum number of new tokens generated during inference.
         random_seed (Optional[int]):
             Random seed for ensuring reproducibility. If None, no seeding is applied.
@@ -103,7 +103,7 @@ class PaliGemma2Configuration:
         self.device = parse_device_spec(self.device)
         if not device_is_available(self.device):
             raise ValueError(f"Requested device '{self.device}' is not available.")
-        
+
 
 class PaliGemma2Trainer(MaestroTrainer):
     """
@@ -149,7 +149,7 @@ class PaliGemma2Trainer(MaestroTrainer):
         self.log("train_loss", loss, prog_bar=True, logger=True, batch_size=self.config.batch_size)
         self.train_metrics_tracker.register("loss", epoch=self.current_epoch, step=batch_idx, value=loss.item())
         return loss
-    
+
     def validation_step(self, batch, batch_idx):
         input_ids, attention_mask, pixel_values, prefixes, suffixes = batch
         generated_suffixes = predict_with_inputs(
@@ -183,7 +183,6 @@ class PaliGemma2Trainer(MaestroTrainer):
             validation_tracker=self.valid_metrics_tracker,
             output_dir=save_metrics_path,
         )
-
 
 
 def train(config: PaliGemma2Configuration | dict) -> None:

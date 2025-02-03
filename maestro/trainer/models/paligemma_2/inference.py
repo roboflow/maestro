@@ -33,7 +33,7 @@ def predict_with_inputs(
             pixel_values=pixel_values.to(device),
             input_ids=input_ids.to(device),
             attention_mask=attention_mask.to(device),
-            max_new_tokens=max_new_tokens
+            max_new_tokens=max_new_tokens,
         )
         prefix_length = input_ids.shape[-1]
         generated_ids = generated_ids[:, prefix_length:]
@@ -62,11 +62,7 @@ def predict(
         str: Generated text prediction.
     """
     device = parse_device_spec(device)
-    inputs = processor(
-        text=prefix,
-        images=image,
-        return_tensors="pt"
-    )
+    inputs = processor(text=prefix, images=image, return_tensors="pt")
     return predict_with_inputs(
         **inputs, model=model, processor=processor, device=device, max_new_tokens=max_new_tokens
     )[0]
