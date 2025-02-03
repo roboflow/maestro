@@ -54,23 +54,20 @@ def load_model(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            device_map="auto",
             quantization_config=bnb_config,
             torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,
         )
-        model = get_peft_model(model, config)
+        model = get_peft_model(model, config).to(device)
         model.print_trainable_parameters()
     else:
         model = AutoModelForCausalLM.from_pretrained(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            device_map="auto",
             torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,
-        )
-        model.to(device)
+        ).to(device)
 
         if optimization_strategy == OptimizationStrategy.FREEZE:
             for param in model.vision_tower.parameters():
