@@ -62,7 +62,8 @@ def predict(
         str: Generated text prediction.
     """
     device = parse_device_spec(device)
-    inputs = processor(text=prefix, images=image, return_tensors="pt")
+    text = "<image>" + prefix
+    inputs = processor(text=text, images=image, return_tensors="pt", padding=True)
     return predict_with_inputs(
         **inputs, model=model, processor=processor, device=device, max_new_tokens=max_new_tokens
     )[0]
