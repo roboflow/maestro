@@ -3,8 +3,6 @@ from typing import Any
 from PIL import Image
 from transformers import PaliGemmaProcessor
 
-MAX_LENGTH = 512
-
 
 def train_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor, max_length: int = 512):
     images, data = zip(*batch)

@@ -28,6 +28,22 @@ def load_model(
     optimization_strategy: OptimizationStrategy = OptimizationStrategy.LORA,
     cache_dir: Optional[str] = None,
 ):
+    """Loads a Florence 2 model and its associated processor.
+
+    Args:
+        model_id_or_path (str): The identifier or path of the Florence 2 model to load.
+        revision (str): The specific model revision to use.
+        device (torch.device): The device to load the model onto.
+        optimization_strategy (OptimizationStrategy): The optimization strategy to apply to the model.
+        cache_dir (Optional[str]): Directory to cache the downloaded model files.
+
+    Returns:
+        tuple(AutoProcessor, AutoModelForCausalLM):
+            A tuple containing the loaded processor and model.
+
+    Raises:
+        ValueError: If the model or processor cannot be loaded.
+    """
     device = parse_device_spec(device)
     processor = AutoProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
 
@@ -35,8 +51,8 @@ def load_model(
         config = LoraConfig(
             r=8,
             lora_alpha=16,
-                lora_dropout=0.05,
-                bias="none",
+            lora_dropout=0.05,
+            bias="none",
             target_modules=["q_proj", "o_proj", "k_proj", "v_proj", "linear"],
             task_type="CAUSAL_LM",
         )
@@ -74,6 +90,7 @@ def load_model(
                 param.is_trainable = False
 
     return processor, model
+
 
 def save_model(
     target_dir: str,
