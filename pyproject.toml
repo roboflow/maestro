@@ -78,7 +78,7 @@ florence_2 = [
 paligemma_2 = [
     "peft>=0.12",
     "torch>=2.4.0",
-    "transformers>=4.48.0",
+    "transformers>=4.48.0,<4.48.0", # does not work with 4.49.*
     "bitsandbytes>=0.45.0"
 ]
 qwen_2_5_vl = [

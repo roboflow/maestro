@@ -28,7 +28,7 @@ def predict_with_inputs(
     Returns:
         list[str]: List of generated text predictions.
     """
-    with torch.inference_mode():
+    with torch.no_grad():
         generated_ids = model.generate(
             pixel_values=pixel_values.to(device),
             input_ids=input_ids.to(device),

@@ -41,7 +41,7 @@ def predict_with_inputs(
     Returns:
         list[str]: A list of decoded strings corresponding to the generated sequences.
     """
-    with torch.inference_mode():
+    with torch.no_grad():
         generated_ids = model.generate(
             input_ids=input_ids.to(device),
             attention_mask=attention_mask.to(device),
