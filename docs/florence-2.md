@@ -204,16 +204,16 @@ file will vary slightly.
     <h2><a href="#maestro.trainer.models.florence_2.core.Configuration">Configuration</a></h2>
 </div>
 
-:::maestro.trainer.models.florence_2.core.Configuration
+<!-- :::maestro.trainer.models.florence_2.core.Configuration -->
 
 <div class="md-typeset">
     <h2><a href="#maestro.trainer.models.florence_2.core.train">train</a></h2>
 </div>
 
-:::maestro.trainer.models.florence_2.core.train
+<!-- :::maestro.trainer.models.florence_2.core.train -->
 
 <div class="md-typeset">
     <h2><a href="#maestro.trainer.models.florence_2.core.evaluate">evaluate</a></h2>
 </div>
 
-:::maestro.trainer.models.florence_2.core.evaluate
+<!-- :::maestro.trainer.models.florence_2.core.evaluate -->
