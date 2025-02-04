@@ -1,11 +1,11 @@
 site_name: maestro
-site_url: https://roboflow.github.io/multimodal-maestro/
+site_url: https://roboflow.github.io/maestro/
 site_author: Roboflow
 site_description: 'Streamline the fine-tuning process for multimodal models: PaliGemma, Florence-2, Qwen2-VL.'
-repo_name: roboflow/multimodal-maestro
-repo_url: https://github.com/roboflow/multimodal-maestro
-edit_uri: https://github.com/roboflow/multimodal-maestro/tree/main/docs
-copyright: Roboflow 2024. All rights reserved.
+repo_name: roboflow/maestro
+repo_url: https://github.com/roboflow/maestro
+edit_uri: https://github.com/roboflow/maestro/tree/main/docs
+copyright: Roboflow 2025. All rights reserved.
 
 extra:
   social:
