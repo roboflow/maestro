@@ -79,7 +79,7 @@ def load_model(
             revision=revision,
             trust_remote_code=True,
             device_map="auto",
-            cache_dir=cache_dir
+            cache_dir=cache_dir,
         ).to(device)
 
         if optimization_strategy == OptimizationStrategy.FREEZE:

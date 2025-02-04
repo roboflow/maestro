@@ -13,10 +13,7 @@ def train_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor)
     pixel_values = inputs["pixel_values"]
 
     labels = processor.tokenizer(
-        text=suffixes,
-        return_tensors="pt",
-        padding=True,
-        return_token_type_ids=False
+        text=suffixes, return_tensors="pt", padding=True, return_token_type_ids=False
     ).input_ids
 
     return input_ids, pixel_values, labels

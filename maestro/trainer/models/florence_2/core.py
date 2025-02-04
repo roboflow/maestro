@@ -10,15 +10,20 @@ from torch.optim import AdamW
 
 from maestro.trainer.common.callbacks import SaveCheckpoint
 from maestro.trainer.common.datasets import create_data_loaders
-from maestro.trainer.common.metrics import BaseMetric, parse_metrics, MetricsTracker, save_metric_plots
+from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, parse_metrics, save_metric_plots
 from maestro.trainer.common.training import MaestroTrainer
-from maestro.trainer.common.utils.device import parse_device_spec, device_is_available
+from maestro.trainer.common.utils.device import device_is_available, parse_device_spec
 from maestro.trainer.common.utils.path import create_new_run_directory
 from maestro.trainer.common.utils.seed import ensure_reproducibility
-from maestro.trainer.models.florence_2.checkpoints import DEFAULT_FLORENCE2_MODEL_ID, DEFAULT_FLORENCE2_MODEL_REVISION, \
-    load_model, OptimizationStrategy, save_model
+from maestro.trainer.models.florence_2.checkpoints import (
+    DEFAULT_FLORENCE2_MODEL_ID,
+    DEFAULT_FLORENCE2_MODEL_REVISION,
+    OptimizationStrategy,
+    load_model,
+    save_model,
+)
 from maestro.trainer.models.florence_2.inference import predict_with_inputs
-from maestro.trainer.models.florence_2.loaders import train_collate_fn, evaluation_collate_fn
+from maestro.trainer.models.florence_2.loaders import evaluation_collate_fn, train_collate_fn
 
 
 @dataclass()
@@ -109,6 +114,7 @@ class Florence2Trainer(MaestroTrainer):
         valid_loader (DataLoader): DataLoader for validation data.
         config (Florence2Configuration): Configuration object with training parameters.
     """
+
     def __init__(self, processor, model, train_loader, valid_loader, config):
         super().__init__(processor, model, train_loader, valid_loader)
         self.config = config
@@ -141,7 +147,7 @@ class Florence2Trainer(MaestroTrainer):
             input_ids=input_ids,
             pixel_values=pixel_values,
             device=self.config.device,
-            max_new_tokens=self.config.max_new_tokens
+            max_new_tokens=self.config.max_new_tokens,
         )
         for metric in self.config.metrics:
             result = metric.compute(predictions=generated_suffixes, targets=suffixes)

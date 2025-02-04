@@ -4,7 +4,9 @@ from PIL import Image
 from transformers import PaliGemmaProcessor
 
 
-def train_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor, max_length: int = 512):
+def train_collate_fn(
+    batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor, max_length: int = 512
+):
     images, data = zip(*batch)
     prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
