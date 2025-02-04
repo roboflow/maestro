@@ -37,13 +37,16 @@ def set_lightning_logging(level: str) -> None:
         from maestro.trainer import set_lightning_logging
         set_lightning_logging("DEBUG")
     """
-    pytorch_lightning_logging = logging.getLogger("pytorch_lightning")
-    cuda_log = logging.getLogger("lightning.pytorch.accelerators.cuda")
-    rank_zero = logging.getLogger("lightning.pytorch.utilities.rank_zero")
 
+    lightning_logging = logging.getLogger("lightning")
+    pytorch_lightning_logging = logging.getLogger("pytorch_lightning")
+    cuda_logging = logging.getLogger("lightning.pytorch.accelerators.cuda")
+    rank_zero_logging = logging.getLogger("lightning.pytorch.utilities.rank_zero")
+
+    lightning_logging.setLevel(getattr(logging, level))
     pytorch_lightning_logging.setLevel(getattr(logging, level))
-    cuda_log.setLevel(getattr(logging, level))
-    rank_zero.setLevel(getattr(logging, level))
+    cuda_logging.setLevel(getattr(logging, level))
+    rank_zero_logging.setLevel(getattr(logging, level))
 
 
 def set_transformers_progress(status: bool) -> None:
