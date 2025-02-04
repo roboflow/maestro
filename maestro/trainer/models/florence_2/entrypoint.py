@@ -34,7 +34,7 @@ def train(
     ] = "auto",
     optimization_strategy: Annotated[
         str,
-        typer.Option("--optimization_strategy", help="Optimization strategy: lora, qlora, freeze, or none")
+        typer.Option("--optimization_strategy", help="Optimization strategy: lora, freeze, or none")
     ] = "lora",
     cache_dir: Annotated[
         Optional[str],
@@ -76,6 +76,10 @@ def train(
         list[str],
         typer.Option("--metrics", help="List of metrics to track during training")
     ] = [],
+    max_new_tokens: Annotated[
+        int,
+        typer.Option("--max_new_tokens", help="Maximum number of new tokens generated during inference"),
+    ] = 1024,
     random_seed: Annotated[
         Optional[int],
         typer.Option("--random_seed", help="Random seed for ensuring reproducibility. If None, no seed is set")
@@ -97,6 +101,7 @@ def train(
         val_num_workers=val_num_workers,
         output_dir=output_dir,
         metrics=metrics,
+        max_new_tokens=max_new_tokens,
         random_seed=random_seed,
     )
     typer.echo(typer.style("Training configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))

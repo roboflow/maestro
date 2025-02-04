@@ -33,8 +33,7 @@ def predict_with_inputs(
         do_sample=False,
         num_beams=3,
     )
-    generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)
-    return processor.post_process_generation(generated_text, task='pure_text')
+    return processor.batch_decode(generated_ids, skip_special_tokens=False)
 
 
 def predict(
