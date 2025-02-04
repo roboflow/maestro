@@ -4,30 +4,28 @@ from typing import Annotated, Optional
 import rich
 import typer
 
-from maestro.trainer.models.paligemma_2.checkpoints import (
-    DEFAULT_PALIGEMMA2_MODEL_ID,
-    DEFAULT_PALIGEMMA2_MODEL_REVISION,
-)
-from maestro.trainer.models.paligemma_2.core import PaliGemma2Configuration
-from maestro.trainer.models.paligemma_2.core import train as paligemma_2_train
+from maestro.trainer.models.florence_2.checkpoints import DEFAULT_FLORENCE2_MODEL_ID, DEFAULT_FLORENCE2_MODEL_REVISION
+from maestro.trainer.models.florence_2.core import Florence2Configuration
+from maestro.trainer.models.florence_2.core import train as florence_2_train
 
-paligemma_2_app = typer.Typer(help="Fine-tune and evaluate PaliGemma-2 model")
+florence_2_app = typer.Typer(help="Fine-tune and evaluate Florence-2 model")
 
 
-@paligemma_2_app.command(
-    help="Train PaliGemma-2 model", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+@florence_2_app.command(
+    help="Train Florence-2 model",
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
 )
 def train(
     dataset: Annotated[str, typer.Option("--dataset", help="Path to the dataset used for training")],
     model_id: Annotated[
-        str, typer.Option("--model_id", help="Identifier for the PaliGemma-2 model")
-    ] = DEFAULT_PALIGEMMA2_MODEL_ID,
+        str, typer.Option("--model_id", help="Identifier for the Florence-2 model")
+    ] = DEFAULT_FLORENCE2_MODEL_ID,
     revision: Annotated[
         str, typer.Option("--revision", help="Model revision to use")
-    ] = DEFAULT_PALIGEMMA2_MODEL_REVISION,
+    ] = DEFAULT_FLORENCE2_MODEL_REVISION,
     device: Annotated[str, typer.Option("--device", help="Device to use for training")] = "auto",
     optimization_strategy: Annotated[
-        str, typer.Option("--optimization_strategy", help="Optimization strategy: lora, qlora, freeze, or none")
+        str, typer.Option("--optimization_strategy", help="Optimization strategy: lora, freeze, or none")
     ] = "lora",
     cache_dir: Annotated[
         Optional[str], typer.Option("--cache_dir", help="Directory to cache the model weights locally")
@@ -45,17 +43,18 @@ def train(
     ] = None,
     output_dir: Annotated[
         str, typer.Option("--output_dir", help="Directory to store training outputs")
-    ] = "./training/paligemma_2",
+    ] = "./training/florence_2",
     metrics: Annotated[list[str], typer.Option("--metrics", help="List of metrics to track during training")] = [],
     max_new_tokens: Annotated[
-        int, typer.Option("--max_new_tokens", help="Maximum number of new tokens generated during inference")
-    ] = 512,
+        int,
+        typer.Option("--max_new_tokens", help="Maximum number of new tokens generated during inference"),
+    ] = 1024,
     random_seed: Annotated[
         Optional[int],
         typer.Option("--random_seed", help="Random seed for ensuring reproducibility. If None, no seed is set"),
     ] = None,
 ) -> None:
-    config = PaliGemma2Configuration(
+    config = Florence2Configuration(
         dataset=dataset,
         model_id=model_id,
         revision=revision,
@@ -74,6 +73,6 @@ def train(
         max_new_tokens=max_new_tokens,
         random_seed=random_seed,
     )
-    typer.echo(typer.style(text="Training configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))
+    typer.echo(typer.style("Training configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))
     rich.print(dataclasses.asdict(config))
-    paligemma_2_train(config=config)
+    florence_2_train(config=config)

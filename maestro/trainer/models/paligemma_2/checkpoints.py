@@ -50,6 +50,9 @@ def load_model(
     if optimization_strategy in {OptimizationStrategy.LORA, OptimizationStrategy.QLORA}:
         lora_config = LoraConfig(
             r=8,
+            lora_alpha=16,
+            lora_dropout=0.05,
+            bias="none",
             target_modules=["q_proj", "o_proj", "k_proj", "v_proj", "gate_proj", "up_proj", "down_proj"],
             task_type="CAUSAL_LM",
         )
@@ -62,6 +65,7 @@ def load_model(
         model = PaliGemmaForConditionalGeneration.from_pretrained(
             pretrained_model_name_or_path=model_id_or_path,
             revision=revision,
+            trust_remote_code=True,
             device_map="auto",
             quantization_config=bnb_config,
             torch_dtype=torch.bfloat16,
@@ -71,7 +75,11 @@ def load_model(
         model.print_trainable_parameters()
     else:
         model = PaliGemmaForConditionalGeneration.from_pretrained(
-            pretrained_model_name_or_path=model_id_or_path, revision=revision, device_map="auto", cache_dir=cache_dir
+            pretrained_model_name_or_path=model_id_or_path,
+            revision=revision,
+            trust_remote_code=True,
+            device_map="auto",
+            cache_dir=cache_dir,
         ).to(device)
 
         if optimization_strategy == OptimizationStrategy.FREEZE:

@@ -7,8 +7,6 @@ import dacite
 import lightning
 import torch
 from torch.optim import AdamW
-from torch.utils.data import DataLoader
-from transformers import PaliGemmaForConditionalGeneration, PaliGemmaProcessor
 
 from maestro.trainer.common.callbacks import SaveCheckpoint
 from maestro.trainer.common.datasets import create_data_loaders
@@ -17,27 +15,27 @@ from maestro.trainer.common.training import MaestroTrainer
 from maestro.trainer.common.utils.device import device_is_available, parse_device_spec
 from maestro.trainer.common.utils.path import create_new_run_directory
 from maestro.trainer.common.utils.seed import ensure_reproducibility
-from maestro.trainer.models.paligemma_2.checkpoints import (
-    DEFAULT_PALIGEMMA2_MODEL_ID,
-    DEFAULT_PALIGEMMA2_MODEL_REVISION,
+from maestro.trainer.models.florence_2.checkpoints import (
+    DEFAULT_FLORENCE2_MODEL_ID,
+    DEFAULT_FLORENCE2_MODEL_REVISION,
     OptimizationStrategy,
     load_model,
     save_model,
 )
-from maestro.trainer.models.paligemma_2.inference import predict_with_inputs
-from maestro.trainer.models.paligemma_2.loaders import evaluation_collate_fn, train_collate_fn
+from maestro.trainer.models.florence_2.inference import predict_with_inputs
+from maestro.trainer.models.florence_2.loaders import evaluation_collate_fn, train_collate_fn
 
 
 @dataclass()
-class PaliGemma2Configuration:
+class Florence2Configuration:
     """
-    Configuration for training the PaliGemma2 model.
+    Configuration for training the Florence-2 model.
 
     Attributes:
         dataset (str):
             Path to the dataset used for training.
         model_id (str):
-            Identifier for the PaliGemma2 model.
+            Identifier for the Florence-2 model.
         revision (str):
             Model revision to use.
         device (str | torch.device):
@@ -73,10 +71,10 @@ class PaliGemma2Configuration:
     """
 
     dataset: str
-    model_id: str = DEFAULT_PALIGEMMA2_MODEL_ID
-    revision: str = DEFAULT_PALIGEMMA2_MODEL_REVISION
+    model_id: str = DEFAULT_FLORENCE2_MODEL_ID
+    revision: str = DEFAULT_FLORENCE2_MODEL_REVISION
     device: str | torch.device = "auto"
-    optimization_strategy: Literal["lora", "qlora", "freeze", "none"] = "lora"
+    optimization_strategy: Literal["lora", "freeze", "none"] = "lora"
     cache_dir: Optional[str] = None
     epochs: int = 10
     lr: float = 1e-5
@@ -85,9 +83,9 @@ class PaliGemma2Configuration:
     val_batch_size: Optional[int] = None
     num_workers: int = 0
     val_num_workers: Optional[int] = None
-    output_dir: str = "./training/paligemma_2"
+    output_dir: str = "./training/florence_2"
     metrics: list[BaseMetric] | list[str] = field(default_factory=list)
-    max_new_tokens: int = 512
+    max_new_tokens: int = 1024
     random_seed: Optional[int] = None
 
     def __post_init__(self):
@@ -105,26 +103,19 @@ class PaliGemma2Configuration:
             raise ValueError(f"Requested device '{self.device}' is not available.")
 
 
-class PaliGemma2Trainer(MaestroTrainer):
+class Florence2Trainer(MaestroTrainer):
     """
-    Trainer for fine-tuning the PaliGemma-2 model.
+    Trainer for fine-tuning the Florence-2 model.
 
     Attributes:
-        processor (PaliGemmaProcessor): Tokenizer and processor for model inputs.
-        model (PaliGemmaForConditionalGeneration): Pre-trained PaliGemma-2 model.
+        processor (AutoProcessor): Processor for model inputs.
+        model (AutoModelForCausalLM): The Florence-2 model.
         train_loader (DataLoader): DataLoader for training data.
         valid_loader (DataLoader): DataLoader for validation data.
-        config (PaliGemma2Configuration): Configuration object containing training parameters.
+        config (Florence2Configuration): Configuration object with training parameters.
     """
 
-    def __init__(
-        self,
-        processor: PaliGemmaProcessor,
-        model: PaliGemmaForConditionalGeneration,
-        train_loader: DataLoader,
-        valid_loader: DataLoader,
-        config: PaliGemma2Configuration,
-    ):
+    def __init__(self, processor, model, train_loader, valid_loader, config):
         super().__init__(processor, model, train_loader, valid_loader)
         self.config = config
 
@@ -133,15 +124,13 @@ class PaliGemma2Trainer(MaestroTrainer):
         metrics = ["loss"]
         for metric in config.metrics:
             if isinstance(metric, BaseMetric):
-                metrics += metric.describe()  # ensure mypy understands it's BaseMetric
+                metrics += metric.describe()
         self.valid_metrics_tracker = MetricsTracker.init(metrics=metrics)
 
     def training_step(self, batch, batch_idx):
-        input_ids, attention_mask, token_type_ids, pixel_values, labels = batch
+        input_ids, pixel_values, labels = batch
         outputs = self.model(
             input_ids=input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
             pixel_values=pixel_values,
             labels=labels,
         )
@@ -151,12 +140,11 @@ class PaliGemma2Trainer(MaestroTrainer):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        input_ids, attention_mask, pixel_values, prefixes, suffixes = batch
+        input_ids, pixel_values, prefixes, suffixes = batch
         generated_suffixes = predict_with_inputs(
             model=self.model,
             processor=self.processor,
             input_ids=input_ids,
-            attention_mask=attention_mask,
             pixel_values=pixel_values,
             device=self.config.device,
             max_new_tokens=self.config.max_new_tokens,
@@ -185,10 +173,10 @@ class PaliGemma2Trainer(MaestroTrainer):
         )
 
 
-def train(config: PaliGemma2Configuration | dict) -> None:
+def train(config: Florence2Configuration | dict) -> None:
     if isinstance(config, dict):
-        config = dacite.from_dict(data_class=PaliGemma2Configuration, data=config)
-    assert isinstance(config, PaliGemma2Configuration)  # ensure mypy understands it's not a dict
+        config = dacite.from_dict(data_class=Florence2Configuration, data=config)
+    assert isinstance(config, Florence2Configuration)  # ensure mypy understands it's not a dict
 
     ensure_reproducibility(seed=config.random_seed, avoid_non_deterministic_algorithms=False)
     run_dir = create_new_run_directory(base_output_dir=config.output_dir)
@@ -204,14 +192,13 @@ def train(config: PaliGemma2Configuration | dict) -> None:
     train_loader, valid_loader, test_loader = create_data_loaders(
         dataset_location=config.dataset,
         train_batch_size=config.batch_size,
-        train_collect_fn=partial(train_collate_fn, processor=processor, max_length=config.max_new_tokens),
+        train_collect_fn=partial(train_collate_fn, processor=processor),
         train_num_workers=config.num_workers,
         test_batch_size=config.val_batch_size,
         test_collect_fn=partial(evaluation_collate_fn, processor=processor),
         test_num_workers=config.val_num_workers,
     )
-
-    pl_module = PaliGemma2Trainer(
+    pl_module = Florence2Trainer(
         processor=processor, model=model, train_loader=train_loader, valid_loader=valid_loader, config=config
     )
     save_checkpoints_path = os.path.join(config.output_dir, "checkpoints")

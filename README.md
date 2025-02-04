@@ -30,6 +30,8 @@
   <br>
 
   [![version](https://badge.fury.io/py/maestro.svg)](https://badge.fury.io/py/maestro)
+  [![license](https://img.shields.io/pypi/l/maestro)](https://github.com/roboflow/maestro/blob/main/LICENSE.md)
+  [![python-version](https://img.shields.io/pypi/pyversions/maestro)](https://badge.fury.io/py/maestro)
 
 </div>
 
