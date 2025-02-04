@@ -1,4 +1,3 @@
-
 <div align="center">
 
   <h1>maestro</h1>
@@ -6,34 +5,26 @@
   <br>
 
   <div>
-    <a href="https://example1.com" style="margin: 0 10px;">
       <img
         src="https://github.com/user-attachments/assets/c9416f1f-a2bf-4590-86da-d2fc89ba559b"
         width="80"
         height="40"
       />
-    </a>
-    <a href="https://example2.com" style="margin: 0 10px;">
       <img
         src="https://github.com/user-attachments/assets/75dc7214-e82a-498d-950e-c64d90218e49"
         width="80"
         height="40"
       />
-    </a>
-    <a href="https://example3.com" style="margin: 0 10px;">
       <img
         src="https://github.com/user-attachments/assets/5d265473-b938-4501-b894-6a44a6a28a8c"
         width="80"
         height="40"
       />
-    </a>
-    <a href="https://example3.com" style="margin: 0 10px;">
       <img
         src="https://github.com/user-attachments/assets/b7ccdf39-ac77-4dbd-8608-0fa2d9dadf0a"
         width="80"
         height="40"
       />
-    </a>
   </div>
 
   <br>
@@ -44,10 +35,11 @@
 
 ## Hello
 
-**maestro** is a tool designed to streamline and accelerate the fine-tuning process for
-multimodal models. It provides ready-to-use recipes for fine-tuning popular
-vision-language models (VLMs) such as **Florence-2**, **PaliGemma 2**, and
-**Qwen2.5-VL** on downstream vision-language tasks.
+**maestro** is a streamlined tool to accelerate the fine-tuning of multimodal models.
+By encapsulating best practices from our core modules, maestro handles configuration,
+data loading, reproducibility, and training loop setup. It currently offers ready-to-use
+recipes for popular vision-language models such as **Florence-2**, **PaliGemma 2**, and
+**Qwen2.5-VL**.
 
 ![maestro](https://github.com/user-attachments/assets/3bb9ccba-b0ee-4964-bcd6-f71124a08bc2)
 
@@ -55,18 +47,21 @@ vision-language models (VLMs) such as **Florence-2**, **PaliGemma 2**, and
 
 ### Install
 
-To get started with maestro, you’ll need to install the dependencies specific to the model you wish to fine-tune.
+To begin, install the model-specific dependencies. Since some models may have clashing requirements,
+we recommend creating a dedicated Python environment for each model.
 
 ```bash
-pip install maestro[qwen_2_5_vl]
+pip install maestro[paligemma_2]
 ```
-
-**Note:** Some models may have clashing dependencies. We recommend creating a separate python environment for each model to avoid version conflicts.
 
 ### CLI
 
+Kick off fine-tuning with our command-line interface, which leverages the configuration
+and training routines defined in each model’s core module. Simply specify key parameters such as
+the dataset location, number of epochs, batch size, optimization strategy, and metrics.
+
 ```bash
-maestro qwen_2_5_vl train \
+maestro paligemma_2 train \
   --dataset "dataset/location" \
   --epochs 10 \
   --batch-size 4 \
@@ -76,8 +71,13 @@ maestro qwen_2_5_vl train \
 
 ### Python
 
+For greater control, use the Python API to fine-tune your models.
+Import the train function from the corresponding module and define your configuration
+in a dictionary. The core modules take care of reproducibility, data preparation,
+and training setup.
+
 ```python
-from maestro.trainer.models.qwen_2_5_vl.core import train
+from maestro.trainer.models.paligemma_2.core import train
 
 config = {
     "dataset": "dataset/location",

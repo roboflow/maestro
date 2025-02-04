@@ -1,11 +1,11 @@
 site_name: maestro
-site_url: https://roboflow.github.io/multimodal-maestro/
+site_url: https://roboflow.github.io/maestro/
 site_author: Roboflow
 site_description: 'Streamline the fine-tuning process for multimodal models: PaliGemma, Florence-2, Qwen2-VL.'
-repo_name: roboflow/multimodal-maestro
-repo_url: https://github.com/roboflow/multimodal-maestro
-edit_uri: https://github.com/roboflow/multimodal-maestro/tree/main/docs
-copyright: Roboflow 2024. All rights reserved.
+repo_name: roboflow/maestro
+repo_url: https://github.com/roboflow/maestro
+edit_uri: https://github.com/roboflow/maestro/tree/main/docs
+copyright: Roboflow 2025. All rights reserved.
 
 extra:
   social:
@@ -23,34 +23,38 @@ extra:
 
 nav:
   - Maestro: index.md
-  - Models:
-    - Florence-2: florence-2.md
-  - Tasks: tasks.md
-  - Metrics: metrics.md
+#  - Models:
+#    - Florence-2: florence-2.md
+#  - Tasks: tasks.md
+#  - Metrics: metrics.md
 
 
 theme:
   name: 'material'
-  logo: https://media.roboflow.com/open-source/supervision/supervision-lenny.png
-  favicon: https://media.roboflow.com/open-source/supervision/supervision-lenny.png
+  logo: assets/maestro-logo.svg
+  favicon: assets/maestro-logo.svg
   custom_dir: docs/theme
   palette:
     # Palette for light mode
     - scheme: default
-      primary: 'custom'
+      primary: 'black'
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
 
     # Palette toggle for dark mode
     - scheme: slate
-      primary: 'custom'
+      primary: 'black'
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
   font:
     text: Roboto
     code: Roboto Mono
+  features:
+    - content.tabs.link
+    - content.code.copy
+
 
 plugins:
   - search
@@ -58,10 +62,10 @@ plugins:
       default_handler: python
       handlers:
         python:
+          paths: [maestro]
+          load_external_modules: true
           options:
             parameter_headings: true
-            paths: [maestro]
-            load_external_modules: true
             allow_inspection: true
             show_bases: true
             group_by_category: true
@@ -69,7 +73,9 @@ plugins:
             show_symbol_type_heading: true
             show_symbol_type_toc: true
             show_category_heading: true
-          domains: [std, py]
+          inventories:
+          - url: https://docs.python-requests.org/en/master/objects.inv
+            domains: [std, py]
 
 
 markdown_extensions:
