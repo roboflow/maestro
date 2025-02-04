@@ -58,10 +58,10 @@ plugins:
       default_handler: python
       handlers:
         python:
+          paths: [maestro]
+          load_external_modules: true
           options:
             parameter_headings: true
-            paths: [maestro]
-            load_external_modules: true
             allow_inspection: true
             show_bases: true
             group_by_category: true
@@ -69,7 +69,9 @@ plugins:
             show_symbol_type_heading: true
             show_symbol_type_toc: true
             show_category_heading: true
-          domains: [std, py]
+          inventories:
+          - url: https://docs.python-requests.org/en/master/objects.inv
+            domains: [std, py]
 
 
 markdown_extensions:
