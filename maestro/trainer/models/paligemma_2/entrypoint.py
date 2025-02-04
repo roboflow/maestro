@@ -9,7 +9,7 @@ from maestro.trainer.models.paligemma_2.checkpoints import (
     DEFAULT_PALIGEMMA2_MODEL_REVISION,
 )
 from maestro.trainer.models.paligemma_2.core import PaliGemma2Configuration
-from maestro.trainer.models.paligemma_2.core import train as paligemma2_train
+from maestro.trainer.models.paligemma_2.core import train as paligemma_2_train
 
 paligemma_2_app = typer.Typer(help="Fine-tune and evaluate PaliGemma-2 model")
 
@@ -76,4 +76,4 @@ def train(
     )
     typer.echo(typer.style(text="Training configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))
     rich.print(dataclasses.asdict(config))
-    paligemma2_train(config=config)
+    paligemma_2_train(config=config)

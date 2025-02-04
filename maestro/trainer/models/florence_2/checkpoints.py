@@ -26,7 +26,7 @@ def load_model(
     device: str | torch.device = "auto",
     optimization_strategy: OptimizationStrategy = OptimizationStrategy.LORA,
     cache_dir: Optional[str] = None,
-):
+) -> tuple[AutoProcessor, AutoModelForCausalLM]:
     """Loads a Florence 2 model and its associated processor.
 
     Args:
