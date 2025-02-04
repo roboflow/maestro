@@ -4,7 +4,7 @@ from typing import Optional
 
 import torch
 from peft import LoraConfig, get_peft_model
-from transformers import BitsAndBytesConfig, AutoModelForCausalLM, AutoProcessor
+from transformers import AutoModelForCausalLM, AutoProcessor
 
 from maestro.trainer.common.utils.device import parse_device_spec
 
@@ -16,7 +16,6 @@ class OptimizationStrategy(Enum):
     """Enumeration for optimization strategies."""
 
     LORA = "lora"
-    QLORA = "qlora"
     FREEZE = "freeze"
     NONE = "none"
 
@@ -47,31 +46,19 @@ def load_model(
     device = parse_device_spec(device)
     processor = AutoProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
 
-    if optimization_strategy in {OptimizationStrategy.LORA, OptimizationStrategy.QLORA}:
+    if optimization_strategy == OptimizationStrategy.LORA:
         config = LoraConfig(
             r=8,
             lora_alpha=16,
             lora_dropout=0.05,
             bias="none",
-            target_modules=["q_proj", "o_proj", "k_proj", "v_proj", "linear"],
+            target_modules=["q_proj", "o_proj", "k_proj", "v_proj", "linear", "Conv2d", "lm_head", "fc2"],
             task_type="CAUSAL_LM",
-        )
-        bnb_config = (
-            BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_type=torch.bfloat16,
-            )
-            if optimization_strategy == OptimizationStrategy.QLORA
-            else None
         )
         model = AutoModelForCausalLM.from_pretrained(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            quantization_config=bnb_config,
-            torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,
         )
         model = get_peft_model(model, config).to(device)
@@ -81,7 +68,6 @@ def load_model(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,
         ).to(device)
 

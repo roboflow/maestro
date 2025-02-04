@@ -73,8 +73,7 @@ florence_2 = [
     "peft>=0.12",
     "transformers>=4.43.0",
     "torch>=2.4.0",
-    "flash-attn>=2.7.0.post2; sys_platform != 'darwin'",
-    "bitsandbytes>=0.45.0"
+    "flash-attn>=2.7.0.post2; sys_platform != 'darwin'"
 ]
 paligemma_2 = [
     "peft>=0.12",
