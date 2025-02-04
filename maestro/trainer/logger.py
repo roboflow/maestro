@@ -13,9 +13,9 @@ def configure_logging() -> None:
 
     Example:
         import os
-        from maestro.trainer import configure_logging
         os.environ["MAESTRO_LIGHTNING_LOG_LEVEL"] = "DEBUG"
         os.environ["MAESTRO_TRANSFORMERS_PROGRESS"] = "1"
+        from maestro.trainer import configure_logging
         configure_logging()
     """
     lightning_level = os.getenv("MAESTRO_LIGHTNING_LOG_LEVEL", "INFO")
