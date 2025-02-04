@@ -86,7 +86,7 @@ qwen_2_5_vl = [
     "peft>=0.12",
     "torch>=2.4.0",
     "torchvision>=0.20.0",
-    "transformers @ git+https://github.com/huggingface/transformers",
+    #"transformers @ git+https://github.com/huggingface/transformers", # pypi doesnt allow git repo packages but we need development version
     "bitsandbytes>=0.45.0",
     "qwen-vl-utils>=0.0.8"
 ]

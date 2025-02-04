@@ -20,6 +20,12 @@ Pip install the supervision package in a
 pip install maestro
 ```
 
+**Note**: For Qwen2.5-VL support, you'll need to install the latest transformers package from source:
+  ```bash
+  pip install git+https://github.com/huggingface/transformers
+  pip install maestro[qwen_2_5_vl]
+  ```
+
 ## quickstart
 
 ### CLI
