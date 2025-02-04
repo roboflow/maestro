@@ -23,34 +23,38 @@ extra:
 
 nav:
   - Maestro: index.md
-  - Models:
-    - Florence-2: florence-2.md
-  - Tasks: tasks.md
-  - Metrics: metrics.md
+#  - Models:
+#    - Florence-2: florence-2.md
+#  - Tasks: tasks.md
+#  - Metrics: metrics.md
 
 
 theme:
   name: 'material'
-  logo: https://media.roboflow.com/open-source/supervision/supervision-lenny.png
-  favicon: https://media.roboflow.com/open-source/supervision/supervision-lenny.png
+  logo: assets/maestro-logo.svg
+  favicon: assets/maestro-logo.svg
   custom_dir: docs/theme
   palette:
     # Palette for light mode
     - scheme: default
-      primary: 'custom'
+      primary: 'black'
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
 
     # Palette toggle for dark mode
     - scheme: slate
-      primary: 'custom'
+      primary: 'black'
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
   font:
     text: Roboto
     code: Roboto Mono
+  features:
+    - content.tabs.link
+    - content.code.copy
+
 
 plugins:
   - search
