@@ -80,7 +80,7 @@ the dataset location, number of epochs, batch size, optimization strategy, and m
       --dataset "dataset/location" \
       --epochs 10 \
       --batch-size 4 \
-      --optimization_strategy "qlora" \
+      --optimization_strategy "lora" \
       --metrics "edit_distance"
     ```
 
