@@ -60,5 +60,10 @@ def predict(
     device = parse_device_spec(device)
     inputs = processor(text=prefix, images=image, return_tensors="pt", padding=True)
     return predict_with_inputs(
-        **inputs, model=model, processor=processor, device=device, max_new_tokens=max_new_tokens
+        input_ids=inputs["input_ids"],
+        pixel_values=inputs["pixel_values"],
+        model=model,
+        processor=processor,
+        device=device,
+        max_new_tokens=max_new_tokens,
     )[0]

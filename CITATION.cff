@@ -1,22 +1,24 @@
-# This CITATION.cff file was generated with cffinit.
-# Visit https://bit.ly/cffinit to generate yours today!
+# This CITATION.cff file has been updated to reflect the current focus of maestro.
+# If you use maestro for vision-language model fine-tuning, please cite it using the metadata provided below.
 
 cff-version: 1.2.0
-title: Multimodal Maestro
+title: maestro
 message: >-
-  If you use this software, please cite it using the
-  metadata from this file.
+  If you use maestro for vision-language model fine-tuning, please cite it using the metadata provided below.
 type: software
 authors:
   - given-names: Roboflow
     email: support@roboflow.com
-repository-code: 'https://github.com/roboflow/multimodal-maestro'
-url: 'https://roboflow.github.io/multimodal-maestro/'
+repository-code: 'https://github.com/roboflow/maestro'
+url: 'https://roboflow.github.io/maestro/'
 abstract: >-
-  Multimodal-Maestro gives you more control over large
-  multimodal models to get the outputs you want.
+  maestro is a streamlined tool for fine-tuning vision-language models.
+  It encapsulates best practices for configuration, data handling, reproducibility,
+  and training loop setup, offering ready-to-use recipes for popular models such as
+  Florence-2, PaliGemma 2, and Qwen2.5-VL.
 keywords:
-  - computer vision
-  - large multimodal models
-  - lmms
+  - vision-language models
+  - fine-tuning
+  - multimodal
+  - deep learning
 license: MIT

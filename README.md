@@ -32,8 +32,7 @@
   <br>
 
   [![version](https://badge.fury.io/py/maestro.svg)](https://badge.fury.io/py/maestro)
-  [![license](https://img.shields.io/pypi/l/maestro)](https://github.com/roboflow/maestro/blob/main/LICENSE.md)
-  [![python-version](https://img.shields.io/pypi/pyversions/maestro)](https://badge.fury.io/py/maestro)
+  [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_qwen2_5_vl_json_extraction.ipynb)
 
 </div>
 
@@ -93,6 +92,15 @@ config = {
 
 train(config)
 ```
+
+## Cookbooks
+Looking for a place to start? Try our cookbooks to learn how to fine-tune different VLMs on various vision tasks with **maestro**.
+
+
+| description                                             |                                                                                          open in colab                                                                                           |
+|:--------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| Finetune PaliGemma 2 for JSON data extraction with LoRA | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_paligemma_2_json_extraction.ipynb) |
+| Finetune Qwen2.5-VL for JSON data extraction with QLoRA | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_qwen2_5_vl_json_extraction.ipynb)  |
 
 ## Contribution
 
