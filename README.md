@@ -99,6 +99,7 @@ Looking for a place to start? Try our cookbooks to learn how to fine-tune differ
 
 | description                                             |                                                                                          open in colab                                                                                           |
 |:--------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| Finetune Florence-2 for object detection with LoRA      | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_florence_2_object_detection.ipynb) |
 | Finetune PaliGemma 2 for JSON data extraction with LoRA | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_paligemma_2_json_extraction.ipynb) |
 | Finetune Qwen2.5-VL for JSON data extraction with QLoRA | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_qwen2_5_vl_json_extraction.ipynb)  |
 
