@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://roboflow.github.io/maestro/1.0.0/</loc>
+         <lastmod>2025-02-05</lastmod>
+    </url>
+    <url>
+         <loc>https://roboflow.github.io/maestro/1.0.0/models/florence_2/</loc>
+         <lastmod>2025-02-05</lastmod>
+    </url>
+    <url>
+         <loc>https://roboflow.github.io/maestro/1.0.0/models/paligemma_2/</loc>
+         <lastmod>2025-02-05</lastmod>
+    </url>
+    <url>
+         <loc>https://roboflow.github.io/maestro/1.0.0/models/qwen_2_5_vl/</loc>
+         <lastmod>2025-02-05</lastmod>
+    </url>
+</urlset>
