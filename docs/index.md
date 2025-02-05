@@ -2,6 +2,8 @@
 
   <h1>maestro</h1>
 
+  <h3>VLM fine-tuning for everyone</h1>
+
   <br>
 
   <div>
