@@ -82,4 +82,3 @@ image, entry = ds[0]
 
 predict(model=model, processor=processor, image=image, prefix=entry["prefix"])
 ```
-
