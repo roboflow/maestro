@@ -2,18 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://roboflow.github.io/maestro/develop/</loc>
-         <lastmod>2025-02-04</lastmod>
+         <lastmod>2025-02-05</lastmod>
     </url>
     <url>
          <loc>https://roboflow.github.io/maestro/develop/florence-2/</loc>
-         <lastmod>2025-02-04</lastmod>
+         <lastmod>2025-02-05</lastmod>
     </url>
     <url>
          <loc>https://roboflow.github.io/maestro/develop/metrics/</loc>
-         <lastmod>2025-02-04</lastmod>
+         <lastmod>2025-02-05</lastmod>
     </url>
     <url>
          <loc>https://roboflow.github.io/maestro/develop/tasks/</loc>
-         <lastmod>2025-02-04</lastmod>
+         <lastmod>2025-02-05</lastmod>
     </url>
 </urlset>
