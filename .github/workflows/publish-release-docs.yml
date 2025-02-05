@@ -1,0 +1,41 @@
+name: Maestro Release Documentation Workflow 📚
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'push' && github.ref}}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pages: write
+  pull-requests: write
+
+
+jobs:
+  maestro-release-docs:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+      - name: 🛎️ Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: '3.10'
+      - name: 📦 Install Packages
+        run: pip install -e ".[docs]"
+      - name: ⚙️ Configure git for github-actions 👷
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: 🚀 Deploy Mkdocs-Material 📚
+        run: |
+            latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+            MKDOCS_GIT_COMMITTERS_APIKEY=${{ secrets.GITHUB_TOKEN }} mike deploy --push --update-aliases $latest_tag latest

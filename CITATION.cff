@@ -1,0 +1,24 @@
+# This CITATION.cff file has been updated to reflect the current focus of maestro.
+# If you use maestro for vision-language model fine-tuning, please cite it using the metadata provided below.
+
+cff-version: 1.2.0
+title: maestro
+message: >-
+  If you use maestro for vision-language model fine-tuning, please cite it using the metadata provided below.
+type: software
+authors:
+  - given-names: Roboflow
+    email: support@roboflow.com
+repository-code: 'https://github.com/roboflow/maestro'
+url: 'https://roboflow.github.io/maestro/'
+abstract: >-
+  maestro is a streamlined tool for fine-tuning vision-language models.
+  It encapsulates best practices for configuration, data handling, reproducibility,
+  and training loop setup, offering ready-to-use recipes for popular models such as
+  Florence-2, PaliGemma 2, and Qwen2.5-VL.
+keywords:
+  - vision-language models
+  - fine-tuning
+  - multimodal
+  - deep learning
+license: MIT

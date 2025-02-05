@@ -1,3 +1,0 @@
-## MarkVisualizer
-
-:::multimodalmaestro.visualizers.MarkVisualizer
