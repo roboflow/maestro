@@ -23,10 +23,10 @@ extra:
 
 nav:
   - Maestro: index.md
-#  - Models:
-#    - Florence-2: florence-2.md
-#  - Tasks: tasks.md
-#  - Metrics: metrics.md
+  - Models:
+    - Florence-2: models/florence_2.md
+    - PaliGemma 2: models/paligemma_2.md
+    - Qwen2.5-VL: models/qwen_2_5_vl.md
 
 
 theme:

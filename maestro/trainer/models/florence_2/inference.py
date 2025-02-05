@@ -39,7 +39,7 @@ def predict_with_inputs(
 def predict(
     model: AutoModelForCausalLM,
     processor: AutoProcessor,
-    image: str | bytes | Image.Image,
+    image: Image.Image,
     prefix: str,
     device: str | torch.device = "auto",
     max_new_tokens: int = 1024,
