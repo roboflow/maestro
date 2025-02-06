@@ -7,8 +7,8 @@ Building on significant improvements over its predecessor, Qwen2-VL, the Qwen2.5
 ## Install
 
 ```bash
-pip install maestro[qwen_2_5_vl]
-pip install git+https://github.com/huggingface/transformers
+pip install "maestro[qwen_2_5_vl]"
+pip install "git+https://github.com/huggingface/transformers"
 ```
 
 !!! warning

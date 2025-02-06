@@ -49,19 +49,19 @@ we recommend creating a dedicated Python environment for each model.
 === "Florence-2"
 
     ```bash
-    pip install maestro[florence_2]
+    pip install "maestro[florence_2]"
     ```
 
 === "PaliGemma 2"
 
     ```bash
-    pip install maestro[paligemma_2]
+    pip install "maestro[paligemma_2]"
     ```
 
 === "Qwen2.5-VL"
 
     ```bash
-    pip install maestro[qwen_2_5_vl]
+    pip install "maestro[qwen_2_5_vl]"
     pip install git+https://github.com/huggingface/transformers
     ```
 

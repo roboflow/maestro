@@ -5,7 +5,7 @@ PaliGemma 2 is an updated and significantly enhanced version of the original Pal
 ## Install
 
 ```bash
-pip install maestro[paligemma_2]
+pip install "maestro[paligemma_2]"
 ```
 
 ## Train

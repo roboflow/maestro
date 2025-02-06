@@ -54,7 +54,7 @@ To begin, install the model-specific dependencies. Since some models may have cl
 we recommend creating a dedicated Python environment for each model.
 
 ```bash
-pip install maestro[paligemma_2]
+pip install "maestro[paligemma_2]"
 ```
 
 ### CLI

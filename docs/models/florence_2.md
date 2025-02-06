@@ -5,7 +5,7 @@ Florence-2 is a lightweight vision-language model open-sourced by Microsoft unde
 ## Install
 
 ```bash
-pip install maestro[florence_2]
+pip install "maestro[florence_2]"
 ```
 
 ## Train
