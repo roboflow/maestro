@@ -1,3 +1,8 @@
+---
+comments: true
+---
+
+
 ## Overview
 
 Florence-2 is a lightweight vision-language model open-sourced by Microsoft under the MIT license. It offers strong zero-shot and fine-tuning capabilities for tasks such as image captioning, object detection, visual grounding, and segmentation. Despite its compact size, training on the extensive FLD-5B dataset (126 million images and 5.4 billion annotations) enables Florence-2 to perform on par with much larger models like Kosmos-2. You can try out the model via HF Spaces, Google Colab, or our interactive playground.
