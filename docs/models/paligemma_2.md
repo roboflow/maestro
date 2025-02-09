@@ -1,3 +1,7 @@
+---
+comments: true
+---
+
 ## Overview
 
 PaliGemma 2 is an updated and significantly enhanced version of the original PaliGemma vision-language model (VLM). By combining the efficient SigLIP-So400m vision encoder with the robust Gemma 2 language model, PaliGemma 2 processes images at multiple resolutions and fuses visual and textual inputs to deliver strong performance across diverse tasks such as captioning, visual question answering (VQA), optical character recognition (OCR), object detection, and instance segmentation. Fine-tuning enables users to adapt the model to specific tasks while leveraging its scalable architecture.

@@ -1,3 +1,7 @@
+---
+comments: true
+---
+
 ## Overview
 
 Qwen2.5-VL is a cutting-edge vision-language model that integrates powerful visual understanding and advanced language processing in a unified framework. It excels across a range of tasks—from extensive image recognition and precise object grounding to sophisticated text extraction, document parsing, and dynamic video comprehension—making it ideal for both desktop and mobile applications.
