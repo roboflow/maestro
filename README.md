@@ -105,8 +105,7 @@ Looking for a place to start? Try our cookbooks to learn how to fine-tune differ
 
 ## Contribution
 
-We would love your help in making this repository even better! We are especially
-looking for contributors with experience in fine-tuning vision-language models (VLMs).
-If you notice any bugs or have suggestions for improvement, feel free to open an
-[issue](https://github.com/roboflow/multimodal-maestro/issues) or submit a
-[pull request](https://github.com/roboflow/multimodal-maestro/pulls).
+We appreciate your input as we continue refining Maestro. Your feedback is invaluable in guiding our improvements. To
+learn how you can help, please check out our [Contributing Guide](https://github.com/roboflow/maestro/blob/develop/CONTRIBUTING.md).
+If you have any questions or ideas, feel free to start a conversation in our [GitHub Discussions](https://github.com/roboflow/maestro/discussions).
+Thank you for being a part of our journey!

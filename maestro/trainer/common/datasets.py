@@ -15,6 +15,26 @@ class RoboflowJSONLDataset(Dataset):
     Args:
         jsonl_file_path (str): Path to the JSONL file containing dataset entries.
         image_directory_path (str): Path to the directory containing images.
+
+    Examples:
+        ```python
+        from roboflow import Roboflow
+        from maestro.trainer.common.datasets import RoboflowJSONLDataset
+
+        rf = Roboflow()
+        workspace = rf.workspace("roboflow-jvuqo")
+        project = workspace.project("pallet-load-manifest-json")
+        version = project.version(2)
+        dataset = version.download("jsonl")
+
+        ds = RoboflowJSONLDataset(
+            jsonl_file_path=f"{dataset.location}/test/annotations.jsonl",
+            image_directory_path=f"{dataset.location}/test",
+        )
+
+        len(ds)
+        # 10
+        ```
     """
 
     def __init__(self, jsonl_file_path: str, image_directory_path: str) -> None:
