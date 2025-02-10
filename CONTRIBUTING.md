@@ -1,115 +1,94 @@
-# Contributing to Multimodal Maestro 🛠️
+# Contributing to Maestro
 
-Thank you for your interest in contributing to Multimodal Maestro (`MM` for short)!
+Thank you for helping to advance Maestro! Your participation is invaluable in evolving our platform—whether you’re squashing bugs, refining documentation, rolling out new features, or even introducing an entirely new model. Every contribution pushes the project forward.
 
-Multimodal Maestro gives you more control over Large Multimodal Models (LMMs) by providing the utilities you need to effectively prompt the models.
+## Table of Contents
 
-We are actively improving this library to add more prompting techniques.
+1. [How to Contribute](#how-to-contribute)
+2. [CLA Signing](#cla-signing)
+3. [Google-Style Docstrings and Mandatory Type Hints](#google-style-docstrings-and-mandatory-type-hints)
+4. [Reporting Bugs](#reporting-bugs)
+5. [Adding a New Model](#adding-a-new-model)
+6. [License](#license)
 
-## Contribution Guidelines
+## How to Contribute
 
-We welcome contributions to:
+Your contributions can be in many forms—whether it’s enhancing existing features, improving documentation, resolving bugs, or proposing new ideas. Here’s a high-level overview to get you started:
 
-1. Add a new feature to the library (guidance below).
-2. Improve our documentation and add examples to make it clear how to leverage the Multimodal Maestro library.
-3. Report bugs and issues in the project.
-4. Submit a request for a new feature.
-5. Improve our test coverage.
+1. [Fork the Repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo): Click the “Fork” button on our GitHub page to create your own copy.
+2. [Clone Locally](https://docs.github.com/en/enterprise-server@3.11/repositories/creating-and-managing-repositories/cloning-a-repository): Download your fork to your local development environment.
+3. [Create a Branch](https://docs.github.com/en/desktop/making-changes-in-a-branch/managing-branches-in-github-desktop): Use a descriptive name to create a new branch (e.g., `feature/your-descriptive-name`):
+   ```bash
+   git checkout -b feature/your-descriptive-name
+   ```
+4. Develop Your Changes: Make your updates, ensuring your commit messages clearly describe your modifications.
+5. [Commit and Push](https://docs.github.com/en/desktop/making-changes-in-a-branch/committing-and-reviewing-changes-to-your-project-in-github-desktop): Run:
+   ```bash
+   git add .
+   git commit -m "A brief description of your changes"
+   git push -u origin your-descriptive-name
+   ```
+6. [Open a Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request): Submit your pull request against the main development branch. Please detail your changes and link any related issues.
 
-### Contributing Features ✨
+Before merging, check that all tests pass and that your changes adhere to our development and documentation standards.
 
-Before you contribute a new feature, consider submitting an Issue to discuss the feature so the community can weigh in and assist.
+## CLA Signing
 
-## How to Contribute Changes
+In order to maintain the integrity of our project, every pull request must include a signed Contributor License Agreement (CLA). This confirms that your contributions are properly licensed under our Apache 2.0 License. After opening your pull request, simply add a comment stating:
 
-First, fork this repository to your own GitHub account. Click "fork" in the top corner of the `multimodal-maestro` repository to get started:
-
-![Forking the repository](https://media.roboflow.com/fork.png)
-
-![Creating a repository fork](https://media.roboflow.com/create_fork.png)
-
-Then, run `git clone` to download the project code to your computer.
-
-Move to a new branch using the `git checkout` command:
-
-```bash
-git checkout -b <your_branch_name>
+```
+I have read the CLA Document and I sign the CLA.
 ```
 
-The name you choose for your branch should describe the change you want to make (i.e. `add-few-shot-prompting`).
+This step is essential before any merge can occur.
 
-Make any changes you want to the project code, then run the following commands to commit your changes:
+## Google-Style Docstrings and Mandatory Type Hints
 
-```bash
-git add .
-git commit -m "Your commit message"
-git push -u origin main
+For clarity and maintainability, any new functions or classes must include [Google-style docstrings](https://google.github.io/styleguide/pyguide.html) and use Python type hints. Type hints are mandatory in all function definitions, ensuring explicit parameter and return type declarations. These docstrings should clearly explain parameters, return types, and provide usage examples when applicable.
+
+For example:
+
+```python
+def sample_function(param1: int, param2: int = 10) -> bool:
+    """
+    Provides a brief description of function behavior.
+
+    Args:
+        param1 (int): Explanation of the first parameter.
+        param2 (int): Explanation of the second parameter, defaulting to 10.
+
+    Returns:
+        bool: True if the operation succeeds, otherwise False.
+
+    Examples:
+        >>> sample_function(5, 10)
+        True
+    """
+    return param1 == param2
 ```
 
-## 🎨 Code quality
+Following this pattern helps ensure consistency throughout the codebase.
 
-### Pre-commit tool
+## Reporting Bugs
 
-This project utilizes the [pre-commit](https://pre-commit.com/) tool to maintain code quality and consistency. Before submitting a pull request or making any commits, it is important to run the pre-commit tool to ensure that your changes meet the project's guidelines.
+Bug reports are vital for continued improvement. When reporting an issue, please include a clear, minimal reproducible example that demonstrates the problem. Detailed bug reports assist us in swiftly diagnosing and addressing issues.
 
-Furthermore, we have integrated a pre-commit GitHub Action into our workflow. This means that with every pull request opened, the pre-commit checks will be automatically enforced, streamlining the code review process and ensuring that all contributions adhere to our quality standards.
+## Adding a New Model
 
-To run the pre-commit tool, follow these steps:
+If you’re contributing a new model to Maestro, please adhere to these guidelines to ensure alignment with our project structure:
 
-1. Install pre-commit by running the following command: `poetry install`. It will not only install pre-commit but also install all the deps and dev-deps of project
+- Directory Structure: Create a dedicated folder under the `models/` directory (e.g., `models/your_model/`). Your folder should mirror the structure seen in existing models, including:
+  - `core.py`: Implements the primary logic of the model.
+  - `loaders.py`: Manages data ingestion and preprocessing.
+  - `checkpoints.py`: Handles saving and loading model checkpoints.
+  - `inference.py`: Contains the functions for running predictions.
+  - `entrypoint.py`: Provides the integration interface for the model.
 
-2. Once pre-commit is installed, navigate to the project's root directory.
+- Dependencies: Update the [`pyproject.toml`](https://github.com/roboflow/maestro/blob/develop/pyproject.toml) file with any new dependencies needed by your model.
+- Documentation: Add a dedicated page for your model under the `docs/` directory and update the main docs index ([`docs/index.md`](https://github.com/roboflow/maestro/blob/develop/docs/index.md)). For style guidance, refer to pages like [`florence_2.md`](https://github.com/roboflow/maestro/blob/develop/docs/models/florence_2.md), [`paligemma_2.md`](https://github.com/roboflow/maestro/blob/develop/docs/models/paligemma_2.md), or [`qwen_2_5_vl.md`](https://github.com/roboflow/maestro/blob/develop/docs/models/qwen_2_5_vl.md).
 
-3. Run the command `pre-commit run --all-files`. This will execute the pre-commit hooks configured for this project against the modified files. If any issues are found, the pre-commit tool will provide feedback on how to resolve them. Make the necessary changes and re-run the pre-commit command until all issues are resolved.
+## License
 
-4. You can also install pre-commit as a git hook by execute `pre-commit install`. Every time you made `git commit` pre-commit run automatically for you.
+By contributing to Maestro, you agree that your contributions will be licensed under the Apache 2.0 License as specified in our [LICENSE](/LICENSE) file.
 
-### Docstrings
-
-All new functions and classes in `multimodal-maestro` should include docstrings. This is a prerequisite for any new functions and classes to be added to the library.
-
-`multimodal-maestro` adheres to the [Google Python docstring style](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods). Please refer to the style guide while writing docstrings for your contribution.
-
-Then, go back to your fork of the `multimodal-maestro` repository, click "Pull Requests", and click "New Pull Request".
-
-![Opening a pull request](https://media.roboflow.com/open_pr.png)
-
-Make sure the `base` branch is `develop` before submitting your PR.
-
-On the next page, review your changes then click "Create pull request":
-
-![Configuring a pull request](https://media.roboflow.com/create_pr_submit.png)
-
-Next, write a description for your pull request, and click "Create pull request" again to submit it for review:
-
-![Submitting a pull request](https://media.roboflow.com/write_pr.png)
-
-When creating new functions, please ensure you have the following:
-
-1. Docstrings for the function and all parameters.
-2. Unit tests for the function.
-3. Examples in the documentation for the function.
-4. Created an entry in our docs to autogenerate the documentation for the function.
-5. Please share a Google Colab with minimal code to test new feature or reproduce PR whenever it is possible. Please ensure that Google Colab can be accessed without any issue.
-
-When you submit your Pull Request, you will be asked to sign a Contributor License Agreement (CLA) by the `cla-assistant` GitHub bot. We can only respond to PRs from contributors who have signed the project CLA.
-
-All pull requests will be reviewed by the maintainers of the project. We will provide feedback and ask for changes if necessary.
-
-PRs must pass all tests and linting requirements before they can be merged.
-
-## 📝 documentation
-
-The `multimodal-maestro` documentation is stored in a folder called `docs`. The project documentation is built using `mkdocs`.
-
-To run the documentation, install the project requirements with `poetry install dev`. Then, run `mkdocs serve` to start the documentation server.
-
-You can learn more about mkdocs on the [mkdocs website](https://www.mkdocs.org/).
-
-## 🧪 tests
-
-[`pytests`](https://docs.pytest.org/en/7.1.x/) is used to run our tests.
-
-## 📄 license
-
-By contributing, you agree that your contributions will be licensed under an [MIT license](https://github.com/roboflow/multimodal-maestro/blob/develop/LICENSE.md).
+Thank you for your commitment to making Maestro better. We look forward to your pull requests and continued collaboration. Happy coding!

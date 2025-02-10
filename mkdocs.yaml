@@ -22,11 +22,13 @@ extra:
 
 
 nav:
-  - Maestro: index.md
+  - Home: index.md
   - Models:
     - Florence-2: models/florence_2.md
     - PaliGemma 2: models/paligemma_2.md
     - Qwen2.5-VL: models/qwen_2_5_vl.md
+  - Datasets:
+    - JSONL: datasets/jsonl.md
 
 
 theme:
