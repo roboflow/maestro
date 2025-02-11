@@ -21,7 +21,7 @@ class JSONLDataset(Dataset):
 
     Parameters:
         annotations_path (str): Filesystem path to the JSONL file containing dataset annotations.
-        image_directory_path (str): Filesystem path to the directory containing image files.
+        images_directory_path (str): Filesystem path to the directory containing image files.
 
     Example:
         ```
@@ -43,12 +43,12 @@ class JSONLDataset(Dataset):
     ROBOFLOW_JSONL_FILENAME: ClassVar[str] = "annotations.jsonl"
     REQUIRED_KEYS: ClassVar[set[str]] = {"image", "prefix", "suffix"}
 
-    def __init__(self, annotations_path: str, image_directory_path: str) -> None:
-        self.image_directory_path = image_directory_path
-        self.entries = self._load_entries(annotations_path, image_directory_path)
+    def __init__(self, annotations_path: str, images_directory_path: str) -> None:
+        self.image_directory_path = images_directory_path
+        self.entries = self._load_entries(annotations_path, images_directory_path)
 
     @classmethod
-    def _load_entries(cls, annotations_path: str, image_dir: str) -> list[dict]:
+    def _load_entries(cls, annotations_path: str, images_dir: str) -> list[dict]:
         """
         Load and validate dataset entries from a JSON Lines (JSONL) file.
 
@@ -59,7 +59,7 @@ class JSONLDataset(Dataset):
 
         Parameters:
             annotations_path (str): Filesystem path to the JSONL file.
-            image_dir (str): Filesystem path to the image directory.
+            images_dir (str): Filesystem path to the image directory.
 
         Returns:
             list[dict]: A list of valid annotation dictionaries.
@@ -86,7 +86,7 @@ class JSONLDataset(Dataset):
                     skipped_count += 1
                     logger.warning(f"Skipping line {line_idx}: missing key(s) {missing_keys}")
                     continue
-                image_path = os.path.join(image_dir, entry["image"])
+                image_path = os.path.join(images_dir, entry["image"])
                 if not os.path.exists(image_path):
                     skipped_count += 1
                     logger.warning(f"Skipping line {line_idx}: image file not found '{image_path}'")

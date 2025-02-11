@@ -16,13 +16,13 @@ class COCODataset(Dataset):
 
     def __init__(self, annotations_path: str, images_directory_path: str) -> None:
         self.images_directory_path = images_directory_path
-        self.entries = self._load_entries(annotations_path, images_directory_path)
+        self.classes, self.entries = self._load_entries(annotations_path, images_directory_path)
 
     @classmethod
-    def _load_entries(cls, annotations_path: str, images_dir: str) -> list[tuple[str, Detections]]:
+    def _load_entries(cls, annotations_path: str, images_dir: str) -> tuple[list[str], list[tuple[str, Detections]]]:
         if not os.path.isfile(annotations_path):
             logger.warning(f"Annotations file does not exist: '{annotations_path}'")
-            return []
+            return [], []
 
         try:
             classes, images, annotation_dict = load_coco_annotations(
@@ -30,7 +30,7 @@ class COCODataset(Dataset):
             )
         except Exception as e:
             logger.warning(f"Could not parse annotations file '{annotations_path}': {e}")
-            return []
+            return [], []
 
         total_images = len(images)
         skipped_count = 0
@@ -58,7 +58,7 @@ class COCODataset(Dataset):
         else:
             logger.warning(f"No images found in '{annotations_path}'.")
 
-        return valid_entries
+        return classes, valid_entries
 
     def __len__(self) -> int:
         return len(self.entries)
