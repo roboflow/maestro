@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from transformers import PaliGemmaForConditionalGeneration, PaliGemmaProcessor
 
 from maestro.trainer.common.callbacks import SaveCheckpoint
-from maestro.trainer.common.datasets import create_data_loaders
+from maestro.trainer.common.datasets.core import create_data_loaders
 from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, parse_metrics, save_metric_plots
 from maestro.trainer.common.training import MaestroTrainer
 from maestro.trainer.common.utils.device import device_is_available, parse_device_spec

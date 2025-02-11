@@ -19,6 +19,7 @@ def get_maestro_logger(name: str = "maestro", level: int = logging.INFO) -> logg
         formatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
+        logger.propagate = False
 
     return logger
 

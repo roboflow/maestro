@@ -64,11 +64,37 @@ from maestro.trainer.models.florence_2.detection import boxes_to_text, text_to_b
         ),
         # 6. Malformatted string -> no matches
         (
-            "catloc_100<loc_200><loc__400><loc_300>",
+            "cat<loc_200><loc_400><loc_300>",
             ["cat", "dog"],
             (640, 480),
             np.zeros((0, 4), dtype=np.float32),
             np.zeros((0,), dtype=np.int32),
+            ExitStack(),
+        ),
+        # 7. Some classes known, some unknown -> only valid boxes are returned
+        (
+            "cat<loc_100><loc_200><loc_400><loc_300>"
+            "unknown<loc_10><loc_20><loc_50><loc_60>"
+            "dog<loc_0><loc_0><loc_1000><loc_1000>",
+            ["cat", "dog"],
+            (640, 480),
+            np.array(
+                [
+                    [64.0, 96.0, 256.0, 144.0],
+                    [0.0, 0.0, 640.0, 480.0],
+                ],
+                dtype=np.float32,
+            ),
+            np.array([0, 1], dtype=np.int32),
+            ExitStack(),
+        ),
+        # 8. Partially malformatted string -> one valid box returned
+        (
+            "cat<loc_100><loc_200><loc_400>dog<loc_0><loc_0><loc_1000><loc_1000>",
+            ["cat", "dog"],
+            (640, 480),
+            np.array([[0.0, 0.0, 640.0, 480.0]], dtype=np.float32),
+            np.array([1], dtype=np.int32),
             ExitStack(),
         ),
     ],
