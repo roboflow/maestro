@@ -3,7 +3,7 @@ from contextlib import ExitStack
 import numpy as np
 import pytest
 
-from maestro.trainer.models.florence_2.detection import boxes_to_text, text_to_boxes
+from maestro.trainer.models.florence_2.detection import detections_to_suffix_formatter, result_to_detections_formatter
 
 
 @pytest.mark.parametrize(
@@ -99,7 +99,7 @@ from maestro.trainer.models.florence_2.detection import boxes_to_text, text_to_b
         ),
     ],
 )
-def test_text_to_boxes(
+def test_result_to_detections_formatter(
     text: str,
     classes: list[str],
     resolution_wh: tuple[int, int],
@@ -108,7 +108,7 @@ def test_text_to_boxes(
     exception: ExitStack,
 ) -> None:
     with exception:
-        boxes, class_ids = text_to_boxes(text, classes, resolution_wh)
+        boxes, class_ids = result_to_detections_formatter(text, classes, resolution_wh)
         assert boxes.shape == expected_boxes.shape
         assert class_ids.shape == expected_class_ids.shape
         np.testing.assert_allclose(boxes, expected_boxes, rtol=1e-5, atol=1e-5)
@@ -171,7 +171,7 @@ def test_text_to_boxes(
         ),
     ],
 )
-def test_boxes_to_text(
+def test_detections_to_suffix_formatter(
     xyxy: np.ndarray,
     class_id: np.ndarray,
     classes: list[str],
@@ -180,6 +180,6 @@ def test_boxes_to_text(
     exception: ExitStack,
 ) -> None:
     with exception:
-        result = boxes_to_text(xyxy, class_id, classes, resolution_wh)
+        result = detections_to_suffix_formatter(xyxy, class_id, classes, resolution_wh)
         if expected_text is not None:
             assert result == expected_text

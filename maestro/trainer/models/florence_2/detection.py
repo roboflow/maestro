@@ -5,7 +5,9 @@ import numpy as np
 PATTERN = re.compile(r"(\w+(?:\s+\w+)*)<loc_(\d+)><loc_(\d+)><loc_(\d+)><loc_(\d+)>")
 
 
-def text_to_boxes(text: str, classes: list[str], resolution_wh: tuple[int, int]) -> tuple[np.ndarray, np.ndarray]:
+def result_to_detections_formatter(
+    text: str, classes: list[str], resolution_wh: tuple[int, int]
+) -> tuple[np.ndarray, np.ndarray]:
     """Converts Florence-2-compatible text describing bounding boxes into NumPy arrays.
 
     Each bounding box is represented by:
@@ -63,7 +65,9 @@ def text_to_boxes(text: str, classes: list[str], resolution_wh: tuple[int, int])
     return boxes, class_ids
 
 
-def boxes_to_text(xyxy: np.ndarray, class_id: np.ndarray, classes: list[str], resolution_wh: tuple[int, int]) -> str:
+def detections_to_suffix_formatter(
+    xyxy: np.ndarray, class_id: np.ndarray, classes: list[str], resolution_wh: tuple[int, int]
+) -> str:
     """Generates Florence-2-compatible text describing bounding boxes.
 
     Each bounding box is assumed to be in pixel coordinates (xyxy) scaled
@@ -103,3 +107,9 @@ def boxes_to_text(xyxy: np.ndarray, class_id: np.ndarray, classes: list[str], re
         text_parts.append(box_text)
 
     return "".join(text_parts)
+
+
+def detections_to_prefix_formatter(
+    xyxy: np.ndarray, class_id: np.ndarray, classes: list[str], resolution_wh: tuple[int, int]
+) -> str:
+    return "<OD>"

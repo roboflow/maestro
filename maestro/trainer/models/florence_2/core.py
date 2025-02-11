@@ -22,6 +22,7 @@ from maestro.trainer.models.florence_2.checkpoints import (
     load_model,
     save_model,
 )
+from maestro.trainer.models.florence_2.detection import detections_to_prefix_formatter, detections_to_suffix_formatter
 from maestro.trainer.models.florence_2.inference import predict_with_inputs
 from maestro.trainer.models.florence_2.loaders import evaluation_collate_fn, train_collate_fn
 
@@ -200,6 +201,8 @@ def train(config: Florence2Configuration | dict) -> None:
         test_batch_size=config.val_batch_size,
         test_collect_fn=partial(evaluation_collate_fn, processor=processor),
         test_num_workers=config.val_num_workers,
+        detections_to_prefix_formatter=detections_to_prefix_formatter,
+        detections_to_suffix_formatter=detections_to_suffix_formatter,
     )
     pl_module = Florence2Trainer(
         processor=processor, model=model, train_loader=train_loader, valid_loader=valid_loader, config=config

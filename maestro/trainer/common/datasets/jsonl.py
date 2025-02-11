@@ -1,16 +1,17 @@
 import json
 import os
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from PIL import Image
 from torch.utils.data import Dataset
 
+from maestro.trainer.common.datasets.base import BaseVLDataset
 from maestro.trainer.logger import get_maestro_logger
 
 logger = get_maestro_logger()
 
 
-class JSONLDataset(Dataset):
+class JSONLDataset(Dataset, BaseVLDataset):
     """
     A dataset for loading images and annotations from a JSON Lines (JSONL) file.
 
@@ -113,7 +114,7 @@ class JSONLDataset(Dataset):
         """
         return len(self.entries)
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx: int) -> tuple[Image.Image, dict[str, Any]]:
         """
         Retrieve the image and its corresponding annotation entry at the specified index.
 
@@ -134,3 +135,47 @@ class JSONLDataset(Dataset):
         image_path = os.path.join(self.image_directory_path, entry["image"])
         image = Image.open(image_path).convert("RGB")
         return image, entry
+
+
+def is_jsonl_dataset(dataset_location: str) -> bool:
+    """
+    Checks if a directory structure matches the JSONL dataset format. A JSONL dataset
+    is typically organized with separate subdirectories (e.g. `train`, `valid`, `test`),
+    each containing an `annotations.jsonl` file and corresponding images:
+
+    Expected structure (example):
+    ```
+    dataset/
+    ├── train/
+    │   ├── annotations.jsonl
+    │   ├── image1.jpg
+    │   ├── image2.jpg
+    │   └── ...
+    ├── valid/
+    │   ├── annotations.jsonl
+    │   ├── image1.jpg
+    │   ├── image2.jpg
+    │   └── ...
+    └── test/
+        ├── annotations.jsonl
+        ├── image1.jpg
+        ├── image2.jpg
+        └── ...
+    ```
+
+    This function checks for at least one subdirectory named `train`, `valid`, or `test`
+    that contains an `annotations.jsonl` file. If found, it returns `True`; otherwise,
+    `False`.
+
+    Args:
+        dataset_location (str): The path to the dataset directory.
+
+    Returns:
+        bool: `True` if the dataset follows the JSONL format; otherwise, `False`.
+    """
+    splits = ["train", "valid", "test"]
+    for split in splits:
+        annotations_path = os.path.join(dataset_location, split, "annotations.jsonl")
+        if os.path.isfile(annotations_path):
+            return True
+    return False
