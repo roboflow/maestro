@@ -175,6 +175,8 @@ class Florence2Trainer(MaestroTrainer):
                     predictions_list.append(sv.Detections(xyxy=predicted_boxes, class_id=predicted_class_ids))
                     targets_list.append(sv.Detections(xyxy=reference_boxes, class_id=reference_class_ids))
 
+                print("predictions_list", predictions_list)
+                print("targets_list", targets_list)
                 result = metric.compute(predictions=predictions_list, targets=targets_list)
                 for key, value in result.items():
                     self.valid_metrics_tracker.register(
