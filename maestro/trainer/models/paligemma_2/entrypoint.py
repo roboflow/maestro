@@ -18,7 +18,14 @@ paligemma_2_app = typer.Typer(help="Fine-tune and evaluate PaliGemma-2 model")
     help="Train PaliGemma-2 model", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
 )
 def train(
-    dataset: Annotated[str, typer.Option("--dataset", help="Path to the dataset used for training")],
+    dataset: Annotated[
+        str,
+        typer.Option(
+            "--dataset",
+            help="Local path or Roboflow identifier. If not found locally, it will be resolved (and downloaded) "
+            "automatically",
+        ),
+    ],
     model_id: Annotated[
         str, typer.Option("--model_id", help="Identifier for the PaliGemma-2 model")
     ] = DEFAULT_PALIGEMMA2_MODEL_ID,

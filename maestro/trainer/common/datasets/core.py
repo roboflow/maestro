@@ -1,9 +1,75 @@
 import os
 from typing import Any, Callable, Optional
 
+from roboflow import Roboflow
 from torch.utils.data import DataLoader, Dataset
 
+from maestro.cli.env import ROBOFLOW_API_KEY_ENV
 from maestro.trainer.common.datasets.jsonl import JSONLDataset
+from maestro.trainer.common.datasets.roboflow import ROBOFLOW_PROJECT_TYPE_TO_DATASET_FORMAT, parse_roboflow_identifier
+
+
+def resolve_dataset_path(dataset_id: str) -> Optional[str]:
+    """
+    Resolves the dataset path from a given identifier or local path.
+
+    This function first checks if the provided string corresponds to an existing local path.
+    If not, it attempts to interpret the string as a Roboflow identifier, download the dataset
+    using the Roboflow API, and then returns the local path where the dataset has been downloaded.
+    The function requires that the 'ROBOFLOW_API_KEY' environment variable is set.
+
+    Args:
+        dataset_id (str): A local path to the dataset or a Roboflow identifier string.
+
+    Returns:
+        Optional[str]: The local path to the dataset if found or successfully downloaded;
+        otherwise, None if the identifier could not be parsed.
+
+    Raises:
+        ValueError: If the Roboflow API key is missing, the dataset type is unsupported, or no dataset
+        versions are available.
+    """
+    from maestro.trainer.logger import get_maestro_logger
+
+    logger = get_maestro_logger()
+
+    if os.path.exists(dataset_id):
+        logger.info(f"Dataset found locally at: {dataset_id}")
+        return dataset_id
+
+    parsed = parse_roboflow_identifier(dataset_id)
+    if parsed is None:
+        return None
+
+    workspace_id, project_id, dataset_version = parsed
+
+    api_key = os.environ.get(ROBOFLOW_API_KEY_ENV)
+    if not api_key:
+        logger.error("Missing Roboflow API key: please set the 'ROBOFLOW_API_KEY' environment variable.")
+        raise ValueError("Missing Roboflow API key: please set the 'ROBOFLOW_API_KEY' environment variable.")
+
+    rf = Roboflow(api_key=api_key)
+    workspace = rf.workspace(workspace_id)
+    project = workspace.project(project_id)
+
+    if project.type not in ROBOFLOW_PROJECT_TYPE_TO_DATASET_FORMAT:
+        logger.error(f"Maestro does not support {project.type} Roboflow datasets.")
+        raise ValueError(f"Maestro does not support {project.type} Roboflow datasets.")
+
+    dataset_format = ROBOFLOW_PROJECT_TYPE_TO_DATASET_FORMAT[project.type]
+    if dataset_version:
+        version = project.version(dataset_version)
+    else:
+        versions = project.versions()
+        if not versions:
+            logger.error("No dataset versions available: project has not been versioned yet.")
+            raise ValueError("No dataset versions available: project has not been versioned yet.")
+        version = versions[0]
+
+    logger.info("Starting download of dataset...")
+    dataset = version.download(dataset_format)
+    logger.info(f"Completed download of dataset at: {dataset.location}")
+    return dataset.location
 
 
 def load_split_dataset(dataset_location: str, split_name: str) -> Optional[Dataset]:

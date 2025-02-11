@@ -16,7 +16,14 @@ florence_2_app = typer.Typer(help="Fine-tune and evaluate Florence-2 model")
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
 )
 def train(
-    dataset: Annotated[str, typer.Option("--dataset", help="Path to the dataset used for training")],
+    dataset: Annotated[
+        str,
+        typer.Option(
+            "--dataset",
+            help="Local path or Roboflow identifier. If not found locally, it will be resolved (and downloaded) "
+            "automatically",
+        ),
+    ],
     model_id: Annotated[
         str, typer.Option("--model_id", help="Identifier for the Florence-2 model")
     ] = DEFAULT_FLORENCE2_MODEL_ID,

@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from transformers import Qwen2_5_VLForConditionalGeneration, Qwen2_5_VLProcessor
 
 from maestro.trainer.common.callbacks import SaveCheckpoint
-from maestro.trainer.common.datasets.core import create_data_loaders
+from maestro.trainer.common.datasets.core import create_data_loaders, resolve_dataset_path
 from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, parse_metrics, save_metric_plots
 from maestro.trainer.common.training import MaestroTrainer
 from maestro.trainer.common.utils.device import device_is_available, parse_device_spec
@@ -34,7 +34,8 @@ class Qwen25VLConfiguration:
     Configuration for training the Qwen2.5-VL model.
 
     Attributes:
-        dataset (str): Path to the dataset in Roboflow JSONL format.
+        dataset (str):
+            Local path or Roboflow identifier. If not found locally, it will be resolved (and downloaded) automatically.
         model_id (str): Identifier for the Qwen2.5-VL model from HuggingFace Hub.
         revision (str): Model revision to use.
         device (torch.device): Device to run training on.
@@ -197,8 +198,11 @@ def train(config: Qwen25VLConfiguration | dict) -> None:
         min_pixels=config.min_pixels,
         max_pixels=config.max_pixels,
     )
+    dataset_location = resolve_dataset_path(config.dataset)
+    if dataset_location is None:
+        return
     train_loader, valid_loader, test_loader = create_data_loaders(
-        dataset_location=config.dataset,
+        dataset_location=dataset_location,
         train_batch_size=config.batch_size,
         train_collect_fn=partial(train_collate_fn, processor=processor, system_message=config.system_message),
         train_num_workers=config.num_workers,

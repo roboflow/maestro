@@ -1,6 +1,11 @@
 import re
 from typing import Optional
 
+ROBOFLOW_PROJECT_TYPE_TO_DATASET_FORMAT = {
+    "object-detection": "coco",
+    "text-image-pairs": "jsonl",
+}
+
 
 def parse_roboflow_identifier(identifier: str) -> Optional[tuple[str, str, Optional[int]]]:
     """
