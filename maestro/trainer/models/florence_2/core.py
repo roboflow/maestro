@@ -5,6 +5,7 @@ from typing import Literal, Optional
 
 import dacite
 import lightning
+import numpy as np
 import supervision as sv
 import torch
 from torch.optim import AdamW
@@ -172,11 +173,20 @@ class Florence2Trainer(MaestroTrainer):
                     reference_boxes, reference_class_ids = result_to_detections_formatter(
                         text=reference_suffix, resolution_wh=image.size
                     )
-                    predictions_list.append(sv.Detections(xyxy=predicted_boxes, class_id=predicted_class_ids))
-                    targets_list.append(sv.Detections(xyxy=reference_boxes, class_id=reference_class_ids))
-
-                print("predictions_list", predictions_list)
-                print("targets_list", targets_list)
+                    predictions_list.append(
+                        sv.Detections(
+                            xyxy=predicted_boxes,
+                            class_id=predicted_class_ids,
+                            confidence=np.ones_like(predicted_class_ids),
+                        )
+                    )
+                    targets_list.append(
+                        sv.Detections(
+                            xyxy=reference_boxes,
+                            class_id=reference_class_ids,
+                            confidence=np.ones_like(reference_class_ids),
+                        )
+                    )
                 result = metric.compute(predictions=predictions_list, targets=targets_list)
                 for key, value in result.items():
                     self.valid_metrics_tracker.register(
