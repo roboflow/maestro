@@ -195,7 +195,7 @@ class Florence2Trainer(MaestroTrainer):
                         step=batch_idx,
                         value=value,
                     )
-                    self.log(key, value, prog_bar=True, logger=True)
+                    self.log(key, value, prog_bar=True, logger=True, batch_size=self.config.val_batch_size)
             else:
                 result = metric.compute(predictions=generated_suffixes, targets=suffixes)
                 for key, value in result.items():
@@ -205,7 +205,7 @@ class Florence2Trainer(MaestroTrainer):
                         step=batch_idx,
                         value=value,
                     )
-                    self.log(key, value, prog_bar=True, logger=True)
+                    self.log(key, value, prog_bar=True, logger=True, batch_size=self.config.val_batch_size)
 
     def configure_optimizers(self):
         optimizer = AdamW(self.model.parameters(), lr=self.config.lr)
@@ -259,7 +259,6 @@ def train(config: Florence2Configuration | dict) -> None:
         max_epochs=config.epochs,
         accumulate_grad_batches=config.accumulate_grad_batches,
         check_val_every_n_epoch=1,
-        limit_val_batches=1,
         log_every_n_steps=10,
         callbacks=[save_checkpoint_callback],
     )
