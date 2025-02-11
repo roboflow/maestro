@@ -49,7 +49,6 @@ def load_model(
     processor = Qwen2_5_VLProcessor.from_pretrained(
         model_id_or_path,
         revision=revision,
-        trust_remote_code=True,
         cache_dir=cache_dir,
         min_pixels=min_pixels,
         max_pixels=max_pixels,
@@ -79,7 +78,6 @@ def load_model(
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
             model_id_or_path,
             revision=revision,
-            trust_remote_code=True,
             device_map="auto",
             quantization_config=bnb_config,
             torch_dtype=torch.bfloat16,
@@ -91,7 +89,6 @@ def load_model(
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
             model_id_or_path,
             revision=revision,
-            trust_remote_code=True,
             device_map="auto",
             torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,

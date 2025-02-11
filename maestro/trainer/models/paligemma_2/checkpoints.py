@@ -45,7 +45,7 @@ def load_model(
         ValueError: If the model or processor cannot be loaded.
     """
     device = parse_device_spec(device)
-    processor = PaliGemmaProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
+    processor = PaliGemmaProcessor.from_pretrained(model_id_or_path, revision=revision)
 
     if optimization_strategy in {OptimizationStrategy.LORA, OptimizationStrategy.QLORA}:
         lora_config = LoraConfig(
@@ -65,7 +65,6 @@ def load_model(
         model = PaliGemmaForConditionalGeneration.from_pretrained(
             pretrained_model_name_or_path=model_id_or_path,
             revision=revision,
-            trust_remote_code=True,
             device_map="auto",
             quantization_config=bnb_config,
             torch_dtype=torch.bfloat16,
@@ -77,7 +76,6 @@ def load_model(
         model = PaliGemmaForConditionalGeneration.from_pretrained(
             pretrained_model_name_or_path=model_id_or_path,
             revision=revision,
-            trust_remote_code=True,
             device_map="auto",
             cache_dir=cache_dir,
         ).to(device)

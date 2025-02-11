@@ -67,7 +67,7 @@ processor, model = load_model(
 Perform inference with PaliGemma 2 using the predict function. Supply an image and a text prefix to obtain predictions, such as object detection outputs or captions.
 
 ```python
-from maestro.trainer.common.datasets import JSONLDataset
+from maestro.trainer.common.datasets.jsonl import JSONLDataset
 from maestro.trainer.models.paligemma_2.inference import predict
 
 ds = JSONLDataset(
