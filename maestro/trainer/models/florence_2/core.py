@@ -5,12 +5,19 @@ from typing import Literal, Optional
 
 import dacite
 import lightning
+import supervision as sv
 import torch
 from torch.optim import AdamW
 
 from maestro.trainer.common.callbacks import SaveCheckpoint
 from maestro.trainer.common.datasets.core import create_data_loaders, resolve_dataset_path
-from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, parse_metrics, save_metric_plots
+from maestro.trainer.common.metrics import (
+    BaseMetric,
+    MeanAveragePrecisionMetric,
+    MetricsTracker,
+    parse_metrics,
+    save_metric_plots,
+)
 from maestro.trainer.common.training import MaestroTrainer
 from maestro.trainer.common.utils.device import device_is_available, parse_device_spec
 from maestro.trainer.common.utils.path import create_new_run_directory
@@ -22,7 +29,11 @@ from maestro.trainer.models.florence_2.checkpoints import (
     load_model,
     save_model,
 )
-from maestro.trainer.models.florence_2.detection import detections_to_prefix_formatter, detections_to_suffix_formatter
+from maestro.trainer.models.florence_2.detection import (
+    detections_to_prefix_formatter,
+    detections_to_suffix_formatter,
+    result_to_detections_formatter,
+)
 from maestro.trainer.models.florence_2.inference import predict_with_inputs
 from maestro.trainer.models.florence_2.loaders import evaluation_collate_fn, train_collate_fn
 
@@ -141,7 +152,7 @@ class Florence2Trainer(MaestroTrainer):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        input_ids, pixel_values, prefixes, suffixes = batch
+        input_ids, pixel_values, images, prefixes, suffixes = batch
         generated_suffixes = predict_with_inputs(
             model=self.model,
             processor=self.processor,
@@ -151,15 +162,38 @@ class Florence2Trainer(MaestroTrainer):
             max_new_tokens=self.config.max_new_tokens,
         )
         for metric in self.config.metrics:
-            result = metric.compute(predictions=generated_suffixes, targets=suffixes)
-            for key, value in result.items():
-                self.valid_metrics_tracker.register(
-                    metric=key,
-                    epoch=self.current_epoch,
-                    step=batch_idx,
-                    value=value,
-                )
-                self.log(key, value, prog_bar=True, logger=True)
+            if isinstance(metric, MeanAveragePrecisionMetric):
+                predictions_list = []
+                targets_list = []
+                for image, generated_suffix, reference_suffix in zip(images, generated_suffixes, suffixes):
+                    predicted_boxes, predicted_class_ids = result_to_detections_formatter(
+                        text=generated_suffix, resolution_wh=image.size
+                    )
+                    reference_boxes, reference_class_ids = result_to_detections_formatter(
+                        text=reference_suffix, resolution_wh=image.size
+                    )
+                    predictions_list.append(sv.Detections(xyxy=predicted_boxes, class_id=predicted_class_ids))
+                    targets_list.append(sv.Detections(xyxy=reference_boxes, class_id=reference_class_ids))
+
+                result = metric.compute(predictions=predictions_list, targets=targets_list)
+                for key, value in result.items():
+                    self.valid_metrics_tracker.register(
+                        metric=key,
+                        epoch=self.current_epoch,
+                        step=batch_idx,
+                        value=value,
+                    )
+                    self.log(key, value, prog_bar=True, logger=True)
+            else:
+                result = metric.compute(predictions=generated_suffixes, targets=suffixes)
+                for key, value in result.items():
+                    self.valid_metrics_tracker.register(
+                        metric=key,
+                        epoch=self.current_epoch,
+                        step=batch_idx,
+                        value=value,
+                    )
+                    self.log(key, value, prog_bar=True, logger=True)
 
     def configure_optimizers(self):
         optimizer = AdamW(self.model.parameters(), lr=self.config.lr)

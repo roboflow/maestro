@@ -97,18 +97,45 @@ from maestro.trainer.models.florence_2.detection import detections_to_suffix_for
             np.array([1], dtype=np.int32),
             ExitStack(),
         ),
+        # 9. Single valid box with no classes provided -> default class id -1
+        (
+            "cat<loc_100><loc_200><loc_400><loc_300>",
+            None,
+            (640, 480),
+            np.array([[64.0, 96.0, 256.0, 144.0]], dtype=np.float32),
+            np.array([-1], dtype=np.int32),
+            ExitStack(),
+        ),
+        # 10. Multiple boxes with no classes provided -> all detections included with class id -1
+        (
+            "cat<loc_0><loc_100><loc_200><loc_300>"
+            "bird<loc_500><loc_500><loc_600><loc_600>"
+            "dog<loc_50><loc_50><loc_1000><loc_1000>",
+            None,
+            (100, 200),
+            np.array(
+                [
+                    [0.0, 20.0, 20.0, 60.0],
+                    [50.0, 100.0, 60.0, 120.0],
+                    [5.0, 10.0, 100.0, 200.0],
+                ],
+                dtype=np.float32,
+            ),
+            np.array([-1, -1, -1], dtype=np.int32),
+            ExitStack(),
+        ),
     ],
 )
 def test_result_to_detections_formatter(
     text: str,
-    classes: list[str],
+    classes: list[str] | None,
     resolution_wh: tuple[int, int],
     expected_boxes: np.ndarray,
     expected_class_ids: np.ndarray,
     exception: ExitStack,
 ) -> None:
     with exception:
-        boxes, class_ids = result_to_detections_formatter(text, classes, resolution_wh)
+        boxes, class_ids = result_to_detections_formatter(text, resolution_wh, classes)
         assert boxes.shape == expected_boxes.shape
         assert class_ids.shape == expected_class_ids.shape
         np.testing.assert_allclose(boxes, expected_boxes, rtol=1e-5, atol=1e-5)
