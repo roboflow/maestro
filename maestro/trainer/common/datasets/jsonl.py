@@ -26,14 +26,14 @@ class JSONLDataset(Dataset):
     Example:
         ```
         from roboflow import download_dataset, login
-        from maestro.trainer.common.datasets import JSONLDataset
+        from maestro.trainer.common.datasets.jsonl import JSONLDataset
 
         login()
 
         dataset = download_dataset("universe.roboflow.com/roboflow-jvuqo/pallet-load-manifest-json/2", "jsonl")
         ds = JSONLDataset(
             annotations_path=f"{dataset.location}/test/annotations.jsonl",
-            image_directory_path=f"{dataset.location}/test"
+            images_directory_path=f"{dataset.location}/test"
         )
         len(ds)
         # 10

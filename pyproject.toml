@@ -37,6 +37,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "roboflow>=1.1.0",
     "dacite>=1.9.1",
     "lightning>=2.4.0",
     "supervision>=0.20.0,<0.26.0",
