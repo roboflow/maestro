@@ -191,10 +191,10 @@ def create_data_loaders(
     valid_dataset = load_split("valid")
     test_dataset = load_split("test")
 
-    if not any([train_dataset, valid_dataset, test_dataset]):
+    if not all([train_dataset, valid_dataset, test_dataset]):
         error_message = (
-            f"No dataset splits found at '{dataset_location}'. "
-            "Ensure the dataset is correctly structured with at least one of train/valid/test."
+            f"All dataset splits (train, valid, and test) must be present at {dataset_location}. "
+            f"Ensure the dataset is correctly structured."
         )
         logger.error(error_message)
         raise ValueError(error_message)
