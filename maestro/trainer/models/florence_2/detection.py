@@ -6,7 +6,7 @@ PATTERN = re.compile(r"(\w+(?:\s+\w+)*)<loc_(\d+)><loc_(\d+)><loc_(\d+)><loc_(\d
 
 
 def result_to_detections_formatter(
-    text: str, classes: list[str], resolution_wh: tuple[int, int]
+    text: str, resolution_wh: tuple[int, int], classes: list[str] | None = None
 ) -> tuple[np.ndarray, np.ndarray]:
     """Converts Florence-2-compatible text describing bounding boxes into NumPy arrays.
 
@@ -15,47 +15,54 @@ def result_to_detections_formatter(
     with coordinates in the [0..1000] range.
 
     These coordinates are normalized by dividing by 1000, then scaled to the
-    width/height specified by `resolution_wh`. Class names map to their IDs
-    based on the order in `classes`. Any class names not found in `classes`
-    are skipped.
+    width/height specified by `resolution_wh`. If `classes` is provided, class names
+    map to their IDs based on the order in `classes` and any class names not found in
+    `classes` are skipped. If `classes` is not provided, all detected boxes are included
+    with a default class ID of -1.
 
     Args:
         text (str): Florence-2-compatible text string with bounding box data.
-        classes (list[str]): A list of valid class names, where the index of
-            each class corresponds to its class ID.
-        resolution_wh (tuple[int, int]): A (width, height) representing the
-            target image resolution in pixels.
+        resolution_wh (tuple[int, int]): A (width, height) representing the target image resolution in pixels.
+        classes (list[str] | None): A list of valid class names where the index of each class corresponds
+            to its class ID. If None, each detection is assigned a class ID of -1.
 
     Returns:
         tuple[np.ndarray, np.ndarray]:
             A tuple where:
-            - The first element is a float32 array of shape (N, 4), containing
-              xyxy bounding boxes scaled to `resolution_wh`.
-            - The second element is an int32 array of shape (N,), containing
-              the class IDs corresponding to each bounding box.
+            - The first element is a float32 array of shape (N, 4), containing xyxy bounding boxes scaled to
+                `resolution_wh`.
+            - The second element is an int32 array of shape (N,), containing the class IDs corresponding to each
+                bounding box.
     """
-    name_to_index = {cls_name: idx for idx, cls_name in enumerate(classes)}
+    if classes is not None:
+        name_to_index = {cls_name: idx for idx, cls_name in enumerate(classes)}
+    else:
+        name_to_index = None
+
     matches = PATTERN.finditer(text)
     boxes_list = []
     class_ids_list = []
 
     for match in matches:
         class_name, x_min, y_min, x_max, y_max = match.groups()
-        if class_name not in name_to_index:
-            continue
+        if name_to_index is not None:
+            if class_name not in name_to_index:
+                continue
+            current_class_id = name_to_index[class_name]
+        else:
+            current_class_id = -1
 
         x_min = float(x_min)
         y_min = float(y_min)
         x_max = float(x_max)
         y_max = float(y_max)
 
-        class_ids_list.append(name_to_index[class_name])
         boxes_list.append([x_min, y_min, x_max, y_max])
+        class_ids_list.append(current_class_id)
 
-    boxes = np.array(boxes_list, dtype=np.float32)
-    boxes = boxes.reshape(-1, 4)
+    boxes = np.array(boxes_list, dtype=np.float32).reshape(-1, 4)
 
-    if len(boxes) > 0:
+    if boxes.shape[0] > 0:
         boxes /= 1000.0
         boxes[:, 0::2] *= resolution_wh[0]
         boxes[:, 1::2] *= resolution_wh[1]

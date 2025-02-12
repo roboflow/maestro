@@ -70,7 +70,7 @@ class MeanAveragePrecisionMetric(BaseMetric):
             Dict[str, float]: A dictionary of computed mAP metrics with metric names as
                 keys and their values.
         """
-        result = MeanAveragePrecision().update(targets=targets, predictions=predictions).compute()
+        result = MeanAveragePrecision(class_agnostic=True).update(targets=targets, predictions=predictions).compute()
         return {"map50:95": result.map50_95, "map50": result.map50, "map75": result.map75}
 
 
