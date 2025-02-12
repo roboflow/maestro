@@ -2,10 +2,6 @@
 
   <h1>maestro</h1>
 
-  <h3>VLM fine-tuning for everyone</h1>
-
-  <br>
-
   <div>
       <img
         src="https://github.com/user-attachments/assets/c9416f1f-a2bf-4590-86da-d2fc89ba559b"
@@ -44,7 +40,18 @@ data loading, reproducibility, and training loop setup. It currently offers read
 recipes for popular vision-language models such as **Florence-2**, **PaliGemma 2**, and
 **Qwen2.5-VL**.
 
-![maestro](https://github.com/user-attachments/assets/3bb9ccba-b0ee-4964-bcd6-f71124a08bc2)
+## Fine-tune VLMs for free
+
+| model, task and acceleration                                |                                                                                          open in colab                                                                                           |
+|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| Florence-2 (0.9B) object detection with LoRA (experimental) | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_florence_2_object_detection.ipynb) |
+| PaliGemma 2 (3B) JSON data extraction with LoRA             | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_paligemma_2_json_extraction.ipynb) |
+| Qwen2.5-VL (3B) JSON data extraction with QLoRA             | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_qwen2_5_vl_json_extraction.ipynb)  |
+
+## News
+
+- `2025/02/12` (`1.1.0rc1`): This prerelease adds native support for COCO datasets. Now you can fine-tune Florence-2 directly on your existing COCO data for seamless model adaptation.
+- `2025/02/05` (`1.0.0`): This release introduces support for Florence-2, PaliGemma 2, and Qwen2.5-VL and includes LoRA, QLoRA, and graph freezing to keep hardware requirements in check. It offers a single CLI/SDK to reduce code complexity, and a consistent JSONL format to streamline data handling.
 
 ## Quickstart
 
@@ -92,16 +99,6 @@ config = {
 
 train(config)
 ```
-
-## Cookbooks
-Looking for a place to start? Try our cookbooks to learn how to fine-tune different VLMs on various vision tasks with **maestro**.
-
-
-| description                                             |                                                                                          open in colab                                                                                           |
-|:--------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| Finetune Florence-2 for object detection with LoRA      | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_florence_2_object_detection.ipynb) |
-| Finetune PaliGemma 2 for JSON data extraction with LoRA | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_paligemma_2_json_extraction.ipynb) |
-| Finetune Qwen2.5-VL for JSON data extraction with QLoRA | [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roboflow/maestro/blob/develop/cookbooks/maestro_qwen2_5_vl_json_extraction.ipynb)  |
 
 ## Contribution
 
