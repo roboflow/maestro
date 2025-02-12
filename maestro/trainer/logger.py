@@ -1,7 +1,27 @@
 import logging
 import os
+import sys
 
 from transformers.utils.logging import disable_progress_bar, enable_progress_bar
+
+
+def get_maestro_logger(name: str = "maestro", level: int = logging.INFO) -> logging.Logger:
+    """
+    Returns a configured logger for the Maestro project.
+    Adjust log levels, handlers, and formatters as needed.
+    """
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+
+    if not logger.handlers:
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setLevel(level)
+        formatter = logging.Formatter("[%(levelname)s] %(name)s - %(message)s")
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+        logger.propagate = False
+
+    return logger
 
 
 def configure_logging() -> None:

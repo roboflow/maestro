@@ -27,4 +27,4 @@ def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], proce
 
     input_ids = inputs["input_ids"]
     pixel_values = inputs["pixel_values"]
-    return input_ids, pixel_values, prefixes, suffixes
+    return input_ids, pixel_values, images, prefixes, suffixes

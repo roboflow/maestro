@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from transformers import PaliGemmaForConditionalGeneration, PaliGemmaProcessor
 
 from maestro.trainer.common.callbacks import SaveCheckpoint
-from maestro.trainer.common.datasets import create_data_loaders
+from maestro.trainer.common.datasets.core import create_data_loaders, resolve_dataset_path
 from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, parse_metrics, save_metric_plots
 from maestro.trainer.common.training import MaestroTrainer
 from maestro.trainer.common.utils.device import device_is_available, parse_device_spec
@@ -35,7 +35,7 @@ class PaliGemma2Configuration:
 
     Attributes:
         dataset (str):
-            Path to the dataset used for training.
+            Local path or Roboflow identifier. If not found locally, it will be resolved (and downloaded) automatically.
         model_id (str):
             Identifier for the PaliGemma2 model.
         revision (str):
@@ -201,8 +201,11 @@ def train(config: PaliGemma2Configuration | dict) -> None:
         optimization_strategy=OptimizationStrategy(config.optimization_strategy),
         cache_dir=config.cache_dir,
     )
+    dataset_location = resolve_dataset_path(config.dataset)
+    if dataset_location is None:
+        return
     train_loader, valid_loader, test_loader = create_data_loaders(
-        dataset_location=config.dataset,
+        dataset_location=dataset_location,
         train_batch_size=config.batch_size,
         train_collect_fn=partial(train_collate_fn, processor=processor, max_length=config.max_new_tokens),
         train_num_workers=config.num_workers,

@@ -5,12 +5,20 @@ from typing import Literal, Optional
 
 import dacite
 import lightning
+import numpy as np
+import supervision as sv
 import torch
 from torch.optim import AdamW
 
 from maestro.trainer.common.callbacks import SaveCheckpoint
-from maestro.trainer.common.datasets import create_data_loaders
-from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, parse_metrics, save_metric_plots
+from maestro.trainer.common.datasets.core import create_data_loaders, resolve_dataset_path
+from maestro.trainer.common.metrics import (
+    BaseMetric,
+    MeanAveragePrecisionMetric,
+    MetricsTracker,
+    parse_metrics,
+    save_metric_plots,
+)
 from maestro.trainer.common.training import MaestroTrainer
 from maestro.trainer.common.utils.device import device_is_available, parse_device_spec
 from maestro.trainer.common.utils.path import create_new_run_directory
@@ -21,6 +29,11 @@ from maestro.trainer.models.florence_2.checkpoints import (
     OptimizationStrategy,
     load_model,
     save_model,
+)
+from maestro.trainer.models.florence_2.detection import (
+    detections_to_prefix_formatter,
+    detections_to_suffix_formatter,
+    result_to_detections_formatter,
 )
 from maestro.trainer.models.florence_2.inference import predict_with_inputs
 from maestro.trainer.models.florence_2.loaders import evaluation_collate_fn, train_collate_fn
@@ -33,7 +46,7 @@ class Florence2Configuration:
 
     Attributes:
         dataset (str):
-            Path to the dataset used for training.
+            Local path or Roboflow identifier. If not found locally, it will be resolved (and downloaded) automatically.
         model_id (str):
             Identifier for the Florence-2 model.
         revision (str):
@@ -140,7 +153,7 @@ class Florence2Trainer(MaestroTrainer):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        input_ids, pixel_values, prefixes, suffixes = batch
+        input_ids, pixel_values, images, prefixes, suffixes = batch
         generated_suffixes = predict_with_inputs(
             model=self.model,
             processor=self.processor,
@@ -150,15 +163,49 @@ class Florence2Trainer(MaestroTrainer):
             max_new_tokens=self.config.max_new_tokens,
         )
         for metric in self.config.metrics:
-            result = metric.compute(predictions=generated_suffixes, targets=suffixes)
-            for key, value in result.items():
-                self.valid_metrics_tracker.register(
-                    metric=key,
-                    epoch=self.current_epoch,
-                    step=batch_idx,
-                    value=value,
-                )
-                self.log(key, value, prog_bar=True, logger=True)
+            if isinstance(metric, MeanAveragePrecisionMetric):
+                predictions_list = []
+                targets_list = []
+                for image, generated_suffix, reference_suffix in zip(images, generated_suffixes, suffixes):
+                    predicted_boxes, predicted_class_ids = result_to_detections_formatter(
+                        text=generated_suffix, resolution_wh=image.size
+                    )
+                    reference_boxes, reference_class_ids = result_to_detections_formatter(
+                        text=reference_suffix, resolution_wh=image.size
+                    )
+                    predictions_list.append(
+                        sv.Detections(
+                            xyxy=predicted_boxes,
+                            class_id=predicted_class_ids,
+                            confidence=np.ones_like(predicted_class_ids),
+                        )
+                    )
+                    targets_list.append(
+                        sv.Detections(
+                            xyxy=reference_boxes,
+                            class_id=reference_class_ids,
+                            confidence=np.ones_like(reference_class_ids),
+                        )
+                    )
+                result = metric.compute(predictions=predictions_list, targets=targets_list)
+                for key, value in result.items():
+                    self.valid_metrics_tracker.register(
+                        metric=key,
+                        epoch=self.current_epoch,
+                        step=batch_idx,
+                        value=value,
+                    )
+                    self.log(key, value, prog_bar=True, logger=True, batch_size=self.config.val_batch_size)
+            else:
+                result = metric.compute(predictions=generated_suffixes, targets=suffixes)
+                for key, value in result.items():
+                    self.valid_metrics_tracker.register(
+                        metric=key,
+                        epoch=self.current_epoch,
+                        step=batch_idx,
+                        value=value,
+                    )
+                    self.log(key, value, prog_bar=True, logger=True, batch_size=self.config.val_batch_size)
 
     def configure_optimizers(self):
         optimizer = AdamW(self.model.parameters(), lr=self.config.lr)
@@ -189,14 +236,19 @@ def train(config: Florence2Configuration | dict) -> None:
         optimization_strategy=OptimizationStrategy(config.optimization_strategy),
         cache_dir=config.cache_dir,
     )
+    dataset_location = resolve_dataset_path(config.dataset)
+    if dataset_location is None:
+        return
     train_loader, valid_loader, test_loader = create_data_loaders(
-        dataset_location=config.dataset,
+        dataset_location=dataset_location,
         train_batch_size=config.batch_size,
         train_collect_fn=partial(train_collate_fn, processor=processor),
         train_num_workers=config.num_workers,
         test_batch_size=config.val_batch_size,
         test_collect_fn=partial(evaluation_collate_fn, processor=processor),
         test_num_workers=config.val_num_workers,
+        detections_to_prefix_formatter=detections_to_prefix_formatter,
+        detections_to_suffix_formatter=detections_to_suffix_formatter,
     )
     pl_module = Florence2Trainer(
         processor=processor, model=model, train_loader=train_loader, valid_loader=valid_loader, config=config
@@ -207,7 +259,6 @@ def train(config: Florence2Configuration | dict) -> None:
         max_epochs=config.epochs,
         accumulate_grad_batches=config.accumulate_grad_batches,
         check_val_every_n_epoch=1,
-        limit_val_batches=1,
         log_every_n_steps=10,
         callbacks=[save_checkpoint_callback],
     )

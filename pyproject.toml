@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "maestro"
-version = "1.0.0"
+version = "1.1.0rc1"
 description = "Streamline the fine-tuning process for vision-language models like PaliGemma 2, Florence-2, and Qwen2.5-VL."
 authors = [
     {name = "Piotr Skalski", email = "piotr.skalski92@gmail.com"}
@@ -37,6 +37,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "roboflow>=1.1.0",
     "dacite>=1.9.1",
     "lightning>=2.4.0",
     "supervision>=0.20.0,<0.26.0",

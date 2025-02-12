@@ -20,7 +20,11 @@ qwen_2_5_vl_app = typer.Typer(help="Fine-tune and evaluate Qwen2.5-VL model")
 def train(
     dataset: Annotated[
         str,
-        typer.Option("--dataset", help="Path to the dataset in Roboflow JSONL format"),
+        typer.Option(
+            "--dataset",
+            help="Local path or Roboflow identifier. If not found locally, it will be resolved (and downloaded) "
+            "automatically",
+        ),
     ],
     model_id: Annotated[
         str,
