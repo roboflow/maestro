@@ -1,8 +1,7 @@
 import os
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional
 
-import torch
 from peft import LoraConfig, get_peft_model
 from transformers import AutoModelForCausalLM, AutoProcessor
 
@@ -32,7 +31,7 @@ def load_model(
     Args:
         model_id_or_path (str): The identifier or path of the Florence 2 model to load.
         revision (str): The specific model revision to use.
-        device_map (Optional[Union[str, dict]]): Device map for the model:        
+        device_map (Optional[Union[str, dict]]): Device map for the model:
             -"auto": Places model on single available device (default)
             - String like "cpu", "cuda:0", or "mps" for a specific device
             - Note: Florence-2 doesn't support dict mapping
@@ -47,7 +46,7 @@ def load_model(
         ValueError: If the model or processor cannot be loaded.
     """
 
-    device = parse_device_spec(device_map) 
+    device = parse_device_spec(device_map)
     processor = AutoProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
 
     if optimization_strategy == OptimizationStrategy.LORA:
