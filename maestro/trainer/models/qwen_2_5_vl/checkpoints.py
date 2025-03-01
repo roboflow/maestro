@@ -1,6 +1,6 @@
 import os
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union
 
 import torch
 from peft import LoraConfig, get_peft_model
@@ -23,7 +23,7 @@ class OptimizationStrategy(Enum):
 def load_model(
     model_id_or_path: str = DEFAULT_QWEN2_5_VL_MODEL_ID,
     revision: str = DEFAULT_QWEN2_5_VL_MODEL_REVISION,
-    device: str | torch.device = "auto",
+    device_map: Optional[Union[str, dict]] = None,
     optimization_strategy: OptimizationStrategy = OptimizationStrategy.NONE,
     cache_dir: Optional[str] = None,
     min_pixels: int = 256 * 28 * 28,
@@ -35,7 +35,10 @@ def load_model(
     Args:
         model_id_or_path (str): The model name or path.
         revision (str): The model revision to load.
-        device (str | torch.device): The device to load the model onto.
+        device_map (Optional[Union[str, dict]]): Device map for the model:
+            - None: Uses "auto" for automatic distribution across available devices (default)
+            - String like "cpu", "cuda:0", or "mps" for a specific device
+            - Dict for custom module-to-device mapping (e.g., {"": "cuda:0"})
         optimization_strategy (OptimizationStrategy): LORA, QLORA, or NONE.
         cache_dir (Optional[str]): Directory to cache downloaded model files.
         min_pixels (int): Minimum number of pixels allowed in the resized image.
@@ -45,7 +48,6 @@ def load_model(
         (Qwen2_5_VLProcessor, Qwen2_5_VLForConditionalGeneration):
             A tuple containing the loaded processor and model.
     """
-    device = parse_device_spec(device)
     processor = Qwen2_5_VLProcessor.from_pretrained(
         model_id_or_path,
         revision=revision,
@@ -82,7 +84,7 @@ def load_model(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            device_map="auto",
+            device_map=device_map if device_map else "auto",
             quantization_config=bnb_config,
             torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,
@@ -94,11 +96,10 @@ def load_model(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            device_map="auto",
+            device_map=device_map if device_map else "auto",
             torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,
         )
-        model.to(device)
 
     return processor, model
 

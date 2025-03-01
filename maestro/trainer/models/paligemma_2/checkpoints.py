@@ -1,6 +1,6 @@
 import os
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union
 
 import torch
 from peft import LoraConfig, get_peft_model
@@ -24,7 +24,7 @@ class OptimizationStrategy(Enum):
 def load_model(
     model_id_or_path: str = DEFAULT_PALIGEMMA2_MODEL_ID,
     revision: str = DEFAULT_PALIGEMMA2_MODEL_REVISION,
-    device: str | torch.device = "auto",
+    device_map: Optional[Union[str, dict]] = None,
     optimization_strategy: OptimizationStrategy = OptimizationStrategy.NONE,
     cache_dir: Optional[str] = None,
 ) -> tuple[PaliGemmaProcessor, PaliGemmaForConditionalGeneration]:
@@ -33,7 +33,10 @@ def load_model(
     Args:
         model_id_or_path (str): The identifier or path of the model to load.
         revision (str): The specific model revision to use.
-        device (torch.device): The device to load the model onto.
+        device_map (Optional[Union[str, dict]]): Device map for the model:
+            - None: Uses "auto" for automatic distribution across available devices (default)
+            - String like "cpu", "cuda:0", or "mps" for a specific device
+            - Dict for custom module-to-device mapping (e.g., {"": "cuda:0"})
         optimization_strategy (OptimizationStrategy): The optimization strategy to apply to the model.
         cache_dir (Optional[str]): Directory to cache the downloaded model files.
 
@@ -44,7 +47,6 @@ def load_model(
     Raises:
         ValueError: If the model or processor cannot be loaded.
     """
-    device = parse_device_spec(device)
     processor = PaliGemmaProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
 
     if optimization_strategy in {OptimizationStrategy.LORA, OptimizationStrategy.QLORA}:
@@ -66,7 +68,7 @@ def load_model(
             pretrained_model_name_or_path=model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            device_map="auto",
+            device_map=device_map if device_map else "auto",
             quantization_config=bnb_config,
             torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,
@@ -78,9 +80,9 @@ def load_model(
             pretrained_model_name_or_path=model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            device_map="auto",
+            device_map=device_map if device_map else "auto",
             cache_dir=cache_dir,
-        ).to(device)
+        )
 
         if optimization_strategy == OptimizationStrategy.FREEZE:
             for param in model.vision_tower.parameters():
