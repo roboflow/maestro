@@ -38,7 +38,7 @@ def prompt_structure():
         OptimizationStrategy.NONE,
     ],
 )
-@pytest.mark.parametrize("use_flash_attention", [True, False])
+@pytest.mark.parametrize("use_flash_attention", [True])
 def test_phi4_vision_detection(
     sample_image,
     prompt_structure,

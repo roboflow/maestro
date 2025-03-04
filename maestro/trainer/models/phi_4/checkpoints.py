@@ -50,6 +50,7 @@ def load_model(
         revision=revision,
         trust_remote_code=True,
         cache_dir=cache_dir,
+        use_fast=True,
     )
     processor.tokenizer.padding_side = "right"
     attn_implementation = "flash_attention_2" if use_flash_attention else "eager"
@@ -104,10 +105,7 @@ def load_model(
 
         # Always remove audio-related parameters for vision-only processing
         model = _remove_audio_layers(model)
-
-        if device != "auto" and device is not None:
-            model.to(device)
-
+        model.to(device)
     return processor, model
 
 
