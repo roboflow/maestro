@@ -52,7 +52,7 @@ def load_model(
         cache_dir=cache_dir,
     )
     processor.tokenizer.padding_side = "right"
-    attn_implementation = "flash_attention_2" if use_flash_attention else None
+    attn_implementation = "flash_attention_2" if use_flash_attention else "eager"
 
     if optimization_strategy in {OptimizationStrategy.LORA, OptimizationStrategy.QLORA}:
         lora_config = LoraConfig(
