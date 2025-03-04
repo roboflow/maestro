@@ -103,7 +103,6 @@ def load_model(
             attn_implementation=attn_implementation,
         )
 
-        # Always remove audio-related parameters for vision-only processing
         model = _remove_audio_layers(model)
         model.to(device)
     return processor, model
@@ -125,13 +124,11 @@ def _remove_audio_layers(model):
     try:
         print("Removing audio layers to optimize for vision-only processing...")
 
-        # Remove audio encoder
         if hasattr(model, "model") and hasattr(model.model, "embed_tokens_extend"):
             if hasattr(model.model.embed_tokens_extend, "audio_embed"):
                 print("Removing audio embedding layer")
                 del model.model.embed_tokens_extend.audio_embed
 
-        # Remove audio lora layers from each transformer layer
         if hasattr(model, "model") and hasattr(model.model, "layers"):
             for layer_idx, layer in enumerate(model.model.layers):
                 removed_components = 0
@@ -178,7 +175,6 @@ def filter_audio_components(inputs: dict[str, Any]) -> dict[str, Any]:
     """
     audio_related_keys = ["input_audio_embeds", "audio_embed_sizes", "audio_attention_mask"]
 
-    # Create a copy of the inputs to avoid modifying the original
     filtered_inputs = {k: v for k, v in inputs.items() if k not in audio_related_keys}
 
     return filtered_inputs
@@ -196,10 +192,8 @@ def process_model_inputs(model: AutoModelForCausalLM, inputs: dict[str, Any], **
     Returns:
         The model's output after processing the filtered inputs.
     """
-    # Filter out audio-related components
     filtered_inputs = filter_audio_components(inputs)
 
-    # Add any additional kwargs
     filtered_inputs.update(kwargs)
 
     # Pass the filtered inputs to the model
@@ -218,13 +212,10 @@ def generate_with_model(model: AutoModelForCausalLM, inputs: dict[str, Any], **g
     Returns:
         The generated token IDs.
     """
-    # Filter out audio-related components
     filtered_inputs = filter_audio_components(inputs)
 
-    # Add any generation-specific parameters
     filtered_inputs.update(generation_kwargs)
 
-    # Call the generate method with filtered inputs
     return model.generate(**filtered_inputs)
 
 
@@ -255,7 +246,6 @@ def main():
     import requests
     from PIL import Image
 
-    # Parse arguments
     parser = argparse.ArgumentParser(description="Test Phi-4 model loading (vision-only)")
     parser.add_argument("--model_id", default=DEFAULT_PHI_4_MODEL_ID, help="Model ID or path")
     parser.add_argument("--revision", default=DEFAULT_PHI_4_MODEL_REVISION, help="Model revision")
@@ -266,7 +256,6 @@ def main():
     parser.add_argument("--no_flash_attention", action="store_true", help="Disable Flash Attention")
     args = parser.parse_args()
 
-    # Get optimization strategy
     opt_strategy = OptimizationStrategy.NONE
     if args.optimization == "lora":
         opt_strategy = OptimizationStrategy.LORA
@@ -275,7 +264,6 @@ def main():
 
     print(f"Loading model {args.model_id} with {args.optimization} optimization (vision-only)...")
 
-    # Load model
     processor, model = load_model(
         model_id_or_path=args.model_id,
         revision=args.revision,
