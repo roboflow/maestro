@@ -5,8 +5,8 @@ import rich
 import typer
 
 from maestro.trainer.models.phi_4.checkpoints import (
-    DEFAULT_PHI4_MODEL_ID,
-    DEFAULT_PHI4_MODEL_REVISION,
+    DEFAULT_PHI_4_MODEL_ID,
+    DEFAULT_PHI_4_MODEL_REVISION,
 )
 from maestro.trainer.models.phi_4.core import Phi4Configuration
 from maestro.trainer.models.phi_4.core import train as phi_4_train
@@ -29,11 +29,11 @@ def train(
     model_id: Annotated[
         str,
         typer.Option("--model_id", help="Identifier for the Phi-4 model from HuggingFace Hub"),
-    ] = DEFAULT_PHI4_MODEL_ID,
+    ] = DEFAULT_PHI_4_MODEL_ID,
     revision: Annotated[
         str,
         typer.Option("--revision", help="Model revision to use"),
-    ] = DEFAULT_PHI4_MODEL_REVISION,
+    ] = DEFAULT_PHI_4_MODEL_REVISION,
     device: Annotated[
         str,
         typer.Option("--device", help="Device to use for training"),
