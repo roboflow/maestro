@@ -1,3 +1,5 @@
+# Parts of the loader is based on https://huggingface.co/microsoft/Phi-4-multimodal-instruct/resolve/main/sample_finetune_vision.py
+
 from typing import Any, Optional
 
 import torch
