@@ -6,7 +6,7 @@ import torch
 from PIL import Image
 from torch import Tensor
 from torch.nn.utils.rnn import pad_sequence
-from transformers import ProcessorMixin
+from transformers import AutoProcessor
 
 _IGNORE_INDEX = -100
 _MAX_TRAINING_LENGTH = 8192
@@ -40,7 +40,7 @@ def cat_with_pad(tensors: list[Tensor], dim: int = 0, padding_value: int = 0) ->
 
 
 def train_collate_fn(
-    batch: list[tuple[Image.Image, dict[str, Any]]], processor: ProcessorMixin, system_message: Optional[str] = None
+    batch: list[tuple[Image.Image, dict[str, Any]]], processor: AutoProcessor, system_message: Optional[str] = None
 ) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Collate function for training data.
 
@@ -101,7 +101,6 @@ def train_collate_fn(
     input_image_embeds_list = []
     image_attention_mask_list = []
     image_sizes_list = []
-    input_mode_list = []
 
     for inputs in processed_inputs:
         input_ids_list.append(inputs["input_ids"][0])
@@ -109,7 +108,6 @@ def train_collate_fn(
         input_image_embeds_list.append(inputs["input_image_embeds"])
         image_attention_mask_list.append(inputs["image_attention_mask"])
         image_sizes_list.append(inputs["image_sizes"])
-        input_mode_list.append(inputs["input_mode"])
 
     input_ids = pad_sequence(input_ids_list, batch_first=True, padding_value=processor.tokenizer.pad_token_id)
     labels = pad_sequence(labels_list, batch_first=True, padding_value=_IGNORE_INDEX)
@@ -117,7 +115,8 @@ def train_collate_fn(
     input_image_embeds = cat_with_pad(input_image_embeds_list, dim=0)
     image_attention_mask = cat_with_pad(image_attention_mask_list, dim=0)
     image_sizes = torch.cat(image_sizes_list)
-    input_mode = torch.cat(input_mode_list)
+
+    input_mode = torch.tensor([1])  # vision mode as 1-d tensor
 
     return (
         input_ids,
@@ -131,7 +130,7 @@ def train_collate_fn(
 
 
 def evaluation_collate_fn(
-    batch: list[tuple[Image.Image, dict[str, Any]]], processor: ProcessorMixin, system_message: Optional[str] = None
+    batch: list[tuple[Image.Image, dict[str, Any]]], processor: AutoProcessor, system_message: Optional[str] = None
 ) -> tuple[list[Image.Image], list[str], list[Optional[str]], Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Collate function for evaluation data.
 
@@ -174,21 +173,20 @@ def evaluation_collate_fn(
     input_image_embeds_list = []
     image_attention_mask_list = []
     image_sizes_list = []
-    input_mode_list = []
 
     for inputs in processed_inputs:
         input_ids_list.append(inputs["input_ids"][0])
         input_image_embeds_list.append(inputs["input_image_embeds"])
         image_attention_mask_list.append(inputs["image_attention_mask"])
         image_sizes_list.append(inputs["image_sizes"])
-        input_mode_list.append(inputs["input_mode"])
 
     input_ids = pad_sequence(input_ids_list, batch_first=True, padding_value=processor.tokenizer.pad_token_id)
     attention_mask = (input_ids != processor.tokenizer.pad_token_id).long()
     input_image_embeds = cat_with_pad(input_image_embeds_list, dim=0)
     image_attention_mask = cat_with_pad(image_attention_mask_list, dim=0)
     image_sizes: Tensor = torch.cat(image_sizes_list)
-    input_mode = torch.cat(input_mode_list)
+
+    input_mode = torch.tensor([1])  # vision mode as 1-d tensor
 
     return (
         images,
