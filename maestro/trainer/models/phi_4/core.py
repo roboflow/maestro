@@ -155,7 +155,7 @@ class Phi4Trainer(MaestroTrainer):
                 "image_attention_mask": image_attention_mask,
                 "image_sizes": image_sizes,
                 "labels": labels,
-                "input_mode": input_mode,
+                "input_mode": input_mode,  # Specific for Phi 4 as it as both audio and vision component
             },
         )
 

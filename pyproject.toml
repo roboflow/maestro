@@ -102,6 +102,7 @@ phi_4 = [
     "torchvision==0.21.0",
     "backoff==2.2.1",
     "peft==0.13.2",
+    "bitsandbytes>=0.45.0",
     "flash-attn==2.7.4.post1; sys_platform != 'darwin'"
 ]
 [project.scripts]
