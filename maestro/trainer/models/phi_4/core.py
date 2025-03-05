@@ -144,7 +144,7 @@ class Phi4Trainer(MaestroTrainer):
         self.valid_metrics_tracker = MetricsTracker.init(metrics=metrics)
 
     def training_step(self, batch, batch_idx):
-        input_ids, attention_mask, input_image_embeds, image_attention_mask, image_sizes, labels = batch
+        input_ids, attention_mask, input_image_embeds, image_attention_mask, image_sizes, labels, input_mode = batch
 
         outputs = process_model_inputs(
             model=self.model,
@@ -155,6 +155,7 @@ class Phi4Trainer(MaestroTrainer):
                 "image_attention_mask": image_attention_mask,
                 "image_sizes": image_sizes,
                 "labels": labels,
+                "input_mode": input_mode,
             },
         )
 
@@ -164,9 +165,17 @@ class Phi4Trainer(MaestroTrainer):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        images, prefixes, suffixes, input_ids, attention_mask, input_image_embeds, image_attention_mask, image_sizes = (
-            batch
-        )
+        (
+            images,
+            prefixes,
+            suffixes,
+            input_ids,
+            attention_mask,
+            input_image_embeds,
+            image_attention_mask,
+            image_sizes,
+            input_mode,
+        ) = batch
 
         input_length = input_ids.shape[1]
         filtered_inputs = filter_audio_components(
@@ -176,6 +185,7 @@ class Phi4Trainer(MaestroTrainer):
                 "input_image_embeds": input_image_embeds,
                 "image_attention_mask": image_attention_mask,
                 "image_sizes": image_sizes,
+                "input_mode": input_mode,
             }
         )
 
