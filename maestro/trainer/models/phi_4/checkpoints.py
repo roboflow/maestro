@@ -61,7 +61,7 @@ def load_model(
             lora_alpha=16,
             lora_dropout=0.05,
             bias="none",
-            target_modules=["q_proj", "v_proj"],
+            target_modules=["q_proj", "v_proj"],  # Todo: Check what target modules will be better
             task_type="CAUSAL_LM",
         )
 
@@ -80,7 +80,7 @@ def load_model(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            device_map="auto",
+            device_map="auto",  # Todo: Check this for multi GPU it might be loading the model in multi GPU and can cause issues
             quantization_config=bnb_config,
             torch_dtype="auto",
             cache_dir=cache_dir,
@@ -97,7 +97,7 @@ def load_model(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            device_map="auto",
+            device_map="auto",  # Todo: Check this for multi GPU it might be loading the model in multi GPU and can cause issues
             torch_dtype="auto",
             cache_dir=cache_dir,
             attn_implementation=attn_implementation,
