@@ -1,15 +1,18 @@
+import json
 import os
 from enum import Enum
 from typing import Any, Optional
 
 import torch
 from peft import LoraConfig, get_peft_model
-from transformers import AutoModelForCausalLM, AutoProcessor, BatchFeature, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoProcessor, BitsAndBytesConfig
 
 from maestro.trainer.common.utils.device import parse_device_spec
+from maestro.trainer.logger import get_maestro_logger
 
 DEFAULT_PHI_4_MODEL_ID = "microsoft/Phi-4-multimodal-instruct"
 DEFAULT_PHI_4_MODEL_REVISION = "refs/heads/main"
+logger = get_maestro_logger()
 
 
 class OptimizationStrategy(Enum):
@@ -52,6 +55,7 @@ def load_model(
         cache_dir=cache_dir,
         use_fast=True,
     )
+
     processor.tokenizer.padding_side = "right"
     attn_implementation = "flash_attention_2" if use_flash_attention else "eager"
 
@@ -87,9 +91,6 @@ def load_model(
             attn_implementation=attn_implementation,
         )
 
-        # Remove audio-related parameters
-        model = _remove_audio_layers(model)
-
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
     else:
@@ -102,10 +103,57 @@ def load_model(
             cache_dir=cache_dir,
             attn_implementation=attn_implementation,
         )
-
-        model = _remove_audio_layers(model)
         model.to(device)
+    # os.makedirs("save_test", exist_ok=True)
+    # save_model("save_test", processor, model)
     return processor, model
+
+
+def save_model(
+    target_dir: str,
+    processor: AutoProcessor,
+    model: AutoModelForCausalLM,
+) -> None:
+    """
+    Save a Phi-4 model and its processor to disk with options for audio layer handling.
+
+    Args:
+        target_dir: Directory path where the model and processor will be saved.
+            Will be created if it doesn't exist.
+        processor: The Phi-4 processor to save.
+        model: The Phi-4 model to save.
+    """
+    os.makedirs(target_dir, exist_ok=True)
+
+    processor.save_pretrained(target_dir)
+    model.save_pretrained(target_dir)
+
+    chat_template_path = os.path.join(target_dir, "chat_template.json")
+    if os.path.exists(chat_template_path):
+        os.remove(chat_template_path)
+        logger.info(f"Removed {chat_template_path}")
+
+    preprocessor_config_path = os.path.join(target_dir, "preprocessor_config.json")
+    if os.path.exists(preprocessor_config_path):
+        try:
+            with open(preprocessor_config_path) as f:
+                preprocessor_config = json.load(f)
+
+            for param in ["feature_size", "sampling_rate", "padding_value"]:
+                if param in preprocessor_config:
+                    del preprocessor_config[param]
+                    logger.info(f"Removed '{param}' from preprocessor_config.json")
+
+            audio_params = {"audio_compression_rate": 8, "audio_downsample_rate": 1, "audio_feat_stride": 1}
+
+            for param, value in audio_params.items():
+                preprocessor_config[param] = value
+                logger.info(f"Added '{param}': {value} to preprocessor_config.json")
+
+            with open(preprocessor_config_path, "w") as f:
+                json.dump(preprocessor_config, f, indent=2)
+        except Exception as e:
+            logger.warning(f"Error modifying preprocessor_config.json: {e}")
 
 
 def _remove_audio_layers(model):
@@ -122,11 +170,10 @@ def _remove_audio_layers(model):
         The modified model with audio layers removed.
     """
     try:
-        print("Removing audio layers to optimize for vision-only processing...")
+        logger.info("Removing audio layers to optimize for vision-only processing...")
 
         if hasattr(model, "model") and hasattr(model.model, "embed_tokens_extend"):
             if hasattr(model.model.embed_tokens_extend, "audio_embed"):
-                print("Removing audio embedding layer")
                 del model.model.embed_tokens_extend.audio_embed
 
         if hasattr(model, "model") and hasattr(model.model, "layers"):
@@ -152,12 +199,12 @@ def _remove_audio_layers(model):
                         continue
 
                 if removed_components > 0:
-                    print(f"Removed {removed_components} audio LoRA components from layer {layer_idx}")
+                    logger.debug(f"Removed {removed_components} audio LoRA components from layer {layer_idx}")
 
-        print("Audio layer removal complete")
+        logger.info("Audio layer removal complete")
     except Exception as e:
-        print(
-            f"Warning: Could not remove some audio layers. This is expected if using a different model variant. Error: {e}"
+        logger.warning(
+            f"Could not remove some audio layers. This is expected if using a different model variant. Error: {e}"
         )
 
     return model
@@ -178,130 +225,3 @@ def filter_audio_components(inputs: dict[str, Any]) -> dict[str, Any]:
     filtered_inputs = {k: v for k, v in inputs.items() if k not in audio_related_keys}
 
     return filtered_inputs
-
-
-def process_model_inputs(model: AutoModelForCausalLM, inputs: dict[str, Any], **kwargs) -> Any:
-    """
-    Process inputs before passing to the model, removing audio components.
-
-    Args:
-        model: The model to use for processing.
-        inputs: Dictionary of input tensors and parameters.
-        **kwargs: Additional arguments to pass to the model.
-
-    Returns:
-        The model's output after processing the filtered inputs.
-    """
-    filtered_inputs = filter_audio_components(inputs)
-
-    filtered_inputs.update(kwargs)
-
-    # Pass the filtered inputs to the model
-    return model(**filtered_inputs)
-
-
-def generate_with_model(model: AutoModelForCausalLM, inputs: dict[str, Any], **generation_kwargs) -> torch.LongTensor:
-    """
-    Generate text with the model after filtering out audio components.
-
-    Args:
-        model: The model to use for generation.
-        inputs: Dictionary of input tensors and parameters.
-        **generation_kwargs: Additional arguments for generation.
-
-    Returns:
-        The generated token IDs.
-    """
-    filtered_inputs = filter_audio_components(inputs)
-
-    filtered_inputs.update(generation_kwargs)
-
-    return model.generate(**filtered_inputs)
-
-
-def save_model(
-    target_dir: str,
-    processor: AutoProcessor,
-    model: AutoModelForCausalLM,
-) -> None:
-    """
-    Save a Phi-4 model and its processor to disk.
-
-    Args:
-        target_dir: Directory path where the model and processor will be saved.
-            Will be created if it doesn't exist.
-        processor: The Phi-4 processor to save.
-        model: The Phi-4 model to save.
-    """
-    os.makedirs(target_dir, exist_ok=True)
-    processor.save_pretrained(target_dir)
-    model.save_pretrained(target_dir)
-
-
-def main():
-    """Test function to verify model loading with vision-only processing."""
-    import argparse
-    from io import BytesIO
-
-    import requests
-    from PIL import Image
-
-    parser = argparse.ArgumentParser(description="Test Phi-4 model loading (vision-only)")
-    parser.add_argument("--model_id", default=DEFAULT_PHI_4_MODEL_ID, help="Model ID or path")
-    parser.add_argument("--revision", default=DEFAULT_PHI_4_MODEL_REVISION, help="Model revision")
-    parser.add_argument(
-        "--optimization", choices=["none", "lora", "qlora"], default="none", help="Optimization strategy"
-    )
-    parser.add_argument("--cache_dir", default=None, help="Cache directory for model")
-    parser.add_argument("--no_flash_attention", action="store_true", help="Disable Flash Attention")
-    args = parser.parse_args()
-
-    opt_strategy = OptimizationStrategy.NONE
-    if args.optimization == "lora":
-        opt_strategy = OptimizationStrategy.LORA
-    elif args.optimization == "qlora":
-        opt_strategy = OptimizationStrategy.QLORA
-
-    print(f"Loading model {args.model_id} with {args.optimization} optimization (vision-only)...")
-
-    processor, model = load_model(
-        model_id_or_path=args.model_id,
-        revision=args.revision,
-        optimization_strategy=opt_strategy,
-        cache_dir=args.cache_dir,
-        use_flash_attention=not args.no_flash_attention,
-    )
-
-    print("Vision-only model loaded successfully!")
-
-    try:
-        sample_image_url = "https://www.ilankelman.org/stopsigns/australia.jpg"
-        response = requests.get(sample_image_url)
-        image = Image.open(BytesIO(response.content))
-        # Define prompt structure
-        user_prompt = "<|user|>"
-        assistant_prompt = "<|assistant|>"
-        prompt_suffix = "<|end|>"
-        prompt = f"{user_prompt}<|image_1|>What is shown in this image?{prompt_suffix}{assistant_prompt}"
-        inputs = processor(text=prompt, images=image, return_tensors="pt").to(model.device)
-
-        # Filter out audio components before processing
-        inputs = filter_audio_components(inputs)
-        inputs = BatchFeature(inputs)
-        input_len = inputs.input_ids.size(1)
-        print("Generating response...")
-        with torch.no_grad():
-            outputs = model.generate(**inputs, max_new_tokens=100, eos_token_id=processor.tokenizer.eos_token_id)
-
-        generated_text = processor.batch_decode(outputs[:, input_len:], skip_special_tokens=True)[0]
-        print("\nPrompt:", prompt)
-        print("Response:", generated_text.split(prompt)[-1].strip())
-
-    except Exception as e:
-        print(f"Error during model testing: {e}")
-
-    print("Test completed.")
-
-
-if __name__ == "__main__":
-    main()
