@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 import torch
 from peft import LoraConfig, get_peft_model
-from transformers import AutoModelForCausalLM, AutoProcessor, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoProcessor
 
 from maestro.trainer.common.utils.device import parse_device_spec
 from maestro.trainer.logger import get_maestro_logger
@@ -19,7 +19,6 @@ class OptimizationStrategy(Enum):
     """Enumeration for optimization strategies."""
 
     LORA = "lora"
-    QLORA = "qlora"
     NONE = "none"
 
 
@@ -32,20 +31,19 @@ def load_model(
     use_flash_attention: bool = True,
 ) -> tuple[AutoProcessor, AutoModelForCausalLM]:
     """
-    Loads a Phi-4 multimodal model and its associated processor with optional LoRA or QLoRA.
-    Configures the model for vision-only processing by removing audio-related layers.
+    Loads a Phi-4 multimodal model and its associated processor with optional LoRA.
 
     Args:
         model_id_or_path (str): The model name or path.
         revision (str): The model revision to load.
         device (str | torch.device): The device to load the model onto.
-        optimization_strategy (OptimizationStrategy): LORA, QLORA, or NONE.
+        optimization_strategy (OptimizationStrategy): LORA or NONE.
         cache_dir (Optional[str]): Directory to cache downloaded model files.
         use_flash_attention (bool): Whether to use Flash Attention 2.
 
     Returns:
         (AutoProcessor, AutoModelForCausalLM):
-            A tuple containing the loaded processor and model configured for vision-only tasks.
+            A tuple containing the loaded processor and model.
     """
     device = parse_device_spec(device)
     processor = AutoProcessor.from_pretrained(
@@ -65,27 +63,20 @@ def load_model(
             lora_alpha=16,
             lora_dropout=0.05,
             bias="none",
-            target_modules=["q_proj", "v_proj"],  # Todo: Check what target modules will be better
+            target_modules=[
+                "qkv_proj",
+                "o_proj",
+                "gate_up_proj",
+                "down_proj",
+            ],  # Todo: Check what target modules will be better
             task_type="CAUSAL_LM",
-        )
-
-        bnb_config = (
-            BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_type=torch.bfloat16,
-            )
-            if optimization_strategy == OptimizationStrategy.QLORA
-            else None
         )
 
         model = AutoModelForCausalLM.from_pretrained(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            device_map="auto",  # Todo: Check this for multi GPU it might be loading the model in multi GPU and can cause issues
-            quantization_config=bnb_config,
+            device_map="auto",
             torch_dtype="auto",
             cache_dir=cache_dir,
             attn_implementation=attn_implementation,
@@ -98,14 +89,12 @@ def load_model(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            device_map="auto",  # Todo: Check this for multi GPU it might be loading the model in multi GPU and can cause issues
+            device_map="auto",
             torch_dtype="auto",
             cache_dir=cache_dir,
             attn_implementation=attn_implementation,
         )
         model.to(device)
-    # os.makedirs("save_test", exist_ok=True)
-    # save_model("save_test", processor, model)
     return processor, model
 
 
@@ -169,6 +158,7 @@ def _remove_audio_layers(model):
     Returns:
         The modified model with audio layers removed.
     """
+    # Todo: Can use this to remove audio processing components from the Encoder can save some param
     try:
         logger.info("Removing audio layers to optimize for vision-only processing...")
 
@@ -225,3 +215,23 @@ def filter_audio_components(inputs: dict[str, Any]) -> dict[str, Any]:
     filtered_inputs = {k: v for k, v in inputs.items() if k not in audio_related_keys}
 
     return filtered_inputs
+
+
+def process_model_inputs(model: AutoModelForCausalLM, inputs: dict[str, Any], **kwargs) -> Any:
+    """
+    Process inputs before passing to the model, removing audio components.
+
+    Args:
+        model: The model to use for processing.
+        inputs: Dictionary of input tensors and parameters.
+        **kwargs: Additional arguments to pass to the model.
+
+    Returns:
+        The model's output after processing the filtered inputs.
+    """
+    filtered_inputs = filter_audio_components(inputs)
+
+    filtered_inputs.update(kwargs)
+
+    # Pass the filtered inputs to the model
+    return model(**filtered_inputs)

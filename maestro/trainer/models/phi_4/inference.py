@@ -23,7 +23,7 @@ def predict_with_inputs(
     top_p: float = 0.9,
 ) -> list[str]:
     """
-    Generates predictions from the Phi-4 model using textual and optional image inputs.
+    Generates predictions from the Phi-4 model using textual and image inputs.
 
     Args:
         model (AutoModelForCausalLM):
@@ -34,6 +34,14 @@ def predict_with_inputs(
             Tokenized input text IDs.
         attention_mask (torch.Tensor):
             Attention mask corresponding to the tokenized input.
+        input_image_embeds (torch.Tensor):
+            Pre-processed image embeddings for the model.
+        image_sizes (torch.Tensor):
+            Sizes of the input images.
+        image_attention_mask (torch.Tensor):
+            Attention mask for the image inputs.
+        input_mode (torch.Tensor):
+            Tensor specifying if Phi4 works in vision mode (1) or speech mode (0).
         device (torch.device):
             Device on which to run inference.
         max_new_tokens (int):
@@ -42,16 +50,6 @@ def predict_with_inputs(
             Sampling temperature for controlling randomness in generation.
         top_p (float):
             Top-p sampling parameter for nucleus sampling.
-        input_image_embeds (torch.Tensor, optional):
-            Pre-processed image embeddings for the model.
-        image_sizes (torch.Tensor, optional):
-            Sizes of the input images.
-        image_attention_mask (torch.Tensor, optional):
-            Attention mask for the image inputs.
-        pixel_values (torch.Tensor, optional):
-            Preprocessed image data for visual inputs.
-        input_mode (torch.Tensor):
-            Tensor specifying if Phi4 works in vision mode (1) or speech mode (0).
 
     Returns:
         list[str]: A list of decoded strings corresponding to the generated sequences.
@@ -83,7 +81,7 @@ def predict(
     processor: AutoProcessor,
     prompt: Optional[str] = None,
     system_message: Optional[str] = None,
-    image: str | bytes | Image.Image = None,
+    image: Optional[str | bytes | Image.Image] = None,
     device: str | torch.device = "auto",
     max_new_tokens: int = 1024,
     temperature: float = 0.7,
@@ -93,16 +91,16 @@ def predict(
     Generates a prediction from the Phi-4 model given a text prompt and optional image.
 
     Args:
-        model (Phi4ForConditionalGeneration):
+        model (AutoModelForCausalLM):
             A Phi-4 model capable of conditional generation with visual context.
         processor (AutoProcessor):
             Processor for handling inputs and outputs for the Phi-4 model.
-        prompt  (str, optional):
+        prompt (str, optional):
             Text prompt for the model to complete.
-        image (str | bytes | Image.Image, optional):
-            Optional image input for multimodal capabilities.
         system_message (str, optional):
             Optional system message to add context or instructions.
+        image (str | bytes | Image.Image, optional):
+            Optional image input for multimodal capabilities.
         device (str | torch.device):
             Device on which to run inference.
         max_new_tokens (int):
@@ -118,12 +116,10 @@ def predict(
     device = parse_device_spec(device)
 
     formatted_prompt = ""
-
     if system_message:
         formatted_prompt += f"<|system|>{system_message}<|end|>"
 
     formatted_prompt += "<|user|>"
-
     if image is not None:
         formatted_prompt += "<|image_1|>"
 
