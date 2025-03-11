@@ -131,7 +131,7 @@ def train_collate_fn(
 
 def evaluation_collate_fn(
     batch: list[tuple[Image.Image, dict[str, Any]]], processor: AutoProcessor, system_message: Optional[str] = None
-) -> tuple[list[Image.Image], list[str], list[Optional[str]], Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[list[str], list[Optional[str]], Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Collate function for evaluation data.
 
     Args:
@@ -141,7 +141,6 @@ def evaluation_collate_fn(
 
     Returns:
         tuple containing:
-            - images: list of original images
             - prefixes: list of prefix strings
             - suffixes: list of suffix strings (may contain None)
             - input_ids: Tensor of token ids
@@ -189,7 +188,6 @@ def evaluation_collate_fn(
     input_mode = torch.tensor([1])  # vision mode as 1-d tensor
 
     return (
-        images,
         prefixes,
         suffixes,
         input_ids,
