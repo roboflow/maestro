@@ -167,7 +167,8 @@ def train(config: dict) -> dict:
         remove_unused_columns=False,
     )
 
-    # Safely handle potential None loaders by directly checking train_loader/valid_loader before accessing dataset attribute
+    # Safely handle potential None loaders by directly checking
+    # train_loader/valid_loader before accessing dataset attribute
     train_dataset = None
     if train_loader is not None:
         train_dataset = train_loader.dataset
