@@ -17,6 +17,35 @@ class SmolVLM2Inference:
         self.model = AutoModelForVision2Seq.from_pretrained(model_name)
         self.processor = AutoProcessor.from_pretrained(model_name)
         self.device = device
+        self.model_name = model_name
+
+    def get_model_info(self) -> dict:
+        """
+        Get information about the loaded model.
+
+        Returns:
+            Dictionary containing model information
+        """
+        # Extract model size from model name (e.g., smolvlm2-500m -> 500M)
+        size_info = "unknown"
+        if "-" in self.model_name:
+            parts = self.model_name.split("-")
+            if len(parts) > 1 and parts[-1].endswith("m"):
+                size_info = parts[-1].upper()
+
+        # Get total parameters
+        total_params = sum(p.numel() for p in self.model.parameters())
+        trainable_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+
+        return {
+            "model_name": self.model_name,
+            "model_size": size_info,
+            "device": self.device,
+            "total_parameters": f"{total_params:,}",
+            "trainable_parameters": f"{trainable_params:,}",
+            "architecture": "Vision-Language Model (VLM)",
+            "framework": "PyTorch/Transformers"
+        }
 
     def generate(
         self,

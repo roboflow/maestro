@@ -99,13 +99,18 @@ def format_prompt_for_detection(
         prompt: Base prompt
         xyxy: Optional bounding boxes
         class_id: Optional class IDs
-        classes: Optional class names
-        resolution_wh: Optional image resolution
-
+        classes: Optional class names        resolution_wh: Optional image resolution
+        
     Returns:
         Formatted prompt string
     """
     if all(x is not None for x in [xyxy, class_id, classes, resolution_wh]):
-        detection_text = detections_to_text_formatter(xyxy, class_id, classes, resolution_wh)
+        # Type-cast to the expected types before passing to formatter
+        detection_text = detections_to_text_formatter(
+            xyxy, 
+            class_id if class_id is not None else [],
+            classes if classes is not None else [],
+            resolution_wh if resolution_wh is not None else (0, 0)
+        )
         return f"{prompt} {detection_text}"
     return prompt
