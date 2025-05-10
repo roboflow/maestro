@@ -60,7 +60,6 @@ def train(config: dict) -> dict:
     Returns:
         Dictionary containing training results and metrics
     """
-    from functools import partial
 
     from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
     from transformers import BitsAndBytesConfig, TrainingArguments
@@ -125,10 +124,10 @@ def train(config: dict) -> dict:
             param.requires_grad = False
     else:
         raise ValueError(f"Unsupported optimization strategy: {strategy}")
-    
+
     # Load processor and datasets
     processor = AutoProcessor.from_pretrained(model_name)
-    
+
     # Create processor wrapper to preprocess data before collating
     def process_batch(batch):
         processed_batch = []
@@ -167,16 +166,16 @@ def train(config: dict) -> dict:
         load_best_model_at_end=True,
         remove_unused_columns=False,
     )
-    
+
     # Safely handle potential None loaders by directly checking train_loader/valid_loader before accessing dataset attribute
     train_dataset = None
     if train_loader is not None:
         train_dataset = train_loader.dataset
-    
+
     eval_dataset = None
     if valid_loader is not None:
         eval_dataset = valid_loader.dataset
-    
+
     # Create data_collator that matches the train_collate_fn signature (doesn't pass processor)
     trainer = Trainer(
         model=model,
