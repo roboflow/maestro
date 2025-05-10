@@ -5,9 +5,7 @@ import numpy as np
 
 
 def result_to_detections_formatter(
-    text: str,
-    resolution_wh: tuple[int, int],
-    classes: Optional[list[str]] = None
+    text: str, resolution_wh: tuple[int, int], classes: Optional[list[str]] = None
 ) -> tuple[np.ndarray, np.ndarray]:
     """Converts SmolVLM2 text output into detection format.
 
@@ -41,7 +39,7 @@ def result_to_detections_formatter(
         x_min, y_min, x_max, y_max = map(float, match.groups())
 
         # Extract class name from text before the box
-        text_before = text[:match.start()].strip()
+        text_before = text[: match.start()].strip()
         class_name = text_before.split()[-1] if text_before else "unknown"
 
         if name_to_index is not None:
@@ -59,11 +57,9 @@ def result_to_detections_formatter(
 
     return boxes, class_ids
 
+
 def detections_to_text_formatter(
-    xyxy: np.ndarray,
-    class_id: np.ndarray,
-    classes: list[str],
-    resolution_wh: tuple[int, int]
+    xyxy: np.ndarray, class_id: np.ndarray, classes: list[str], resolution_wh: tuple[int, int]
 ) -> str:
     """Converts detections to SmolVLM2 text format.
 
@@ -86,12 +82,13 @@ def detections_to_text_formatter(
 
     return " ".join(text_parts)
 
+
 def format_prompt_for_detection(
     prompt: str,
     xyxy: Optional[np.ndarray] = None,
     class_id: Optional[np.ndarray] = None,
     classes: Optional[list[str]] = None,
-    resolution_wh: Optional[tuple[int, int]] = None
+    resolution_wh: Optional[tuple[int, int]] = None,
 ) -> str:
     """Formats a prompt for object detection with SmolVLM2.
 

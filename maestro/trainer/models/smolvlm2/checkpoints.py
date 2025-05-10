@@ -6,10 +6,7 @@ from transformers import AutoModelForVision2Seq, AutoProcessor
 
 
 def save_checkpoint(
-    model: AutoModelForVision2Seq,
-    processor: AutoProcessor,
-    path: str,
-    metadata: Optional[dict] = None
+    model: AutoModelForVision2Seq, processor: AutoProcessor, path: str, metadata: Optional[dict] = None
 ) -> None:
     """
     Save model checkpoint.
@@ -32,10 +29,8 @@ def save_checkpoint(
     if metadata is not None:
         torch.save(metadata, os.path.join(path, "metadata.pt"))
 
-def load_checkpoint(
-    path: str,
-    device: str = "cuda" if torch.cuda.is_available() else "cpu"
-) -> dict:
+
+def load_checkpoint(path: str, device: str = "cuda" if torch.cuda.is_available() else "cpu") -> dict:
     """
     Load model checkpoint.
 
@@ -57,8 +52,4 @@ def load_checkpoint(
     metadata_path = os.path.join(path, "metadata.pt")
     metadata = torch.load(metadata_path) if os.path.exists(metadata_path) else None
 
-    return {
-        "model": model,
-        "processor": processor,
-        "metadata": metadata
-    }
+    return {"model": model, "processor": processor, "metadata": metadata}
