@@ -44,7 +44,7 @@ class SmolVLM2Inference:
             "total_parameters": f"{total_params:,}",
             "trainable_parameters": f"{trainable_params:,}",
             "architecture": "Vision-Language Model (VLM)",
-            "framework": "PyTorch/Transformers"
+            "framework": "PyTorch/Transformers",
         }
 
     def generate(

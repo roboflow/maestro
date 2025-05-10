@@ -126,20 +126,16 @@ def train(config: dict) -> dict:
 
     else:
         raise ValueError(f"Unsupported optimization strategy: {strategy}")
-    processor = AutoProcessor.from_pretrained(model_name)    # Load datasets
-    
+    processor = AutoProcessor.from_pretrained(model_name)  # Load datasets
+
     # Create processor wrapper to preprocess data before collating
     def process_batch(batch):
         processed_batch = []
         for item in batch:
-            processed_item = processor(
-                images=item.get("image"),
-                text=item.get("text", ""),
-                return_tensors="pt"
-            )
+            processed_item = processor(images=item.get("image"), text=item.get("text", ""), return_tensors="pt")
             processed_batch.append(processed_item)
         return processed_batch
-        
+
     train_loader, valid_loader, test_loader = create_data_loaders(
         dataset_location=dataset_location,
         train_batch_size=config.get("batch_size", 4),
