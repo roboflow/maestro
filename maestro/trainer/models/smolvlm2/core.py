@@ -1,7 +1,8 @@
+import os
 from typing import Optional, Union
 
 import torch
-from transformers import AutoModelForVision2Seq, AutoProcessor
+from transformers import AutoModelForVision2Seq, AutoProcessor, Trainer
 
 
 class SmolVLM2Core:
@@ -70,7 +71,7 @@ class SmolVLM2Core:
 def train(config: dict) -> dict:
     """
     Train SmolVLM2 model with provided configuration.
-    
+
     Args:
         config: Dictionary containing training configuration
             - dataset: Path to dataset directory or file
@@ -82,15 +83,19 @@ def train(config: dict) -> dict:
     Returns:
         Dictionary containing training results and metrics
     """
+    from functools import partial
+
     from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
     from transformers import BitsAndBytesConfig, TrainingArguments
 
+    from maestro.trainer.common.datasets.core import create_data_loaders, resolve_dataset_path
+    from maestro.trainer.models.smolvlm2.loaders import evaluation_collate_fn, train_collate_fn
     # Load dataset
     dataset_path = config["dataset"]
+    dataset_location = resolve_dataset_path(dataset_path)
+    if dataset_location is None:
+        return {"error": "Dataset not found"}
 
-    # TODO: Implement proper dataset loading logic based on the dataset format
-    # For now, we'll use a placeholder implementation
-    
     # Create model with the specified optimization strategy
     model_name = config.get("model_name", "smol-ai/smolvlm2-500m")
     strategy = config.get("optimization_strategy", "qlora")
@@ -147,15 +152,27 @@ def train(config: dict) -> dict:
 
     else:
         raise ValueError(f"Unsupported optimization strategy: {strategy}")
-
     processor = AutoProcessor.from_pretrained(model_name)
+
+    # Load datasets
+    train_loader, valid_loader, test_loader = create_data_loaders(
+        dataset_location=dataset_location,
+        train_batch_size=config.get("batch_size", 4),
+        train_collect_fn=partial(train_collate_fn, processor=processor),
+        train_num_workers=config.get("num_workers", 0),
+        test_batch_size=config.get("val_batch_size", config.get("batch_size", 4)),
+        test_collect_fn=partial(evaluation_collate_fn, processor=processor),
+        test_num_workers=config.get("val_num_workers", config.get("num_workers", 0)),    )
 
     # Set up training arguments
     output_dir = config.get("output_dir", "./smolvlm2-finetuned")
+    os.makedirs(output_dir, exist_ok=True)
+
     training_args = TrainingArguments(
         output_dir=output_dir,
         num_train_epochs=config.get("epochs", 10),
         per_device_train_batch_size=config.get("batch_size", 4),
+        per_device_eval_batch_size=config.get("val_batch_size", config.get("batch_size", 4)),
         gradient_accumulation_steps=4,
         learning_rate=2e-5,
         weight_decay=0.01,
@@ -163,17 +180,30 @@ def train(config: dict) -> dict:
         save_strategy="epoch",
         save_total_limit=2,
         logging_steps=10,
-        remove_unused_columns=False,
+        evaluation_strategy="epoch",
+        load_best_model_at_end=True,
+        remove_unused_columns=False
     )
 
-    # TODO: Implement full training logic with dataset loading
-    # This is a placeholder that returns a mock result
+    # Set up trainer
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_loader.dataset,
+        eval_dataset=valid_loader.dataset,
+        data_collator=lambda batch: train_collate_fn(batch, processor)
+    )
 
+    # Train model
+    trainer.train()
+
+    # Save model and processor
+    model.save_pretrained(output_dir)
+    processor.save_pretrained(output_dir)
+
+    # Return results
     return {
         "model_path": output_dir,
-        "metrics": {
-            "loss": 0.5,
-            "edit_distance": 0.2
-        },
-        "status": "Training implementation in progress"
+        "metrics": trainer.state.log_history[-1] if trainer.state.log_history else {"loss": "N/A"},
+        "status": "Training completed"
     }

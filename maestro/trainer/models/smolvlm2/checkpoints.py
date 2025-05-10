@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional
+from typing import Optional
 
 import torch
 from transformers import AutoModelForVision2Seq, AutoProcessor
@@ -9,11 +9,11 @@ def save_checkpoint(
     model: AutoModelForVision2Seq,
     processor: AutoProcessor,
     path: str,
-    metadata: Optional[Dict] = None
+    metadata: Optional[dict] = None
 ) -> None:
     """
     Save model checkpoint.
-    
+
     Args:
         model: Model to save
         processor: Processor to save
@@ -35,14 +35,14 @@ def save_checkpoint(
 def load_checkpoint(
     path: str,
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
-) -> Dict:
+) -> dict:
     """
     Load model checkpoint.
-    
+
     Args:
         path: Path to checkpoint
         device: Device to load model on
-        
+
     Returns:
         Dictionary containing model, processor, and metadata
     """
