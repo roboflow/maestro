@@ -12,7 +12,7 @@ class SmolVLM2Core:
         self,
         model_name: str = "smol-ai/smolvlm2-500m",
         device: str = "cuda" if torch.cuda.is_available() else "cpu",
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize SmolVLM2 model.
@@ -29,44 +29,21 @@ class SmolVLM2Core:
         self.model = AutoModelForVision2Seq.from_pretrained(model_name)
         self.model.to(device)
 
-    def process_inputs(
-        self,
-        images: Union[str, list[str]],
-        prompt: Optional[str] = None
-    ) -> dict:
+    def process_inputs(self, images: Union[str, list[str]], prompt: Optional[str] = None) -> dict:
         """Process input images and text."""
         if isinstance(images, str):
             images = [images]
 
-        return self.processor(
-            images=images,
-            text=prompt if prompt else "",
-            return_tensors="pt"
-        ).to(self.device)
+        return self.processor(images=images, text=prompt if prompt else "", return_tensors="pt").to(self.device)
 
-    def generate(
-        self,
-        inputs: dict,
-        max_new_tokens: int = 512,
-        **kwargs
-    ) -> torch.Tensor:
+    def generate(self, inputs: dict, max_new_tokens: int = 512, **kwargs) -> torch.Tensor:
         """Generate text from processed inputs."""
-        return self.model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            **kwargs
-        )
+        return self.model.generate(**inputs, max_new_tokens=max_new_tokens, **kwargs)
 
-    def decode_outputs(
-        self,
-        outputs: torch.Tensor,
-        skip_special_tokens: bool = True
-    ) -> list[str]:
+    def decode_outputs(self, outputs: torch.Tensor, skip_special_tokens: bool = True) -> list[str]:
         """Decode model outputs to text."""
-        return self.processor.batch_decode(
-            outputs,
-            skip_special_tokens=skip_special_tokens
-        )
+        return self.processor.batch_decode(outputs, skip_special_tokens=skip_special_tokens)
+
 
 def train(config: dict) -> dict:
     """
@@ -90,6 +67,7 @@ def train(config: dict) -> dict:
 
     from maestro.trainer.common.datasets.core import create_data_loaders, resolve_dataset_path
     from maestro.trainer.models.smolvlm2.loaders import evaluation_collate_fn, train_collate_fn
+
     # Load dataset
     dataset_path = config["dataset"]
     dataset_location = resolve_dataset_path(dataset_path)
@@ -109,11 +87,7 @@ def train(config: dict) -> dict:
             bnb_4bit_use_double_quant=True,
         )
 
-        model = AutoModelForVision2Seq.from_pretrained(
-            model_name,
-            quantization_config=bnb_config,
-            device_map="auto"
-        )
+        model = AutoModelForVision2Seq.from_pretrained(model_name, quantization_config=bnb_config, device_map="auto")
         model = prepare_model_for_kbit_training(model)
 
         lora_config = LoraConfig(
@@ -122,7 +96,7 @@ def train(config: dict) -> dict:
             target_modules=["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
             lora_dropout=0.05,
             bias="none",
-            task_type="CAUSAL_LM"
+            task_type="CAUSAL_LM",
         )
 
         model = get_peft_model(model, lora_config)
@@ -137,7 +111,7 @@ def train(config: dict) -> dict:
             target_modules=["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
             lora_dropout=0.05,
             bias="none",
-            task_type="CAUSAL_LM"
+            task_type="CAUSAL_LM",
         )
 
         model = get_peft_model(model, lora_config)
@@ -162,7 +136,8 @@ def train(config: dict) -> dict:
         train_num_workers=config.get("num_workers", 0),
         test_batch_size=config.get("val_batch_size", config.get("batch_size", 4)),
         test_collect_fn=partial(evaluation_collate_fn, processor=processor),
-        test_num_workers=config.get("val_num_workers", config.get("num_workers", 0)),    )
+        test_num_workers=config.get("val_num_workers", config.get("num_workers", 0)),
+    )
 
     # Set up training arguments
     output_dir = config.get("output_dir", "./smolvlm2-finetuned")
@@ -182,7 +157,7 @@ def train(config: dict) -> dict:
         logging_steps=10,
         evaluation_strategy="epoch",
         load_best_model_at_end=True,
-        remove_unused_columns=False
+        remove_unused_columns=False,
     )
 
     # Set up trainer
@@ -191,7 +166,7 @@ def train(config: dict) -> dict:
         args=training_args,
         train_dataset=train_loader.dataset,
         eval_dataset=valid_loader.dataset,
-        data_collator=lambda batch: train_collate_fn(batch, processor)
+        data_collator=lambda batch: train_collate_fn(batch, processor),
     )
 
     # Train model
@@ -205,5 +180,5 @@ def train(config: dict) -> dict:
     return {
         "model_path": output_dir,
         "metrics": trainer.state.log_history[-1] if trainer.state.log_history else {"loss": "N/A"},
-        "status": "Training completed"
+        "status": "Training completed",
     }

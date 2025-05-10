@@ -11,7 +11,7 @@ class SmolVLM2Inference:
         self,
         model_name: str = "smol-ai/smolvlm2-500m",
         device: str = "cuda" if torch.cuda.is_available() else "cpu",
-        **kwargs
+        **kwargs,
     ):
         """Initialize inference interface."""
         self.model = AutoModelForVision2Seq.from_pretrained(model_name)
@@ -19,11 +19,7 @@ class SmolVLM2Inference:
         self.device = device
 
     def generate(
-        self,
-        images: Union[str, list[str]],
-        prompt: Optional[str] = None,
-        max_new_tokens: int = 512,
-        **kwargs
+        self, images: Union[str, list[str]], prompt: Optional[str] = None, max_new_tokens: int = 512, **kwargs
     ) -> dict:
         """
         Generate text from images.
@@ -38,27 +34,21 @@ class SmolVLM2Inference:
             Dictionary containing generated text and other outputs
         """
         # Process inputs
-        inputs = self.processor(
-            images=images,
-            text=prompt if prompt else "",
-            return_tensors="pt"
-        )
+        inputs = self.processor(images=images, text=prompt if prompt else "", return_tensors="pt")
 
         # Generate
         outputs = self.model.generate(
             input_ids=inputs["input_ids"].to(self.device),
             pixel_values=inputs["pixel_values"].to(self.device),
             max_new_tokens=max_new_tokens,
-            **kwargs
+            **kwargs,
         )
 
         # Decode outputs
         generated_text = self.processor.batch_decode(outputs, skip_special_tokens=True)
 
-        return {
-            "generated_text": generated_text,
-            "model_outputs": outputs
-        }
+        return {"generated_text": generated_text, "model_outputs": outputs}
+
 
 def predict_with_inputs(
     model: AutoModelForVision2Seq,
@@ -67,7 +57,7 @@ def predict_with_inputs(
     pixel_values: torch.Tensor,
     device: Union[str, torch.device],
     max_new_tokens: int = 512,
-    **kwargs
+    **kwargs,
 ) -> list[str]:
     """
     Generate text predictions using the model.
@@ -90,9 +80,10 @@ def predict_with_inputs(
             input_ids=input_ids.to(device),
             pixel_values=pixel_values.to(device),
             max_new_tokens=max_new_tokens,
-            **kwargs
+            **kwargs,
         )
     return processor.batch_decode(outputs, skip_special_tokens=True)
+
 
 def predict_with_images(
     model: AutoModelForVision2Seq,
@@ -101,7 +92,7 @@ def predict_with_images(
     prompt: Optional[str] = None,
     device: Union[str, torch.device] = "cuda" if torch.cuda.is_available() else "cpu",
     max_new_tokens: int = 512,
-    **kwargs
+    **kwargs,
 ) -> list[str]:
     """
     Generate text predictions from images.
@@ -121,11 +112,7 @@ def predict_with_images(
     if isinstance(images, str):
         images = [images]
 
-    inputs = processor(
-        images=images,
-        text=prompt if prompt else "",
-        return_tensors="pt"
-    )
+    inputs = processor(images=images, text=prompt if prompt else "", return_tensors="pt")
 
     return predict_with_inputs(
         model=model,
@@ -134,5 +121,5 @@ def predict_with_images(
         pixel_values=inputs["pixel_values"],
         device=device,
         max_new_tokens=max_new_tokens,
-        **kwargs
+        **kwargs,
     )

@@ -10,10 +10,7 @@ class SmolVLM2Dataset(Dataset):
     """Dataset for SmolVLM2 model."""
 
     def __init__(
-        self,
-        image_paths: list[str],
-        texts: Optional[list[str]] = None,
-        processor: Optional[AutoProcessor] = None
+        self, image_paths: list[str], texts: Optional[list[str]] = None, processor: Optional[AutoProcessor] = None
     ):
         """
         Initialize dataset.
@@ -40,16 +37,10 @@ class SmolVLM2Dataset(Dataset):
             text = ""
 
         if self.processor is not None:
-            return self.processor(
-                images=image,
-                text=text,
-                return_tensors="pt"
-            )
+            return self.processor(images=image, text=text, return_tensors="pt")
         else:
-            return {
-                "image": image,
-                "text": text
-            }
+            return {"image": image, "text": text}
+
 
 def train_collate_fn(batch: list[dict]) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """
@@ -67,8 +58,9 @@ def train_collate_fn(batch: list[dict]) -> tuple[torch.Tensor, torch.Tensor, tor
 
     return input_ids, pixel_values, labels
 
+
 def evaluation_collate_fn(
-    batch: list[dict]
+    batch: list[dict],
 ) -> tuple[torch.Tensor, torch.Tensor, list[Image.Image], list[str], list[str]]:
     """
     Collate function for evaluation data.
@@ -87,12 +79,9 @@ def evaluation_collate_fn(
 
     return input_ids, pixel_values, images, prompts, targets
 
+
 def create_dataloader(
-    dataset: Dataset,
-    batch_size: int = 8,
-    num_workers: int = 4,
-    shuffle: bool = True,
-    collate_fn = None
+    dataset: Dataset, batch_size: int = 8, num_workers: int = 4, shuffle: bool = True, collate_fn=None
 ) -> DataLoader:
     """
     Create a DataLoader for the dataset.
@@ -106,10 +95,4 @@ def create_dataloader(
     Returns:
         DataLoader instance
     """
-    return DataLoader(
-        dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=shuffle,
-        collate_fn=collate_fn
-    )
+    return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, collate_fn=collate_fn)
