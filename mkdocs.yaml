@@ -27,6 +27,7 @@ nav:
     - Florence-2: models/florence_2.md
     - PaliGemma 2: models/paligemma_2.md
     - Qwen2.5-VL: models/qwen_2_5_vl.md
+    - SmolVLM2: models/smolvlm2.md
   - Datasets:
     - JSONL: datasets/jsonl.md
 

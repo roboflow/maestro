@@ -91,6 +91,14 @@ qwen_2_5_vl = [
     "bitsandbytes>=0.45.0",
     "qwen-vl-utils>=0.0.8"
 ]
+smolvlm2 = [
+    "accelerate>=1.2.1",
+    "peft>=0.12",
+    "torch>=2.4.0",
+    "torchvision>=0.20.0",
+    "transformers>=4.49.0",
+    "bitsandbytes>=0.45.0"
+]
 
 [project.scripts]
 maestro = "maestro.cli.main:app"
@@ -147,62 +155,19 @@ line-length = 120
 indent-width = 4
 
 [tool.ruff.lint]
-
-# Enable pycodestyle (`E`)
-select = ["E", "F", "I", "A", "Q", "W", "N", "T", "Q","TRY","UP","C90","RUF","NPY"]
-ignore = ["T201","TRY003","NPY201"]
-
-# Allow autofix for all enabled rules (when `--fix`) is provided.
-fixable = [
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "I",
-    "N",
-    "Q",
-    "S",
-    "T",
-    "W",
-    "ANN",
-    "ARG",
-    "BLE",
-    "COM",
-    "DJ",
-    "DTZ",
-    "EM",
-    "ERA",
-    "EXE",
-    "FBT",
-    "ICN",
-    "INP",
-    "ISC",
-    "NPY",
-    "PD",
-    "PGH",
-    "PIE",
-    "PL",
-    "PT",
-    "PTH",
-    "PYI",
-    "RET",
-    "RSE",
-    "RUF",
-    "SIM",
-    "SLF",
-    "TCH",
-    "TID",
-    "TRY",
-    "UP",
-    "YTT",
-]
+select = ["E", "F", "I", "A", "Q", "W", "N", "T", "TRY", "UP", "C90", "RUF", "NPY"]
+ignore = ["T201", "TRY003", "NPY201"]
+fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", 
+    "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", 
+    "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", 
+    "TCH", "TID", "TRY", "UP", "YTT"]
 unfixable = []
+
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-pylint.max-args = 20
+
+[tool.ruff.lint.pylint]
+max-args = 20
 
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = "double"
