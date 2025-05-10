@@ -69,10 +69,16 @@ we recommend creating a dedicated Python environment for each model.
     pip install "maestro[qwen_2_5_vl]"
     ```
 
+=== "SmolVLM2"
+
+    ```bash
+    pip install "maestro[smolvlm2]"
+    ```
+
 ### CLI
 
 Kick off fine-tuning with our command-line interface, which leverages the configuration
-and training routines defined in each model’s core module. Simply specify key parameters such as
+and training routines defined in each model's core module. Simply specify key parameters such as
 the dataset location, number of epochs, batch size, optimization strategy, and metrics.
 
 === "Florence-2"
@@ -105,6 +111,17 @@ the dataset location, number of epochs, batch size, optimization strategy, and m
       --epochs 10 \
       --batch-size 4 \
       --optimization_strategy "qlora" \
+      --metrics "edit_distance"
+    ```
+
+=== "SmolVLM2"
+
+    ```bash
+    maestro smolvlm2 train \
+      --dataset "dataset/location" \
+      --epochs 10 \
+      --batch-size 4 \
+      --optimization_strategy "lora" \
       --metrics "edit_distance"
     ```
 
@@ -148,7 +165,6 @@ and training setup.
     ```
 
 === "Qwen2.5-VL"
-
     ```python
     from maestro.trainer.models.qwen_2_5_vl.core import train
 
@@ -157,6 +173,21 @@ and training setup.
         "epochs": 10,
         "batch_size": 4,
         "optimization_strategy": "qlora",
+        "metrics": ["edit_distance"],
+    }
+
+    train(config)
+    ```
+
+=== "SmolVLM2"
+    ```python
+    from maestro.trainer.models.smolvlm2.core import train
+
+    config = {
+        "dataset": "dataset/location",
+        "epochs": 10,
+        "batch_size": 4,
+        "optimization_strategy": "lora",
         "metrics": ["edit_distance"],
     }
 
