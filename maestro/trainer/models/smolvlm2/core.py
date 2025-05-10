@@ -123,11 +123,12 @@ def train(config: dict) -> dict:
         # Freeze vision encoder parameters
         for param in model.vision_model.parameters():
             param.requires_grad = False
-
     else:
         raise ValueError(f"Unsupported optimization strategy: {strategy}")
-    processor = AutoProcessor.from_pretrained(model_name)  # Load datasets
-
+    
+    # Load processor and datasets
+    processor = AutoProcessor.from_pretrained(model_name)
+    
     # Create processor wrapper to preprocess data before collating
     def process_batch(batch):
         processed_batch = []
@@ -142,7 +143,7 @@ def train(config: dict) -> dict:
         train_collect_fn=lambda batch: train_collate_fn(process_batch(batch)),
         train_num_workers=config.get("num_workers", 0),
         test_batch_size=config.get("val_batch_size", config.get("batch_size", 4)),
-        test_collect_fn=partial(evaluation_collate_fn, processor=processor),
+        test_collect_fn=lambda batch: evaluation_collate_fn(process_batch(batch)),
         test_num_workers=config.get("val_num_workers", config.get("num_workers", 0)),
     )
 
@@ -166,14 +167,23 @@ def train(config: dict) -> dict:
         load_best_model_at_end=True,
         remove_unused_columns=False,
     )
-
-    # Set up trainer
+    
+    # Safely handle potential None loaders by directly checking train_loader/valid_loader before accessing dataset attribute
+    train_dataset = None
+    if train_loader is not None:
+        train_dataset = train_loader.dataset
+    
+    eval_dataset = None
+    if valid_loader is not None:
+        eval_dataset = valid_loader.dataset
+    
+    # Create data_collator that matches the train_collate_fn signature (doesn't pass processor)
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=train_loader.dataset,
-        eval_dataset=valid_loader.dataset,
-        data_collator=lambda batch: train_collate_fn(batch, processor),
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        data_collator=lambda batch: train_collate_fn(process_batch(batch)),
     )
 
     # Train model
