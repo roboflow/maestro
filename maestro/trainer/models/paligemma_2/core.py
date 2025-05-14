@@ -230,7 +230,7 @@ def train(config: PaliGemma2Configuration | dict) -> None:
     dataset_location = resolve_dataset_path(config.dataset)
     if dataset_location is None:
         return
-        
+
     train_loader, valid_loader, test_loader = create_data_loaders(
         dataset_location=dataset_location,
         train_batch_size=config.batch_size,
@@ -244,18 +244,19 @@ def train(config: PaliGemma2Configuration | dict) -> None:
     _, train_entry = train_loader.dataset[0]
     logger.info(f"sample train prefix: {train_entry['prefix']}")
     logger.info(f"sample train suffix: {train_entry['suffix']}")
-    
+
     pl_module = PaliGemma2Trainer(
         processor=processor, model=model, train_loader=train_loader, valid_loader=valid_loader, config=config
     )
     save_checkpoints_path = os.path.join(config.output_dir, "checkpoints")
     save_checkpoint_callback = SaveCheckpoint(result_path=save_checkpoints_path, save_model_callback=save_model)
-    
+
     callbacks = [save_checkpoint_callback]
-    
+
     # Add early stopping if enabled
     if config.early_stopping:
         from maestro.trainer.common.callbacks import EarlyStoppingCallback
+
         early_stopping_callback = EarlyStoppingCallback(
             monitor=config.early_stopping_monitor,
             min_delta=config.early_stopping_threshold,
@@ -265,13 +266,13 @@ def train(config: PaliGemma2Configuration | dict) -> None:
         )
         callbacks.append(early_stopping_callback)
         logger.info(f"Early stopping enabled with patience {config.early_stopping_patience}")
-    
+
     trainer = lightning.Trainer(
         max_epochs=config.epochs,
         accumulate_grad_batches=config.accumulate_grad_batches,
         check_val_every_n_epoch=1,
         limit_val_batches=1,
         log_every_n_steps=10,
-        callbacks=callbacks
+        callbacks=callbacks,
     )
     trainer.fit(pl_module)

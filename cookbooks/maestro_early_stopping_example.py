@@ -4,10 +4,13 @@ This is useful to prevent overfitting and reduce training time when model
 performance on the validation set has stopped improving.
 """
 
-from maestro.trainer.models.florence_2.core import Florence2Configuration, train as train_florence
-from maestro.trainer.models.paligemma_2.core import PaliGemma2Configuration, train as train_paligemma
-from maestro.trainer.models.qwen_2_5_vl.core import Qwen25VLConfiguration, train as train_qwen
-from maestro.trainer.models.smolvlm2.core import train as train_smolvlm2
+from maestro.trainer.models.florence_2.core import Florence2Configuration
+from maestro.trainer.models.florence_2.core import train as train_florence
+from maestro.trainer.models.paligemma_2.core import PaliGemma2Configuration
+from maestro.trainer.models.paligemma_2.core import train as train_paligemma
+from maestro.trainer.models.qwen_2_5_vl.core import Qwen25VLConfiguration
+from maestro.trainer.models.qwen_2_5_vl.core import train as train_qwen
+
 
 # Example with Florence-2 model
 def train_florence_with_early_stopping():
@@ -20,8 +23,9 @@ def train_florence_with_early_stopping():
         early_stopping_threshold=0.01,  # Minimum change to be considered as improvement
         early_stopping_monitor="val_loss",  # Metric to monitor (default: val_loss)
     )
-    
+
     train_florence(config)
+
 
 # Example with PaliGemma-2 model
 def train_paligemma_with_early_stopping():
@@ -34,8 +38,9 @@ def train_paligemma_with_early_stopping():
         early_stopping_threshold=0.001,  # More sensitive to small improvements
         early_stopping_monitor="val_loss",  # Metric to monitor
     )
-    
+
     train_paligemma(config)
+
 
 # Example with Qwen2.5-VL model
 def train_qwen_with_early_stopping():
@@ -48,8 +53,9 @@ def train_qwen_with_early_stopping():
         early_stopping_threshold=0.01,  # Minimum change to be considered as improvement
         early_stopping_monitor="val_loss",  # Metric to monitor
     )
-    
+
     train_qwen(config)
+
 
 if __name__ == "__main__":
     # Choose one of the training functions to run
