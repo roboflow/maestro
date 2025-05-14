@@ -38,8 +38,9 @@ class EarlyStoppingCallback(EarlyStopping):
         monitor (str): Quantity to be monitored. Default is 'val_loss'.
         min_delta (float): Minimum change in monitored quantity to qualify as improvement.
         patience (int): Number of validation epochs with no improvement after which training will be stopped.
-        mode (str): One of 'min', 'max'. In 'min' mode, training will stop when the quantity monitored has stopped decreasing;
-                    in 'max' mode it will stop when the quantity monitored has stopped increasing. Default is 'min'.
+        mode (str): One of 'min', 'max'. In 'min' mode, training will stop when the quantity monitored
+                    has stopped decreasing; in 'max' mode it will stop when the quantity monitored
+                    has stopped increasing. Default is 'min'.
         verbose (bool): Whether to print progress messages.
     """
 
