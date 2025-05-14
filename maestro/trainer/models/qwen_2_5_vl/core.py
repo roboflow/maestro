@@ -67,6 +67,10 @@ class Qwen25VLConfiguration:
         max_new_tokens (int): Maximum number of new tokens generated during inference.
         random_seed (Optional[int]): Random seed for ensuring reproducibility. If `None`, no seed is set.
         peft_advanced_params (Optional[dict]): Custom LoRA configuration . If None, default configuration is applied.
+        early_stopping (bool): Whether to use early stopping. Default is False.
+        early_stopping_patience (int): Number of epochs with no improvement after which training will be stopped.
+        early_stopping_threshold (float): Minimum change in monitored quantity to qualify as improvement.
+        early_stopping_monitor (str): Quantity to be monitored for early stopping.
     """
 
     dataset: str
@@ -89,6 +93,10 @@ class Qwen25VLConfiguration:
     max_new_tokens: int = 1024
     random_seed: Optional[int] = None
     peft_advanced_params: Optional[dict] = None
+    early_stopping: bool = False
+    early_stopping_patience: int = 3
+    early_stopping_threshold: float = 0.0
+    early_stopping_monitor: str = "val_loss"
 
     def __post_init__(self):
         if self.val_batch_size is None:
@@ -261,6 +269,7 @@ def train(config: Qwen25VLConfiguration | dict) -> None:
     dataset_location = resolve_dataset_path(config.dataset)
     if dataset_location is None:
         return
+        
     train_loader, valid_loader, test_loader = create_data_loaders(
         dataset_location=dataset_location,
         train_batch_size=config.batch_size,
@@ -278,18 +287,34 @@ def train(config: Qwen25VLConfiguration | dict) -> None:
 
     logger.info(f"sample train prefix: {train_entry['prefix']}")
     logger.info(f"sample train suffix: {train_entry['suffix']}")
-
+    
     pl_module = Qwen25VLTrainer(
         processor=processor, model=model, train_loader=train_loader, valid_loader=valid_loader, config=config
     )
     save_checkpoints_path = os.path.join(config.output_dir, "checkpoints")
     save_checkpoint_callback = SaveCheckpoint(result_path=save_checkpoints_path, save_model_callback=save_model)
+    
+    callbacks = [save_checkpoint_callback]
+    
+    # Add early stopping if enabled
+    if config.early_stopping:
+        from maestro.trainer.common.callbacks import EarlyStoppingCallback
+        early_stopping_callback = EarlyStoppingCallback(
+            monitor=config.early_stopping_monitor,
+            min_delta=config.early_stopping_threshold,
+            patience=config.early_stopping_patience,
+            verbose=True,
+            mode="min" if config.early_stopping_monitor == "val_loss" else "max",
+        )
+        callbacks.append(early_stopping_callback)
+        logger.info(f"Early stopping enabled with patience {config.early_stopping_patience}")
+    
     trainer = lightning.Trainer(
         max_epochs=config.epochs,
         accumulate_grad_batches=config.accumulate_grad_batches,
         check_val_every_n_epoch=1,
         limit_val_batches=1,
         log_every_n_steps=10,
-        callbacks=[save_checkpoint_callback],
+        callbacks=callbacks,
     )
     trainer.fit(pl_module)
