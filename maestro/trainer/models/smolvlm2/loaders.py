@@ -80,14 +80,15 @@ def train_collate_fn(
     # pixel_values = [i["pixel_values"] for i in instances]#inputs["pixel_values"]
     # attention_mask = [i["attention_mask"] for i in instances]#inputs["attention_mask"]
 
-    labels = processor.tokenizer(
-        text=suffixes, return_tensors="pt", padding=True, return_token_type_ids=False
-    ).input_ids
-    labels = pad_sequence(
-        labels,
-        batch_first=True,
-        padding_value=-100
-    )
+    # labels = processor.tokenizer(
+    #     text=suffixes, return_tensors="pt", padding=True, return_token_type_ids=False
+    # ).input_ids
+    image_token_id = processor.tokenizer.additional_special_tokens_ids[
+    processor.tokenizer.additional_special_tokens.index("<image>")
+    ]   
+    labels = batch["input_ids"].clone()
+    labels[labels == processor.tokenizer.pad_token_id] = -100  # Mask padding tokens in labels
+    labels[labels == image_token_id] = -100  # Mask image token IDs in labels
 
     print(labels.shape)
     print(input_ids.shape)
