@@ -5,94 +5,66 @@ from transformers import  AutoProcessor
 import supervision as sv
 from torch.nn.utils.rnn import pad_sequence
 import torch
+
+def format_data(image, prefix, suffix):
+    return [
+
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image",
+                    "image": image,
+                },
+                {
+                    "type": "text",
+                    "text": prefix,
+                },
+            ],
+        },
+        {
+            "role": "assistant",
+            "content": [{"type": "text", "text": suffix}],
+        },
+    ]
+
 def train_collate_fn(
     batch: list[tuple[Image.Image, dict[str, Any]]],
       processor: AutoProcessor ):
     images, data = zip(*batch)
-    instances = []
+
+    messages = []
+    suffixes = []
     for i in range(len(images)):
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "image", "image": images[i]},
-                    {"type": "text", "text": data[i]["prefix"]},
-                ]
-            },
-        ]
+        messages.append(format_data(images[i], data[i]["prefix"], data[i]["suffix"]))
+        suffixes.append(data[i]["suffix"])
 
-        instance = processor.apply_chat_template(
-            messages,
-            add_generation_prompt=True,
-            tokenize=True,
-            return_dict=True,
-            return_tensors="pt",
-        )
-        instances.append(instance)
+    # Apply chat template WITHOUT tokenization
+    texts = [processor.apply_chat_template(m, tokenize=False) for m in messages]
 
+    # Tokenize and encode images
+    batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
+    input_ids = batch_enc["input_ids"]
+    attention_mask = batch_enc["attention_mask"]
+    pixel_values = batch_enc["pixel_values"]
 
-    input_ids = pad_sequence(
-        [inst["input_ids"].squeeze(0) for inst in instances],
-        batch_first=True,
-        padding_value=processor.tokenizer.pad_token_id
-    )
-    attention_mask = pad_sequence(
-        [inst["attention_mask"].squeeze(0) for inst in instances],
-        batch_first=True,
-        padding_value=0
-    )
-
-    # Step 1: figure out maximum frames, height, width across the batch
-    pvs = [inst["pixel_values"].squeeze(0) for inst in instances if "pixel_values" in inst]
-    if pvs:  # there is at least one non-None pixel_values
-        max_frames = max(pv.shape[0] for pv in pvs)
-        max_h = max(pv.shape[-2] for pv in pvs)
-        max_w = max(pv.shape[-1] for pv in pvs)
-    else:
-        max_h = max_w = processor.video_size['longest_edge']
-        max_frames = 1
-
-    padded_pixel_values_list = []
-    for ex in instances:
-        pv = ex.get("pixel_values", None).squeeze(0)
-
-        if pv is None:
-            # text-only => fill pixel data + mask with zeros
-            shape_pv = (max_frames, 3, max_h, max_w)
-            padded_pv = torch.zeros(shape_pv, dtype=torch.float32)
-        else:
-            f, c, h, w = pv.shape
-            # Prepare final storage
-            padded_pv = torch.zeros(
-                (max_frames, c, max_h, max_w),
-                dtype=pv.dtype,
-                device=pv.device
-            )
-            padded_pv[:f, :, :h, :w] = pv
-        padded_pixel_values_list.append(padded_pv)
-
-    pixel_values = torch.stack(padded_pixel_values_list, dim=0)
-    #prefixes = ["<image>" + entry["prefix"] for entry in data]
-    suffixes = [entry["suffix"] for entry in data]
-    #inputs = processor(text=prefixes, images=images, return_tensors="pt", padding=True)
-
-    # input_ids = [i["input_ids"] for i in instances]#inputs["input_ids"]
-    # pixel_values = [i["pixel_values"] for i in instances]#inputs["pixel_values"]
-    # attention_mask = [i["attention_mask"] for i in instances]#inputs["attention_mask"]
-
-    # labels = processor.tokenizer(
-    #     text=suffixes, return_tensors="pt", padding=True, return_token_type_ids=False
-    # ).input_ids
-    image_token_id = processor.tokenizer.additional_special_tokens_ids[
-    processor.tokenizer.additional_special_tokens.index("<image>")
-    ]   
+    # Clone input_ids to labels and mask out everything except suffix
     labels = input_ids.clone()
-    labels[labels == processor.tokenizer.pad_token_id] = -100  # Mask padding tokens in labels
-    labels[labels == image_token_id] = -100  # Mask image token IDs in labels
 
-    print(labels[0,-10:])
-    print(input_ids.shape)
-    return input_ids,attention_mask, pixel_values, labels
+    # Mask pad tokens
+    labels[labels == processor.tokenizer.pad_token_id] = -100
+
+    # Mask <image> tokens
+    image_token_id = processor.tokenizer.convert_tokens_to_ids("<image>")
+    labels[labels == image_token_id] = -100
+
+    # Mask prefix tokens: keep only suffix as target
+    for i, suffix in enumerate(suffixes):
+        suffix_ids = processor.tokenizer(suffix, add_special_tokens=False).input_ids
+        # Only keep the last len(suffix_ids) tokens in labels
+        labels[i, :-len(suffix_ids)] = -100
+
+    return input_ids, attention_mask, pixel_values, labels
 
 def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: AutoProcessor):
     images, data = zip(*batch)
