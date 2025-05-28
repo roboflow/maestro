@@ -10,13 +10,14 @@ def train_collate_fn(
       processor: AutoProcessor ):
     images, data = zip(*batch)
     instances = []
-
+    print(type(images))
     for i in range(len(images)):
+        print(i)
         messages = [
             {
                 "role": "user",
                 "content": [
-                    {"type": "image", "image": Image.open(images[i])},
+                    {"type": "image", "image": images[i]},
                     {"type": "text", "text": data[i]["prefix"]},
                 ]
             },
