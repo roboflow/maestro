@@ -2,19 +2,44 @@ from typing import Any
 
 from PIL import Image
 from transformers import  AutoProcessor
-
+import supervision as sv
+from torch.nn.utils.rnn import pad_sequence
 
 def train_collate_fn(
     batch: list[tuple[Image.Image, dict[str, Any]]],
       processor: AutoProcessor ):
     images, data = zip(*batch)
-    prefixes = ["<image>" + entry["prefix"] for entry in data]
-    suffixes = [entry["suffix"] for entry in data]
-    inputs = processor(text=prefixes, images=images, return_tensors="pt", padding=True)
+    instances = []
 
-    input_ids = inputs["input_ids"]
-    pixel_values = inputs["pixel_values"]
-    attention_mask = inputs["attention_mask"]
+    for i in range(len(images)) in images:
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image", "image": Image.open(images[i])},
+                    {"type": "text", "text": data[i]["prefix"]},
+                ]
+            },
+        ]
+
+        instance = processor.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            tokenize=True,
+            return_dict=True,
+            return_tensors="pt",
+        )
+        instances.append(instance)
+
+
+
+    #prefixes = ["<image>" + entry["prefix"] for entry in data]
+    suffixes = [entry["suffix"] for entry in data]
+    #inputs = processor(text=prefixes, images=images, return_tensors="pt", padding=True)
+
+    input_ids = [i["inputs_ids"] for i in instances]#inputs["input_ids"]
+    pixel_values = [i["pixel_values"] for i in instances]#inputs["pixel_values"]
+    attention_mask = [i["attention_mask"] for i in instances]#inputs["attention_mask"]
 
     labels = processor.tokenizer(
         text=suffixes, return_tensors="pt", padding=True, return_token_type_ids=False

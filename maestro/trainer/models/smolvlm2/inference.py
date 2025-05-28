@@ -52,7 +52,7 @@ def predict(
     """Generate a text prediction for a single image and text prefix.
 
     Args:
-        model (AutoModelForCausalLM): The Florence-2 model for conditional text generation.
+        model (AutoModelForImageTextToText): The Florence-2 model for conditional text generation.
         processor (AutoProcessor): Processor for model inputs and outputs, handling tokenization and decoding.
         image (str | bytes | Image.Image): Input image as a file path, raw bytes, or a PIL Image.
         prefix (str): Text prefix to condition the generated output.
