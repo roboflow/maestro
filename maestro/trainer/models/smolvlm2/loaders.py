@@ -86,7 +86,7 @@ def train_collate_fn(
     image_token_id = processor.tokenizer.additional_special_tokens_ids[
     processor.tokenizer.additional_special_tokens.index("<image>")
     ]   
-    labels = batch["input_ids"].clone()
+    labels = input_ids.clone()
     labels[labels == processor.tokenizer.pad_token_id] = -100  # Mask padding tokens in labels
     labels[labels == image_token_id] = -100  # Mask image token IDs in labels
 
