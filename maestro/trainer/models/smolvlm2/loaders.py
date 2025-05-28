@@ -83,6 +83,12 @@ def train_collate_fn(
     labels = processor.tokenizer(
         text=suffixes, return_tensors="pt", padding=True, return_token_type_ids=False
     ).input_ids
+    labels = pad_sequence(
+        labels,
+        batch_first=True,
+        padding_value=-100
+    )
+
     print(labels.shape)
     print(input_ids.shape)
     return input_ids,attention_mask, pixel_values, labels
