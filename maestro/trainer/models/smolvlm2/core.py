@@ -237,7 +237,7 @@ def train(config: SmolVLM2Configuration | dict) -> None:
     train_loader, valid_loader, test_loader = create_data_loaders(
         dataset_location=dataset_location,
         train_batch_size=config.batch_size,
-        train_collect_fn=partial(train_collate_fn, processor=processor, max_length=config.max_new_tokens),
+        train_collect_fn=partial(train_collate_fn, processor=processor),
         train_num_workers=config.num_workers,
         test_batch_size=config.val_batch_size,
         test_collect_fn=partial(evaluation_collate_fn, processor=processor),
