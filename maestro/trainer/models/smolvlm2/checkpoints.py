@@ -154,8 +154,8 @@ def load_model(
             trust_remote_code=True,
             quantization_config=bnb_config,
             cache_dir=cache_dir,
-            torch_dtype=torch.bfloat16,
-        )
+            torch_dtype=torch.bfloat16, 
+        ).to(device)
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
     else:
