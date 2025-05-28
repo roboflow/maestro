@@ -3,7 +3,7 @@ from typing import Optional
 from enum import Enum
 
 import torch
-from transformers import AutoModelForVision2Seq, AutoProcessor
+from transformers import AutoModelForImageTextToText, AutoProcessor
 from maestro.trainer.common.utils.device import parse_device_spec
 from maestro.trainer.logger import get_maestro_logger
 from peft import LoraConfig, get_peft_model
@@ -24,7 +24,7 @@ logger = get_maestro_logger()
 
 
 def save_checkpoint(
-    model: AutoModelForVision2Seq, processor: AutoProcessor, path: str, metadata: Optional[dict] = None
+    model: AutoModelForImageTextToText, processor: AutoProcessor, path: str, metadata: Optional[dict] = None
 ) -> None:
     """
     Save model checkpoint.
@@ -50,7 +50,7 @@ def save_checkpoint(
 def save_model(
     target_dir: str,
     processor: AutoProcessor,
-    model: AutoModelForVision2Seq,
+    model: AutoModelForImageTextToText,
 ) -> None:
     """
     Save a PaliGemma 2 model and its processor to disk.
@@ -77,7 +77,7 @@ def save_model(
 #         Dictionary containing model, processor, and metadata
 #     """
 #     # Load model
-#     model = AutoModelForVision2Seq.from_pretrained(path)
+#     model = AutoModelForImageTextToText.from_pretrained(path)
 #     model.to(device)
 
 #     # Load processor
@@ -103,7 +103,7 @@ def load_model(
     optimization_strategy: OptimizationStrategy = OptimizationStrategy.NONE,
     peft_advanced_params: Optional[dict] = None,
     cache_dir: Optional[str] = None,
-) -> tuple[AutoProcessor, AutoModelForVision2Seq]:
+) -> tuple[AutoProcessor, AutoModelForImageTextToText]:
     """Loads a PaliGemma 2 model and its associated processor.
 
     Args:
@@ -148,7 +148,7 @@ def load_model(
         ) if optimization_strategy == OptimizationStrategy.QLORA
             else None)
         
-        model = AutoModelForVision2Seq.from_pretrained(
+        model = AutoModelForImageTextToText.from_pretrained(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
@@ -160,7 +160,7 @@ def load_model(
         model.print_trainable_parameters()
     else:
 
-        model = AutoModelForVision2Seq.from_pretrained(
+        model = AutoModelForImageTextToText.from_pretrained(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,

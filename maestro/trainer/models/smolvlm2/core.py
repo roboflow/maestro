@@ -133,7 +133,7 @@ class SmolVLM2Trainer(MaestroTrainer):
 
     Attributes:
         processor (AutoProcessor): Processor for model inputs.
-        model (AutoModelForCausalLM): The SmolVLM-2 model.
+        model (AutoModelForImageTextToText): The SmolVLM-2 model.
         train_loader (DataLoader): DataLoader for training data.
         valid_loader (DataLoader): DataLoader for validation data.
         config (SmolVLM2Configuration): Configuration object with training parameters.

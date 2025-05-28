@@ -2,12 +2,12 @@ from typing import Optional, Union
 from PIL import Image
 
 import torch
-from transformers import AutoModelForVision2Seq, AutoProcessor
+from transformers import AutoModelForImageTextToText, AutoProcessor
 from maestro.trainer.common.utils.device import parse_device_spec
 
 
 def predict_with_inputs(
-    model: AutoModelForVision2Seq,
+    model: AutoModelForImageTextToText,
     processor: AutoProcessor,
     input_ids: torch.Tensor,
     pixel_values: torch.Tensor,
@@ -42,7 +42,7 @@ def predict_with_inputs(
 
 
 def predict(
-    model: AutoModelForVision2Seq,
+    model: AutoModelForImageTextToText,
     processor: AutoProcessor,
     image: Image.Image,
     prefix: str,
@@ -74,7 +74,7 @@ def predict(
     )[0]
 
 # def predict_with_images(
-#     model: AutoModelForVision2Seq,
+#     model: AutoModelForImageTextToText,
 #     processor: AutoProcessor,
 #     images: Union[str, list[str]],
 #     prompt: Optional[str] = None,
