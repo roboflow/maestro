@@ -11,7 +11,7 @@ def train_collate_fn(
     images, data = zip(*batch)
     instances = []
 
-    for i in range(len(images)) in images:
+    for i in range(len(images)):
         messages = [
             {
                 "role": "user",
