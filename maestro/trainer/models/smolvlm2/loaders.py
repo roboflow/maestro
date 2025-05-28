@@ -8,7 +8,7 @@ def train_collate_fn(
     batch: list[tuple[Image.Image, dict[str, Any]]],
       processor: AutoProcessor ):
     images, data = zip(*batch)
-    prefixes = [entry["prefix"] for entry in data]
+    prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
     inputs = processor(text=prefixes, images=images, return_tensors="pt", padding=True)
 
@@ -23,7 +23,7 @@ def train_collate_fn(
 
 def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: AutoProcessor):
     images, data = zip(*batch)
-    prefixes = [entry["prefix"] for entry in data]
+    prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
     inputs = processor(text=prefixes, images=images, return_tensors="pt", padding=True)
 
