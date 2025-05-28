@@ -168,7 +168,7 @@ def load_model(
 
         if optimization_strategy == OptimizationStrategy.FREEZE:
             # Freeze vision encoder parameters
-            for param in model.vision_model.parameters():
+            for param in model.model.vision_model.parameters():
                 param.requires_grad = False
 
             # for param in model.multi_modal_projector.parameters():
