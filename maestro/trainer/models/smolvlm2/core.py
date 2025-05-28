@@ -247,6 +247,12 @@ def train(config: SmolVLM2Configuration | dict) -> None:
     _, train_entry = train_loader.dataset[0]
     logger.info(f"sample train prefix: {train_entry['prefix']}")
     logger.info(f"sample train suffix: {train_entry['suffix']}")
+    if config.device.type == "cuda":  # Or check for 'cpu' if you intend to use BF16 on CPU
+        logger.info(f"Casting model to {torch.bfloat16} for training on {config.device}")
+        model = model.to(torch.bfloat16)
+    else:
+        logger.info(f"Using default precision for training on {config.device}")
+
 
     pl_module = SmolVLM2Trainer(
         processor=processor, model=model, train_loader=train_loader, valid_loader=valid_loader, config=config
