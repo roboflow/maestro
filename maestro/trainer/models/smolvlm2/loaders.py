@@ -64,7 +64,7 @@ def train_collate_fn(
         # Only keep the last len(suffix_ids) tokens in labels
         labels[i, :-len(suffix_ids)] = -100
 
-    return input_ids, attention_mask, pixel_values.to(dtype=torch.bfloat16), labels
+    return input_ids, attention_mask, pixel_values, labels
 
 def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: AutoProcessor):
     images, data = zip(*batch)
