@@ -4,7 +4,7 @@ from PIL import Image
 from transformers import  AutoProcessor
 import supervision as sv
 from torch.nn.utils.rnn import pad_sequence
-
+import torch
 def train_collate_fn(
     batch: list[tuple[Image.Image, dict[str, Any]]],
       processor: AutoProcessor ):
@@ -31,14 +31,54 @@ def train_collate_fn(
         instances.append(instance)
 
 
+    input_ids = pad_sequence(
+        [inst["input_ids"].squeeze(0) for inst in instances],
+        batch_first=True,
+        padding_value=processor.tokenizer.pad_token_id
+    )
+    attention_mask = pad_sequence(
+        [inst["attention_mask"].squeeze(0) for inst in instances],
+        batch_first=True,
+        padding_value=0
+    )
 
+    # Step 1: figure out maximum frames, height, width across the batch
+    pvs = [inst["pixel_values"].squeeze(0) for inst in instances if "pixel_values" in inst]
+    if pvs:  # there is at least one non-None pixel_values
+        max_frames = max(pv.shape[0] for pv in pvs)
+        max_h = max(pv.shape[-2] for pv in pvs)
+        max_w = max(pv.shape[-1] for pv in pvs)
+    else:
+        max_h = max_w = processor.video_size['longest_edge']
+        max_frames = 1
+
+    padded_pixel_values_list = []
+    for ex in instances:
+        pv = ex.get("pixel_values", None).squeeze(0)
+
+        if pv is None:
+            # text-only => fill pixel data + mask with zeros
+            shape_pv = (max_frames, 3, max_h, max_w)
+            padded_pv = torch.zeros(shape_pv, dtype=torch.float32)
+        else:
+            f, c, h, w = pv.shape
+            # Prepare final storage
+            padded_pv = torch.zeros(
+                (max_frames, c, max_h, max_w),
+                dtype=pv.dtype,
+                device=pv.device
+            )
+            padded_pv[:f, :, :h, :w] = pv
+        padded_pixel_values_list.append(padded_pv)
+
+    pixel_values = torch.stack(padded_pixel_values_list, dim=0)
     #prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
     #inputs = processor(text=prefixes, images=images, return_tensors="pt", padding=True)
 
-    input_ids = [i["input_ids"] for i in instances]#inputs["input_ids"]
-    pixel_values = [i["pixel_values"] for i in instances]#inputs["pixel_values"]
-    attention_mask = [i["attention_mask"] for i in instances]#inputs["attention_mask"]
+    # input_ids = [i["input_ids"] for i in instances]#inputs["input_ids"]
+    # pixel_values = [i["pixel_values"] for i in instances]#inputs["pixel_values"]
+    # attention_mask = [i["attention_mask"] for i in instances]#inputs["attention_mask"]
 
     labels = processor.tokenizer(
         text=suffixes, return_tensors="pt", padding=True, return_token_type_ids=False
