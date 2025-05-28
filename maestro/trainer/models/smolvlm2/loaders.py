@@ -90,7 +90,7 @@ def train_collate_fn(
     labels[labels == processor.tokenizer.pad_token_id] = -100  # Mask padding tokens in labels
     labels[labels == image_token_id] = -100  # Mask image token IDs in labels
 
-    print(labels.shape)
+    print(labels[0,-10:])
     print(input_ids.shape)
     return input_ids,attention_mask, pixel_values, labels
 
