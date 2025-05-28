@@ -14,12 +14,13 @@ def train_collate_fn(
 
     input_ids = inputs["input_ids"]
     pixel_values = inputs["pixel_values"]
+    attention_mask = inputs["attention_mask"]
 
     labels = processor.tokenizer(
         text=suffixes, return_tensors="pt", padding=True, return_token_type_ids=False
     ).input_ids
 
-    return input_ids, pixel_values, labels
+    return input_ids,attention_mask, pixel_values, labels
 
 def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: AutoProcessor):
     images, data = zip(*batch)
@@ -29,7 +30,9 @@ def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], proce
 
     input_ids = inputs["input_ids"]
     pixel_values = inputs["pixel_values"]
-    return input_ids, pixel_values, images, prefixes, suffixes
+    attention_mask = inputs["attention_mask"]
+
+    return input_ids, attention_mask, pixel_values, images, prefixes, suffixes
 
 
 

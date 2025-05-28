@@ -159,9 +159,10 @@ class SmolVLM2Trainer(MaestroTrainer):
         self.valid_metrics_tracker = MetricsTracker.init(metrics=metrics)
 
     def training_step(self, batch, batch_idx):
-        input_ids, pixel_values, labels = batch
+        input_ids, attention_mask, pixel_values, labels = batch
         outputs = self.model(
             input_ids=input_ids,
+            attention_mask=attention_mask,
             pixel_values=pixel_values,
             labels=labels,
         )
@@ -171,11 +172,12 @@ class SmolVLM2Trainer(MaestroTrainer):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        input_ids, pixel_values, images, prefixes, suffixes = batch
+        input_ids,attention_mask, pixel_values, images, prefixes, suffixes = batch
         generated_suffixes = predict_with_inputs(
             model=self.model,
             processor=self.processor,
             input_ids=input_ids,
+            attention_mask=attention_mask,
             pixel_values=pixel_values,
             device=self.config.device,
             max_new_tokens=self.config.max_new_tokens,
