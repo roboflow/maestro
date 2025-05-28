@@ -10,9 +10,7 @@ def train_collate_fn(
       processor: AutoProcessor ):
     images, data = zip(*batch)
     instances = []
-    print(type(images))
     for i in range(len(images)):
-        print(i)
         messages = [
             {
                 "role": "user",
@@ -38,7 +36,7 @@ def train_collate_fn(
     suffixes = [entry["suffix"] for entry in data]
     #inputs = processor(text=prefixes, images=images, return_tensors="pt", padding=True)
 
-    input_ids = [i["inputs_ids"] for i in instances]#inputs["input_ids"]
+    input_ids = [i["input_ids"] for i in instances]#inputs["input_ids"]
     pixel_values = [i["pixel_values"] for i in instances]#inputs["pixel_values"]
     attention_mask = [i["attention_mask"] for i in instances]#inputs["attention_mask"]
 
