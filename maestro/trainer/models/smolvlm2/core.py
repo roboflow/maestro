@@ -171,21 +171,12 @@ class SmolVLM2Trainer(MaestroTrainer):
 
     def validation_step(self, batch, batch_idx):
         inputs, prefixes, suffixes = batch
-        # generated_suffixes = predict_with_inputs(
-        #     model=self.model,
-        #     processor=self.processor,
-        #     input_ids=input_ids,
-        #     attention_mask=attention_mask,
-        #     pixel_values=pixel_values,
-        #     device=self.config.device,
-        #     max_new_tokens=self.config.max_new_tokens,
-        # )
-        generated_ids = self.model.generate(**inputs, do_sample=False, max_new_tokens=64)
-        generated_suffixes = self.processor.batch_decode(
-            generated_ids,
-            skip_special_tokens=True,
-        )
-        print("generated_suffixes", generated_suffixes)
+
+        generated_suffixes = predict_with_inputs(self.model,
+                                            self.processor,
+                                            inputs,
+                                            max_new_tokens=self.config.max_new_tokens )
+
         if batch_idx == 0:
             logger.info(f"sample valid prefix: {prefixes[0]}")
             logger.info(f"sample valid suffix: {suffixes[0]}")
