@@ -88,6 +88,7 @@ def evaluation_collate_fn(
     # # Tokenize and encode images
     # batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
     batch_enc = processor.apply_chat_template(messages, tokenize=True)
+    print(batch_enc)
 
     input_ids = batch_enc["input_ids"]
     attention_mask = batch_enc["attention_mask"]
