@@ -172,7 +172,7 @@ class SmolVLM2Trainer(MaestroTrainer):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        input_ids,attention_mask, pixel_values, images, prefixes, suffixes = batch
+        input_ids,attention_mask, pixel_values, prefixes, suffixes = batch
         generated_suffixes = predict_with_inputs(
             model=self.model,
             processor=self.processor,

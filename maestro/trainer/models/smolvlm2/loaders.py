@@ -84,24 +84,18 @@ def evaluation_collate_fn(
         for image, entry in zip(images, data)
     ]
 
-    texts = [processor.apply_chat_template(msg, tokenize=True, 
-                                           add_generation_prompt=True,
-                                           return_dict=True,
-                                            )
-                                            for msg in messages]
+    texts = [processor.apply_chat_template(m, tokenize=False) for m in messages]
 
-    # Tokenize with processor (includes image + text)
-    #batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
-
-    input_ids = torch.Tensor([t["input_ids"] for t in texts])#batch_enc["input_ids"]
-    attention_mask = torch.Tensor([t["attention_mask"] for t in texts])
-    pixel_values =torch.Tensor( [t["pixel_values"] for t in texts])
-    print(input_ids)
+    # Tokenize and encode images
+    batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
+    input_ids = batch_enc["input_ids"]
+    attention_mask = batch_enc["attention_mask"]
+    pixel_values = batch_enc["pixel_values"]
     #attention_mask = batch_enc["attention_mask"]
     #pixel_values = batch_enc["pixel_values"]
 
     prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
 
-    return input_ids, attention_mask, pixel_values, images, prefixes, suffixes
+    return input_ids, attention_mask, pixel_values, prefixes, suffixes
 
