@@ -74,7 +74,7 @@ def predict(
             tokenize=True,
             return_dict=True,
             return_tensors="pt",
-        ).to(model.device, dtype=torch.bfloat16)
+        )#.to(model.device, dtype=torch.bfloat16)
     #inputs = processor(text=text, images=image, return_tensors="pt", padding=True)
     return predict_with_inputs(
         inputs = inputs, model=model, processor=processor, device=device, max_new_tokens=max_new_tokens
