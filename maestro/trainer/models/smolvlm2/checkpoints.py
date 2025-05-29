@@ -143,7 +143,7 @@ def load_model(
         bnb_config = (BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.float16,
+            #bnb_4bit_compute_dtype=torch.float16,
             bnb_4bit_use_double_quant=True,
         ) if optimization_strategy == OptimizationStrategy.QLORA
             else None)
@@ -154,7 +154,7 @@ def load_model(
             trust_remote_code=True,
             quantization_config=bnb_config,
             cache_dir=cache_dir,
-            torch_dtype=torch.bfloat16, 
+            #torch_dtype=torch.bfloat16, 
         ).to(device)
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()

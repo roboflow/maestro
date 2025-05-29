@@ -39,8 +39,6 @@ from maestro.trainer.common.metrics import (
     parse_metrics,
     save_metric_plots,
 )
-from torch.cuda.amp import autocast
-
 from maestro.trainer.models.florence_2.detection import (
     detections_to_prefix_formatter,
     detections_to_suffix_formatter,
@@ -162,14 +160,12 @@ class SmolVLM2Trainer(MaestroTrainer):
 
     def training_step(self, batch, batch_idx):
         input_ids, attention_mask, pixel_values, labels = batch
-        with autocast(dtype=torch.bfloat16):
-
-            outputs = self.model(
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                pixel_values=pixel_values,
-                labels=labels,
-            )
+        outputs = self.model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            pixel_values=pixel_values,
+            labels=labels,
+        )
         loss = outputs.loss
         self.log("train_loss", loss, prog_bar=True, logger=True, batch_size=self.config.batch_size)
         self.train_metrics_tracker.register("loss", epoch=self.current_epoch, step=batch_idx, value=loss.item())
