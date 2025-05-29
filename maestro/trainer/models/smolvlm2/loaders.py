@@ -29,41 +29,68 @@ def format_data(image, prefix, suffix):
     ]
 
 def train_collate_fn(
-    batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor, max_length: int = 512
+    batch: list[tuple[Image.Image, dict[str, Any]]],
+      processor: AutoProcessor ):
+    images, data = zip(*batch)
+
+    messages = [
+        format_data(image, entry["prefix"], entry["suffix"])
+        for image, entry in zip(images, data)
+    ]
+    suffixes = [entry["suffix"] for entry in data]
+    
+    # Apply chat template WITHOUT tokenization
+    texts = [processor.apply_chat_template(m,  add_generation_prompt=False) for m in messages]
+
+    # Tokenize and encode images
+    batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
+    input_ids = batch_enc["input_ids"]
+    attention_mask = batch_enc["attention_mask"]
+    pixel_values = batch_enc["pixel_values"]
+
+    # Clone input_ids to labels and mask out everything except suffix
+    labels = input_ids.clone()
+
+    # Mask pad tokens
+    labels[labels == processor.tokenizer.pad_token_id] = -100
+
+    # Mask <image> tokens
+    image_token_id = processor.tokenizer.convert_tokens_to_ids("<image>")
+    labels[labels == image_token_id] = -100
+
+    # Mask prefix tokens: keep only suffix as target
+    for i, suffix in enumerate(suffixes):
+        suffix_ids = processor.tokenizer(suffix, add_special_tokens=False).input_ids
+        labels[i, :-len(suffix_ids)] = -100
+
+    return input_ids, attention_mask, pixel_values, labels
+def evaluation_collate_fn(
+    batch: list[tuple[Image.Image, dict[str, Any]]],
+    processor: AutoProcessor
 ):
     images, data = zip(*batch)
+
+    messages = [
+        [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image", "image": image},
+                    {"type": "text", "text": entry["prefix"]},
+                ],
+            }
+        ]
+        for image, entry in zip(images, data)
+    ]
+
+    texts = [processor.apply_chat_template(m, tokenize=False) for m in messages]
+    # Tokenize and encode images
+    batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
+    input_ids = batch_enc["input_ids"]
+    attention_mask = batch_enc["attention_mask"]
+    pixel_values = batch_enc["pixel_values"]
+
     prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
-
-    inputs = processor(
-        text=prefixes,
-        images=images,
-        return_tensors="pt",
-        suffix=suffixes,
-        padding=True,
-        truncation="only_second",
-        max_length=max_length,
-    )
-
-    input_ids = inputs["input_ids"]
-    attention_mask = inputs["attention_mask"]
-    token_type_ids = inputs["token_type_ids"]
-    pixel_values = inputs["pixel_values"]
-    labels = inputs["labels"]
-
-    return input_ids, attention_mask, token_type_ids, pixel_values, labels
-
-
-
-def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor):
-    images, data = zip(*batch)
-    prefixes = ["<image>" + entry["prefix"] for entry in data]
-    suffixes = [entry["suffix"] for entry in data]
-
-    inputs = processor(text=prefixes, images=images, return_tensors="pt", padding=True)
-
-    input_ids = inputs["input_ids"]
-    attention_mask = inputs["attention_mask"]
-    pixel_values = inputs["pixel_values"]
-
     return input_ids, attention_mask, pixel_values, prefixes, suffixes
+
