@@ -40,7 +40,7 @@ def train_collate_fn(
     suffixes = [entry["suffix"] for entry in data]
     
     # Apply chat template WITHOUT tokenization
-    texts = [processor.apply_chat_template(m, tokenize=False) for m in messages]
+    texts = [processor.apply_chat_template(m,  add_generation_prompt=False) for m in messages]
 
     # Tokenize and encode images
     batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
@@ -61,7 +61,6 @@ def train_collate_fn(
     # Mask prefix tokens: keep only suffix as target
     for i, suffix in enumerate(suffixes):
         suffix_ids = processor.tokenizer(suffix, add_special_tokens=False).input_ids
-        # Only keep the last len(suffix_ids) tokens in labels
         labels[i, :-len(suffix_ids)] = -100
 
     return input_ids, attention_mask, pixel_values, labels
@@ -85,7 +84,7 @@ def evaluation_collate_fn(
     ]
 
     texts = [processor.apply_chat_template(m, tokenize=False) for m in messages]
-
+    print(texts)
     # Tokenize and encode images
     batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
     input_ids = batch_enc["input_ids"]
@@ -96,6 +95,6 @@ def evaluation_collate_fn(
 
     prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
-
+    print(suffixes)
     return input_ids, attention_mask, pixel_values, prefixes, suffixes
 

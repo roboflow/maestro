@@ -36,9 +36,8 @@ def predict_with_inputs(
             pixel_values=pixel_values.to(device),
             max_new_tokens=max_new_tokens,
             do_sample=False,
-            num_beams=3,
         )
-    return processor.batch_decode(generated_ids, skip_special_tokens=False)
+    return processor.batch_decode(generated_ids, skip_special_tokens=True)
 
 
 def predict(
