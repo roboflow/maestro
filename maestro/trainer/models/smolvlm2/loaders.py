@@ -95,8 +95,7 @@ def evaluation_collate_fn(
     attention_mask = batch_enc["attention_mask"]
     pixel_values = batch_enc["pixel_values"]
 
-    # Optionally return raw text + images for later reference/evaluation
-    prefixes = [entry["prefix"] for entry in data]
+    prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
 
     return input_ids, attention_mask, pixel_values, images, prefixes, suffixes
