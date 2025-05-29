@@ -40,10 +40,10 @@ def train_collate_fn(
     suffixes = [entry["suffix"] for entry in data]
     
     # Apply chat template WITHOUT tokenization
-    texts = [processor.apply_chat_template(m,  add_generation_prompt=False) for m in messages]
+    texts = [processor.apply_chat_template(m, tokenize=False) for m in messages]
 
     # Tokenize and encode images
-    batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
+    batch_enc = processor(text=texts, return_tensors="pt", padding=True)
     input_ids = batch_enc["input_ids"]
     attention_mask = batch_enc["attention_mask"]
     pixel_values = batch_enc["pixel_values"]
@@ -85,7 +85,7 @@ def evaluation_collate_fn(
 
     texts = [processor.apply_chat_template(m, tokenize=False) for m in messages]
     # Tokenize and encode images
-    batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
+    batch_enc = processor(text=texts,  return_tensors="pt", padding=True)
     input_ids = batch_enc["input_ids"]
     attention_mask = batch_enc["attention_mask"]
     pixel_values = batch_enc["pixel_values"]
