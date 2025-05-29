@@ -123,8 +123,7 @@ def load_model(
         ValueError: If the model or processor cannot be loaded.
     """
     device = parse_device_spec(device)
-    #processor = AutoProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
-    processor = PaliGemmaProcessor.from_pretrained(model_id_or_path)
+    processor = AutoProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
 
     if optimization_strategy in {OptimizationStrategy.LORA, OptimizationStrategy.QLORA}:
         default_params = DEFAULT_SMOLVLM2_PEFT_PARAMS
