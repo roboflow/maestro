@@ -96,7 +96,7 @@ def evaluation_collate_fn(
     input_ids = torch.Tensor([t["input_ids"] for t in texts])#batch_enc["input_ids"]
     attention_mask = torch.Tensor([t["attention_mask"] for t in texts])
     pixel_values =torch.Tensor( [t["pixel_values"] for t in texts])
-
+    print(input_ids)
     #attention_mask = batch_enc["attention_mask"]
     #pixel_values = batch_enc["pixel_values"]
 
