@@ -175,6 +175,7 @@ class SmolVLM2Trainer(MaestroTrainer):
         generated_suffixes = predict_with_inputs(self.model,
                                             self.processor,
                                             inputs,
+                                            device = self.config.device,
                                             max_new_tokens=self.config.max_new_tokens )
 
         if batch_idx == 0:

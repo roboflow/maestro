@@ -31,7 +31,7 @@ def predict_with_inputs(
     """
     with torch.no_grad():
         generated_ids = model.generate(
-            **inputs,
+            **inputs.to(device),
             max_new_tokens=max_new_tokens,
             do_sample=False,
         )
