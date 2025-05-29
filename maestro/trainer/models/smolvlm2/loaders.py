@@ -51,7 +51,7 @@ def train_collate_fn(
     pixel_values = inputs["pixel_values"]
     labels = inputs["labels"]
 
-    return input_ids, attention_mask, token_type_ids, pixel_values, labels
+    return input_ids, attention_mask, pixel_values, labels
 
 
 def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor):
