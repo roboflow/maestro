@@ -59,8 +59,23 @@ def predict(
         str: Generated text prediction.
     """
     device = parse_device_spec(device)
-    text = "<image>" + prefix
-    inputs = processor(text=text, images=image, return_tensors="pt", padding=True)
+    messages = [
+    {
+        "role": "user",
+        "content": [
+            {"type": "image", "image":image},
+            {"type": "text", "text": prefix},
+        ]
+    },
+    ]
+    inputs = processor.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            tokenize=True,
+            return_dict=True,
+            return_tensors="pt",
+        ).to(model.device, dtype=torch.bfloat16)
+    #inputs = processor(text=text, images=image, return_tensors="pt", padding=True)
     return predict_with_inputs(
         inputs = inputs, model=model, processor=processor, device=device, max_new_tokens=max_new_tokens
     )[0]
