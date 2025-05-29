@@ -62,5 +62,5 @@ def predict(
     text = "<image>" + prefix
     inputs = processor(text=text, images=image, return_tensors="pt", padding=True)
     return predict_with_inputs(
-        **inputs, model=model, processor=processor, device=device, max_new_tokens=max_new_tokens
+        inputs = inputs, model=model, processor=processor, device=device, max_new_tokens=max_new_tokens
     )[0]
