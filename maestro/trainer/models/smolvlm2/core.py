@@ -242,7 +242,7 @@ def train(config: SmolVLM2Configuration | dict) -> None:
         train_collect_fn=partial(train_collate_fn, processor=processor),
         train_num_workers=config.num_workers,
         test_batch_size=config.val_batch_size,
-        test_collect_fn=partial(evaluation_collate_fn, processor=processor),
+        #test_collect_fn=partial(evaluation_collate_fn, processor=processor),
         test_num_workers=config.val_num_workers,
     )
 
