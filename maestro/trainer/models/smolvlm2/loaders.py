@@ -14,7 +14,7 @@ def format_data(image, prefix, suffix):
             "content": [
                 {
                     "type": "image",
-                    "image": "<image>",
+                    "image": image,
                 },
                 {
                     "type": "text",
@@ -75,7 +75,7 @@ def evaluation_collate_fn(
             {
                 "role": "user",
                 "content": [
-                    {"type": "image", "image": "<image>"},
+                    {"type": "image", "image": image},
                     {"type": "text", "text": entry["prefix"]},
                 ],
             }
