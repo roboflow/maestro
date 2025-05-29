@@ -42,7 +42,7 @@ def train_collate_fn(
     # Apply chat template WITHOUT tokenization
     #texts = [processor.apply_chat_template(m, tokenize=False) for m in messages]
     batch_enc = processor.apply_chat_template(messages, tokenize=True)
-
+    print(batch_enc)
     # Tokenize and encode images
     #batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
     input_ids = batch_enc["input_ids"]
