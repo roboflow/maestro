@@ -172,15 +172,20 @@ class SmolVLM2Trainer(MaestroTrainer):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        input_ids,attention_mask, pixel_values, prefixes, suffixes = batch
-        generated_suffixes = predict_with_inputs(
-            model=self.model,
-            processor=self.processor,
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            pixel_values=pixel_values,
-            device=self.config.device,
-            max_new_tokens=self.config.max_new_tokens,
+        inputs, prefixes, suffixes = batch
+        # generated_suffixes = predict_with_inputs(
+        #     model=self.model,
+        #     processor=self.processor,
+        #     input_ids=input_ids,
+        #     attention_mask=attention_mask,
+        #     pixel_values=pixel_values,
+        #     device=self.config.device,
+        #     max_new_tokens=self.config.max_new_tokens,
+        # )
+        generated_ids = self.model.generate(**inputs, do_sample=False, max_new_tokens=64)
+        generated_suffixes = self.processor.batch_decode(
+            generated_ids,
+            skip_special_tokens=True,
         )
         print("generated_suffixes", generated_suffixes)
         if batch_idx == 0:

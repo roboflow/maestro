@@ -42,7 +42,6 @@ def train_collate_fn(
     # Apply chat template WITHOUT tokenization
     #texts = [processor.apply_chat_template(m, tokenize=False) for m in messages]
     batch_enc = processor.apply_chat_template(messages, tokenize=True)
-    print(batch_enc)
     # Tokenize and encode images
     #batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
     input_ids = batch_enc["input_ids"]
@@ -88,13 +87,13 @@ def evaluation_collate_fn(
     # # Tokenize and encode images
     # batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
     batch_enc = processor.apply_chat_template(messages, tokenize=True)
-    print(batch_enc)
+    #print(batch_enc)
 
-    input_ids = batch_enc["input_ids"]
-    attention_mask = batch_enc["attention_mask"]
-    pixel_values = batch_enc["pixel_values"]
+    # input_ids = batch_enc["input_ids"]
+    # attention_mask = batch_enc["attention_mask"]
+    # pixel_values = batch_enc["pixel_values"]
 
     prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
-    return input_ids, attention_mask, pixel_values, prefixes, suffixes
+    return batch_enc, prefixes, suffixes
 
