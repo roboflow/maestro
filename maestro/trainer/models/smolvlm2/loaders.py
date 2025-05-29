@@ -33,12 +33,12 @@ def train_collate_fn(
       processor: AutoProcessor ):
     images, data = zip(*batch)
 
-    messages = []
-    suffixes = []
-    for i in range(len(images)):
-        messages.append(format_data(images[i], data[i]["prefix"], data[i]["suffix"]))
-        suffixes.append(data[i]["suffix"])
-
+    messages = [
+        format_data(image, entry["prefix"], entry["suffix"])
+        for image, entry in zip(images, data)
+    ]
+    suffixes = [entry["suffix"] for entry in data]
+    
     # Apply chat template WITHOUT tokenization
     texts = [processor.apply_chat_template(m, tokenize=False) for m in messages]
 
@@ -65,20 +65,41 @@ def train_collate_fn(
         labels[i, :-len(suffix_ids)] = -100
 
     return input_ids, attention_mask, pixel_values, labels
-
-def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: AutoProcessor):
+def evaluation_collate_fn(
+    batch: list[tuple[Image.Image, dict[str, Any]]],
+    processor: AutoProcessor
+):
     images, data = zip(*batch)
-    prefixes = ["<image>" + entry["prefix"] for entry in data]
-    suffixes = [entry["suffix"] for entry in data]
-    inputs = processor(text=prefixes, images=images, return_tensors="pt", padding=True)
 
-    input_ids = inputs["input_ids"]
-    pixel_values = inputs["pixel_values"]
-    attention_mask = inputs["attention_mask"]
+    # Format inputs: <image> token + prefix as text, image will be passed separately
+    messages = [
+        [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image", "image": image},
+                    {"type": "text", "text": entry["prefix"]},
+                ],
+            }
+        ]
+        for image, entry in zip(images, data)
+    ]
+
+    # Apply chat template without tokenizing to get clean prompt strings
+    texts = [processor.apply_chat_template(msg, tokenize=False) for msg in messages]
+
+    # Tokenize with processor (includes image + text)
+    batch_enc = processor(text=texts, images=images, return_tensors="pt", padding=True)
+
+    input_ids = batch_enc["input_ids"]
+    attention_mask = batch_enc["attention_mask"]
+    pixel_values = batch_enc["pixel_values"]
+
+    # Optionally return raw text + images for later reference/evaluation
+    prefixes = [entry["prefix"] for entry in data]
+    suffixes = [entry["suffix"] for entry in data]
 
     return input_ids, attention_mask, pixel_values, images, prefixes, suffixes
-
-
 
 
 
