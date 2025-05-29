@@ -53,7 +53,7 @@ def train_collate_fn(
     return input_ids, attention_mask, pixel_values, labels
 
 
-def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor):
+def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor):
     images, data = zip(*batch)
     prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
