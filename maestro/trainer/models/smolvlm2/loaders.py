@@ -29,7 +29,7 @@ def format_data(image, prefix, suffix):
     ]
 
 def train_collate_fn(
-    batch: list[tuple[Image.Image, dict[str, Any]]], processor
+    batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor, max_length: int = 512
 ):
     images, data = zip(*batch)
     prefixes = ["<image>" + entry["prefix"] for entry in data]
@@ -42,6 +42,7 @@ def train_collate_fn(
         suffix=suffixes,
         padding=True,
         truncation="only_second",
+        max_length=max_length,
     )
 
     input_ids = inputs["input_ids"]
@@ -50,10 +51,11 @@ def train_collate_fn(
     pixel_values = inputs["pixel_values"]
     labels = inputs["labels"]
 
-    return input_ids, attention_mask, pixel_values, labels
+    return input_ids, attention_mask, token_type_ids, pixel_values, labels
 
 
-def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor):
+
+def evaluation_collate_fn(batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor):
     images, data = zip(*batch)
     prefixes = ["<image>" + entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]

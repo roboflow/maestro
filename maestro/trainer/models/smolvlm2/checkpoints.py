@@ -8,6 +8,7 @@ from maestro.trainer.common.utils.device import parse_device_spec
 from maestro.trainer.logger import get_maestro_logger
 from peft import LoraConfig, get_peft_model
 from transformers import BitsAndBytesConfig
+from transformers import PaliGemmaForConditionalGeneration, PaliGemmaProcessor
 
 DEFAULT_SMOLVLM2_MODEL_ID = "HuggingFaceTB/SmolVLM2-2.2B-Instruct"#"smol-ai/smolvlm2-500m"
 DEFAULT_SMOLVLM2_MODEL_REVISION = "refs/heads/main"
@@ -122,8 +123,8 @@ def load_model(
         ValueError: If the model or processor cannot be loaded.
     """
     device = parse_device_spec(device)
-    #processor = PaliGemmaProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
-    processor = AutoProcessor.from_pretrained(model_id_or_path)
+    #processor = AutoProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
+    processor = PaliGemmaProcessor.from_pretrained(model_id_or_path)
 
     if optimization_strategy in {OptimizationStrategy.LORA, OptimizationStrategy.QLORA}:
         default_params = DEFAULT_SMOLVLM2_PEFT_PARAMS
