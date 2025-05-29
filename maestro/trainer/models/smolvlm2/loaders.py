@@ -29,7 +29,7 @@ def format_data(image, prefix, suffix):
     ]
 
 def train_collate_fn(
-    batch: list[tuple[Image.Image, dict[str, Any]]], processor: PaliGemmaProcessor, max_length: int = 512
+    batch: list[tuple[Image.Image, dict[str, Any]]], processor
 ):
     images, data = zip(*batch)
     prefixes = ["<image>" + entry["prefix"] for entry in data]
@@ -42,7 +42,6 @@ def train_collate_fn(
         suffix=suffixes,
         padding=True,
         truncation="only_second",
-        max_length=max_length,
     )
 
     input_ids = inputs["input_ids"]
