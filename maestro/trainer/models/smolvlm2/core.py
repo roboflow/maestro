@@ -207,10 +207,6 @@ class SmolVLM2Trainer(MaestroTrainer):
         )
 
 
-
-
-
-
 def train(config: SmolVLM2Configuration | dict) -> None:
     if isinstance(config, dict):
         config = dacite.from_dict(data_class=SmolVLM2Configuration, data=config)

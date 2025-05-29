@@ -8,7 +8,6 @@ from maestro.trainer.common.utils.device import parse_device_spec
 from maestro.trainer.logger import get_maestro_logger
 from peft import LoraConfig, get_peft_model
 from transformers import BitsAndBytesConfig
-from transformers import PaliGemmaForConditionalGeneration, PaliGemmaProcessor
 
 DEFAULT_SMOLVLM2_MODEL_ID = "HuggingFaceTB/SmolVLM2-2.2B-Instruct"#"smol-ai/smolvlm2-500m"
 DEFAULT_SMOLVLM2_MODEL_REVISION = "refs/heads/main"
@@ -54,13 +53,13 @@ def save_model(
     model: AutoModelForImageTextToText,
 ) -> None:
     """
-    Save a PaliGemma 2 model and its processor to disk.
+    Save a SmolVLM 2 model and its processor to disk.
 
     Args:
         target_dir: Directory path where the model and processor will be saved.
             Will be created if it doesn't exist.
-        processor: The PaliGemma 2 processor to save.
-        model: The PaliGemma 2model to save.
+        processor: The SmolVLM 2 processor to save.
+        model: The SmolVLM 2model to save.
     """
     os.makedirs(target_dir, exist_ok=True)
     processor.save_pretrained(target_dir)
@@ -105,7 +104,7 @@ def load_model(
     peft_advanced_params: Optional[dict] = None,
     cache_dir: Optional[str] = None,
 ) -> tuple[AutoProcessor, AutoModelForImageTextToText]:
-    """Loads a PaliGemma 2 model and its associated processor.
+    """Loads a SmolVLM 2 model and its associated processor.
 
     Args:
         model_id_or_path (str): The identifier or path of the model to load.
@@ -116,7 +115,7 @@ def load_model(
         cache_dir (Optional[str]): Directory to cache the downloaded model files.
 
     Returns:
-        (PaliGemmaProcessor, PaliGemmaForConditionalGeneration):
+        (SmolVLM2Processor, SmolVLM2ForConditionalGeneration):
             A tuple containing the loaded processor and model.
 
     Raises:
@@ -125,6 +124,7 @@ def load_model(
     device = parse_device_spec(device)
     processor = AutoProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
 
+    # TODO: QLORA IS NOT WORKING, MAYBE THE SOLUTION IS CAST THE INPUTS TO blfloat16
     if optimization_strategy in {OptimizationStrategy.LORA, OptimizationStrategy.QLORA}:
         default_params = DEFAULT_SMOLVLM2_PEFT_PARAMS
         if peft_advanced_params is not None:
@@ -171,10 +171,9 @@ def load_model(
             for param in model.model.vision_model.parameters():
                 param.requires_grad = False
 
+            # TODO: check if there are more weights to freeze, like:
             # for param in model.multi_modal_projector.parameters():
             #     param.requires_grad = False
-
-
 
     return processor, model
 
