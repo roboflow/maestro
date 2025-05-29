@@ -182,7 +182,7 @@ class SmolVLM2Trainer(MaestroTrainer):
             device=self.config.device,
             max_new_tokens=self.config.max_new_tokens,
         )
-
+        print("generated_suffixes", generated_suffixes)
         if batch_idx == 0:
             logger.info(f"sample valid prefix: {prefixes[0]}")
             logger.info(f"sample valid suffix: {suffixes[0]}")
@@ -242,7 +242,7 @@ def train(config: SmolVLM2Configuration | dict) -> None:
         train_collect_fn=partial(train_collate_fn, processor=processor),
         train_num_workers=config.num_workers,
         test_batch_size=config.val_batch_size,
-        #test_collect_fn=partial(evaluation_collate_fn, processor=processor),
+        test_collect_fn=partial(evaluation_collate_fn, processor=processor),
         test_num_workers=config.val_num_workers,
     )
 
