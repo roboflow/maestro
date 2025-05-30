@@ -55,9 +55,17 @@ def train_collate_fn(
     # Mask prefix tokens: keep only suffix as target
     for i, suffix in enumerate(suffixes):
         suffix_ids = processor.tokenizer(suffix, add_special_tokens=False).input_ids
-        labels[i, :-len(suffix_ids)] = -100
+        #labels[i, :-len(suffix_ids)] = -100
 
-    return inputs, labels
+        # Try to find the start index of the suffix tokens in the full input sequence
+        sequence = inputs.input_ids[i].tolist()
+        for j in range(len(sequence) - len(suffix_ids) + 1):
+            if sequence[j:j + len(suffix_ids)] == suffix_ids:
+                labels[i, :j] = -100
+                labels[i, j + len(suffix_ids):] = -100
+                break
+        return inputs, labels
+
 def evaluation_collate_fn(
     batch: list[tuple[Image.Image, dict[str, Any]]],
     processor: AutoProcessor
