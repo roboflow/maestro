@@ -59,6 +59,7 @@ def train_collate_fn(
         sequence = inputs.input_ids[i].tolist()
         for j in range(len(sequence) - len(suffix_ids) + 1):
             if sequence[j:j + len(suffix_ids)] == suffix_ids:
+                print("here")
                 labels[i, :j] = -100
                 labels[i, j + len(suffix_ids):] = -100
                 break
