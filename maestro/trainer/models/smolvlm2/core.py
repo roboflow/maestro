@@ -8,9 +8,6 @@ import lightning
 import dacite
 from functools import partial
 
-
-import numpy as np
-import supervision as sv
 from maestro.trainer.common.callbacks import SaveCheckpoint
 from maestro.trainer.common.datasets.core import create_data_loaders, resolve_dataset_path
 from maestro.trainer.common.metrics import BaseMetric, MetricsTracker, parse_metrics, save_metric_plots
@@ -34,7 +31,6 @@ from torch.utils.data import DataLoader
 from torch.optim import AdamW
 from maestro.trainer.common.metrics import (
     BaseMetric,
-    MeanAveragePrecisionMetric,
     MetricsTracker,
     parse_metrics,
     save_metric_plots,
@@ -227,7 +223,7 @@ def train(config: SmolVLM2Configuration | dict) -> None:
     dataset_location = resolve_dataset_path(config.dataset)
     if dataset_location is None:
         return
-            
+
     train_loader, valid_loader, test_loader = create_data_loaders(
         dataset_location=dataset_location,
         train_batch_size=config.batch_size,
