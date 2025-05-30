@@ -45,7 +45,6 @@ from maestro.trainer.models.florence_2.detection import (
     result_to_detections_formatter,
 )
 logger = get_maestro_logger()
-from trl import  DataCollatorForCompletionOnlyLM
 
 
 @dataclass()
@@ -160,13 +159,10 @@ class SmolVLM2Trainer(MaestroTrainer):
         self.valid_metrics_tracker = MetricsTracker.init(metrics=metrics)
 
     def training_step(self, batch, batch_idx):
-        batch = {k: v.to(self.config.device) for k, v in batch.items()}
-
-        # Forward pass
+        inputs, labels = batch
         outputs = self.model(
-            input_ids=batch["input_ids"],
-            attention_mask=batch["attention_mask"],
-            labels=batch["labels"],
+            **inputs,
+            labels=labels,
         )
         loss = outputs.loss
         self.log("train_loss", loss, prog_bar=True, logger=True, batch_size=self.config.batch_size)
@@ -231,13 +227,11 @@ def train(config: SmolVLM2Configuration | dict) -> None:
     dataset_location = resolve_dataset_path(config.dataset)
     if dataset_location is None:
         return
-    response_template = "### Assistant:"
-    data_collator = DataCollatorForCompletionOnlyLM(response_template=response_template,
-                                                     tokenizer=processor.tokenizer)
+            
     train_loader, valid_loader, test_loader = create_data_loaders(
         dataset_location=dataset_location,
         train_batch_size=config.batch_size,
-        train_collect_fn=data_collator,
+        train_collect_fn=partial(train_collate_fn, processor=processor),
         train_num_workers=config.num_workers,
         test_batch_size=config.val_batch_size,
         test_collect_fn=partial(evaluation_collate_fn, processor=processor),
