@@ -45,7 +45,7 @@ from maestro.trainer.models.florence_2.detection import (
     result_to_detections_formatter,
 )
 logger = get_maestro_logger()
-from transformers import DataCollatorForCompletionOnlyLM
+from trl import  DataCollatorForCompletionOnlyLM
 
 
 @dataclass()
@@ -232,11 +232,12 @@ def train(config: SmolVLM2Configuration | dict) -> None:
     if dataset_location is None:
         return
     response_template = "### Assistant:"
-    data_collator = DataCollatorForCompletionOnlyLM(response_template=response_template, tokenizer=tokenizer)
+    data_collator = DataCollatorForCompletionOnlyLM(response_template=response_template,
+                                                     tokenizer=processor.tokenizer)
     train_loader, valid_loader, test_loader = create_data_loaders(
         dataset_location=dataset_location,
         train_batch_size=config.batch_size,
-        train_collect_fn=partial(data_collator, processor=processor),
+        train_collect_fn=data_collator,
         train_num_workers=config.num_workers,
         test_batch_size=config.val_batch_size,
         test_collect_fn=partial(evaluation_collate_fn, processor=processor),
