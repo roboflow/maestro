@@ -35,6 +35,10 @@ def predict_with_inputs(
             max_new_tokens=max_new_tokens,
             do_sample=False,
         )
+        prefix_length = inputs['input_ids'].shape[-1]
+
+        generated_ids = generated_ids[:, prefix_length:]
+
     return processor.batch_decode(generated_ids, skip_special_tokens=True)
 
 def predict(
