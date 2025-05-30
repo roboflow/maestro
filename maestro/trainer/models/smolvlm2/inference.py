@@ -35,11 +35,11 @@ def predict_with_inputs(
             max_new_tokens=max_new_tokens,
             do_sample=False,
         )
-        prefix_length = inputs['input_ids'].shape[-1]
+        # Trim the generated ids to remove the input ids
+        generated_ids = [out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
 
-        generated_ids = generated_ids[:, prefix_length:]
 
-    return processor.batch_decode(generated_ids, skip_special_tokens=True)
+    return processor.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
 
 def predict(
     model: AutoModelForImageTextToText,
@@ -79,7 +79,6 @@ def predict(
             return_dict=True,
             return_tensors="pt",
         )#.to(model.device, dtype=torch.bfloat16)
-    #inputs = processor(text=text, images=image, return_tensors="pt", padding=True)
     return predict_with_inputs(
         inputs = inputs, model=model, processor=processor, device=device, max_new_tokens=max_new_tokens
     )[0]
