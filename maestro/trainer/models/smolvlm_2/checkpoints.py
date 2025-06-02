@@ -93,7 +93,7 @@ def load_model(
     device = parse_device_spec(device)
     processor = AutoProcessor.from_pretrained(
         model_id_or_path,
-        do_resize=True, size={"longest_edge": longest_edge},
+        do_resize=True, size={"longest_edge": longest_edge}, max_image_size = {"longest_edge": longest_edge},
         trust_remote_code=True,
         revision=revision
     )

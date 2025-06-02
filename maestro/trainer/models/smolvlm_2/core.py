@@ -2,7 +2,7 @@ import os
 from typing import Optional, Union
 
 import torch
-from transformers import AutoModelForVision2Seq, AutoProcessor, Trainer
+from transformers import AutoModelForVision2Seq, AutoProcessor
 
 import lightning
 import dacite
@@ -35,11 +35,7 @@ from maestro.trainer.common.metrics import (
     parse_metrics,
     save_metric_plots,
 )
-from maestro.trainer.models.florence_2.detection import (
-    detections_to_prefix_formatter,
-    detections_to_suffix_formatter,
-    result_to_detections_formatter,
-)
+
 logger = get_maestro_logger()
 
 
