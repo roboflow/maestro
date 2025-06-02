@@ -98,7 +98,7 @@ smolvlm_2 = [
     "torchvision>=0.20.0",
     "transformers>=4.49.0",
     "bitsandbytes>=0.45.0",
-    num2words
+    "num2words>=0.54.14"
 ]
 
 [project.scripts]
