@@ -131,7 +131,7 @@ def load_model(
             quantization_config=bnb_config,
             torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,
-            _attn_implementation="flash_attention_2",
+            #_attn_implementation="flash_attention_2",
         )
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
@@ -143,7 +143,7 @@ def load_model(
             device_map="auto",
             cache_dir=cache_dir,
             torch_dtype=torch.bfloat16,
-            _attn_implementation="flash_attention_2"
+            #_attn_implementation="flash_attention_2"
         ).to(device)
 
         if optimization_strategy == OptimizationStrategy.FREEZE:
