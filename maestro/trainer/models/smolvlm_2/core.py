@@ -1,12 +1,14 @@
 import os
-from typing import Optional, Union
-
-import torch
-from transformers import AutoModelForVision2Seq, AutoProcessor
-
-import lightning
-import dacite
+from dataclasses import dataclass, field, replace
 from functools import partial
+from typing import Literal, Optional
+
+import dacite
+import lightning
+import torch
+from torch.optim import AdamW
+from torch.utils.data import DataLoader
+from transformers import AutoModelForVision2Seq, AutoProcessor
 
 from maestro.trainer.common.callbacks import SaveCheckpoint
 from maestro.trainer.common.datasets.core import create_data_loaders, resolve_dataset_path
@@ -25,19 +27,8 @@ from maestro.trainer.models.smolvlm_2.checkpoints import (
 )
 from maestro.trainer.models.smolvlm_2.inference import predict_with_inputs
 from maestro.trainer.models.smolvlm_2.loaders import evaluation_collate_fn, train_collate_fn
-from typing import Literal, Optional
-from dataclasses import dataclass, field, replace
-from torch.utils.data import DataLoader
-from torch.optim import AdamW
-from maestro.trainer.common.metrics import (
-    BaseMetric,
-    MetricsTracker,
-    parse_metrics,
-    save_metric_plots,
-)
 
 logger = get_maestro_logger()
-
 
 
 @dataclass()
@@ -122,7 +113,6 @@ class SmolVLM2Trainer(MaestroTrainer):
         self.train_metrics_tracker.register("loss", epoch=self.current_epoch, step=batch_idx, value=loss.item())
         return loss
 
-
     def validation_step(self, batch, batch_idx):
         input_ids, attention_mask, pixel_values, pixel_attention_mask, images, prefixes, suffixes = batch
         generated_suffixes = predict_with_inputs(
@@ -131,7 +121,7 @@ class SmolVLM2Trainer(MaestroTrainer):
             input_ids=input_ids,
             attention_mask=attention_mask,
             pixel_values=pixel_values,
-            pixel_attention_mask=pixel_attention_mask
+            pixel_attention_mask=pixel_attention_mask,
         )
 
         if batch_idx == 0:
@@ -212,10 +202,3 @@ def train(config: SmolVLM2Configuration | dict) -> None:
         callbacks=[save_checkpoint_callback],
     )
     trainer.fit(pl_module)
-
-
-
-
-
-
-

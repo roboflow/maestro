@@ -108,4 +108,3 @@ def train(
     typer.echo(typer.style("Training configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))
     rich.print(dataclasses.asdict(config))
     smolvlm_2_train(config=config)
-

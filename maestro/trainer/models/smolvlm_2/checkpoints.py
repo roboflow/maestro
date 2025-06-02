@@ -1,33 +1,33 @@
 import os
-from typing import Optional
 from enum import Enum
+from typing import Optional
 
 import torch
-from transformers import AutoModelForImageTextToText, AutoProcessor
+from peft import LoraConfig, get_peft_model
+from transformers import AutoModelForImageTextToText, AutoProcessor, BitsAndBytesConfig
+
 from maestro.trainer.common.utils.device import parse_device_spec
 from maestro.trainer.logger import get_maestro_logger
-from peft import LoraConfig, get_peft_model
-from transformers import BitsAndBytesConfig
 
-DEFAULT_SMOLVLM_2_MODEL_ID = "HuggingFaceTB/SmolVLM-500M-Instruct"#"HuggingFaceTB/SmolVLM2-2.2B-Instruct"
+DEFAULT_SMOLVLM_2_MODEL_ID = "HuggingFaceTB/SmolVLM-500M-Instruct"  # "HuggingFaceTB/SmolVLM2-2.2B-Instruct"
 DEFAULT_SMOLVLM_2_MODEL_REVISION = "refs/heads/main"
 DEFAULT_SMOLVLM_2_LORA_PARAMS = {
     "r": 8,
     "lora_alpha": 8,
     "lora_dropout": 0.1,
     "bias": "none",
-    "target_modules": ['down_proj','o_proj','k_proj','q_proj','gate_proj','up_proj','v_proj'],
+    "target_modules": ["down_proj", "o_proj", "k_proj", "q_proj", "gate_proj", "up_proj", "v_proj"],
     "init_lora_weights": "gaussian",
-    "use_dora": True
+    "use_dora": True,
 }
 DEFAULT_SMOLVLM_2_QLORA_PARAMS = {
     "r": 8,
     "lora_alpha": 8,
     "lora_dropout": 0.1,
     "bias": "none",
-    "target_modules": ['down_proj','o_proj','k_proj','q_proj','gate_proj','up_proj','v_proj'],
+    "target_modules": ["down_proj", "o_proj", "k_proj", "q_proj", "gate_proj", "up_proj", "v_proj"],
     "init_lora_weights": "gaussian",
-    "use_dora": False
+    "use_dora": False,
 }
 logger = get_maestro_logger()
 
@@ -56,6 +56,7 @@ def save_checkpoint(
     if metadata is not None:
         torch.save(metadata, os.path.join(path, "metadata.pt"))
 
+
 def save_model(
     target_dir: str,
     processor: AutoProcessor,
@@ -74,6 +75,7 @@ def save_model(
     processor.save_pretrained(target_dir)
     model.save_pretrained(target_dir)
 
+
 class OptimizationStrategy(Enum):
     """Enumeration for optimization strategies."""
 
@@ -81,6 +83,8 @@ class OptimizationStrategy(Enum):
     QLORA = "qlora"
     FREEZE = "freeze"
     NONE = "none"
+
+
 def load_model(
     model_id_or_path: str = DEFAULT_SMOLVLM_2_MODEL_ID,
     revision: str = DEFAULT_SMOLVLM_2_MODEL_REVISION,
@@ -88,18 +92,19 @@ def load_model(
     optimization_strategy: OptimizationStrategy = OptimizationStrategy.NONE,
     peft_advanced_params: Optional[dict] = None,
     cache_dir: Optional[str] = None,
-    longest_edge: int = 512
+    longest_edge: int = 512,
 ) -> tuple[AutoProcessor, AutoModelForImageTextToText]:
     device = parse_device_spec(device)
     processor = AutoProcessor.from_pretrained(
-        model_id_or_path,
-        do_resize=True, size={"longest_edge": longest_edge},
-        trust_remote_code=True,
-        revision=revision
+        model_id_or_path, do_resize=True, size={"longest_edge": longest_edge}, trust_remote_code=True, revision=revision
     )
 
     if optimization_strategy in {OptimizationStrategy.LORA, OptimizationStrategy.QLORA}:
-        default_params = DEFAULT_SMOLVLM_2_QLORA_PARAMS if optimization_strategy == OptimizationStrategy.QLORA else DEFAULT_SMOLVLM_2_LORA_PARAMS
+        default_params = (
+            DEFAULT_SMOLVLM_2_QLORA_PARAMS
+            if optimization_strategy == OptimizationStrategy.QLORA
+            else DEFAULT_SMOLVLM_2_LORA_PARAMS
+        )
         if peft_advanced_params is not None:
             default_params.update(peft_advanced_params)
             try:
@@ -117,7 +122,7 @@ def load_model(
                 load_in_4bit=True,
                 bnb_4bit_use_double_quant=True,
                 bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=torch.bfloat16
+                bnb_4bit_compute_dtype=torch.bfloat16,
             )
             if optimization_strategy == OptimizationStrategy.QLORA
             else None
@@ -131,7 +136,7 @@ def load_model(
             quantization_config=bnb_config,
             torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,
-            #_attn_implementation="flash_attention_2",
+            # _attn_implementation="flash_attention_2",
         )
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
@@ -143,7 +148,7 @@ def load_model(
             device_map="auto",
             cache_dir=cache_dir,
             torch_dtype=torch.bfloat16,
-            #_attn_implementation="flash_attention_2"
+            # _attn_implementation="flash_attention_2"
         ).to(device)
 
         if optimization_strategy == OptimizationStrategy.FREEZE:

@@ -1,8 +1,9 @@
-from PIL import Image
-
 import torch
+from PIL import Image
 from transformers import AutoModelForImageTextToText, AutoProcessor
+
 from maestro.trainer.common.utils.device import parse_device_spec
+
 
 def predict_with_inputs(
     model: AutoModelForImageTextToText,
@@ -42,7 +43,7 @@ def predict(
             "content": [
                 {"type": "image", "image": image},
                 {"type": "text", "text": prefix},
-            ]
+            ],
         },
     ]
     inputs = processor.apply_chat_template(
@@ -52,6 +53,4 @@ def predict(
         return_dict=True,
         return_tensors="pt",
     ).to(device, dtype=torch.bfloat16)
-    return predict_with_inputs(
-        **inputs, model=model, processor=processor, max_new_tokens=max_new_tokens
-    )[0]
+    return predict_with_inputs(**inputs, model=model, processor=processor, max_new_tokens=max_new_tokens)[0]

@@ -1,8 +1,11 @@
 from typing import Any
-from maestro.trainer.common.utils.device import parse_device_spec
+
 import torch
 from PIL import Image
-from transformers import  AutoProcessor
+from transformers import AutoProcessor
+
+from maestro.trainer.common.utils.device import parse_device_spec
+
 
 def format_conversation(
     image: str | bytes | Image.Image, prefix: str, suffix: str | None = None, system_message: str | None = None
@@ -61,16 +64,19 @@ def train_collate_fn(
         for conversation in conversations
     ]
     user_conversations = [
-        format_conversation(image, entry["prefix"], system_message)
-        for image, entry in zip(images, data)
+        format_conversation(image, entry["prefix"], system_message) for image, entry in zip(images, data)
     ]
     user_texts = [
         processor.apply_chat_template(conversation=user_conversation, add_generation_prompt=False).strip()
         for user_conversation in user_conversations
     ]
-    images = [[image] for image in images]
-    model_inputs = processor(text=texts, images=images, return_tensors="pt", padding=True).to(device, dtype=torch.bfloat16)
-    user_model_inputs = processor(text=user_texts, images=images, return_tensors="pt", padding=True).to(device, dtype=torch.bfloat16)
+    image_lists = [[image] for image in images]
+    model_inputs = processor(text=texts, images=image_lists, return_tensors="pt", padding=True).to(
+        device, dtype=torch.bfloat16
+    )
+    user_model_inputs = processor(text=user_texts, images=image_lists, return_tensors="pt", padding=True).to(
+        device, dtype=torch.bfloat16
+    )
 
     labels = model_inputs["input_ids"].clone()
     input_ids = model_inputs["input_ids"]
@@ -97,19 +103,28 @@ def evaluation_collate_fn(
     prefixes = [entry["prefix"] for entry in data]
     suffixes = [entry["suffix"] for entry in data]
     user_conversations = [
-        format_conversation(image, entry["prefix"], system_message)
-        for image, entry in zip(images, data)
+        format_conversation(image, entry["prefix"], system_message) for image, entry in zip(images, data)
     ]
     user_texts = [
         processor.apply_chat_template(conversation=user_conversation, add_generation_prompt=False).strip()
         for user_conversation in user_conversations
     ]
-    images = [[image] for image in images]
-    user_model_inputs = processor(text=user_texts, images=images, return_tensors="pt", padding=True).to(device, dtype=torch.bfloat16)
+    image_lists = [[image] for image in images]
+    user_model_inputs = processor(text=user_texts, images=image_lists, return_tensors="pt", padding=True).to(
+        device, dtype=torch.bfloat16
+    )
 
     user_input_ids = user_model_inputs["input_ids"]
     user_attention_mask = user_model_inputs["attention_mask"]
     user_pixel_values = user_model_inputs["pixel_values"]
     user_pixel_attention_mask = user_model_inputs["pixel_attention_mask"]
 
-    return user_input_ids, user_attention_mask, user_pixel_values, user_pixel_attention_mask, images, prefixes, suffixes
+    return (
+        user_input_ids,
+        user_attention_mask,
+        user_pixel_values,
+        user_pixel_attention_mask,
+        image_lists,
+        prefixes,
+        suffixes,
+    )
