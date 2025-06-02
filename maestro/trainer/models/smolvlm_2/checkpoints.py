@@ -100,7 +100,7 @@ def load_model(
             "video_size": {
             "longest_edge": longest_edge
             }
-        }
+        },
         trust_remote_code=True,
         revision=revision
     )
