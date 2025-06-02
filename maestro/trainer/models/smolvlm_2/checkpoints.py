@@ -9,17 +9,26 @@ from maestro.trainer.logger import get_maestro_logger
 from peft import LoraConfig, get_peft_model
 from transformers import BitsAndBytesConfig
 
-DEFAULT_SMOLVLM2_MODEL_ID = "HuggingFaceTB/SmolVLM2-2.2B-Instruct"#"smol-ai/smolvlm2-500m"
-DEFAULT_SMOLVLM2_MODEL_REVISION = "refs/heads/main"
-DEFAULT_SMOLVLM2_PEFT_PARAMS = {
+DEFAULT_SMOLVLM_2_MODEL_ID = "HuggingFaceTB/SmolVLM-500M-Instruct"#"HuggingFaceTB/SmolVLM2-2.2B-Instruct"
+DEFAULT_SMOLVLM_2_MODEL_REVISION = "refs/heads/main"
+DEFAULT_SMOLVLM_2_LORA_PARAMS = {
     "r": 8,
-    "lora_alpha": 16,
-    "lora_dropout": 0.05,
+    "lora_alpha": 8,
+    "lora_dropout": 0.1,
     "bias": "none",
-    "target_modules": ["q_proj", "o_proj", "k_proj", "v_proj", "linear", "Conv2d", "lm_head", "fc2"],
-    "task_type": "CAUSAL_LM",
+    "target_modules": ['down_proj','o_proj','k_proj','q_proj','gate_proj','up_proj','v_proj'],
+    "init_lora_weights": "gaussian",
+    "use_dora": True
 }
-
+DEFAULT_SMOLVLM_2_QLORA_PARAMS = {
+    "r": 8,
+    "lora_alpha": 8,
+    "lora_dropout": 0.1,
+    "bias": "none",
+    "target_modules": ['down_proj','o_proj','k_proj','q_proj','gate_proj','up_proj','v_proj'],
+    "init_lora_weights": "gaussian",
+    "use_dora": False
+}
 logger = get_maestro_logger()
 
 
@@ -73,36 +82,24 @@ class OptimizationStrategy(Enum):
     FREEZE = "freeze"
     NONE = "none"
 def load_model(
-    model_id_or_path: str = DEFAULT_SMOLVLM2_MODEL_ID,
-    revision: str = DEFAULT_SMOLVLM2_MODEL_REVISION,
+    model_id_or_path: str = DEFAULT_SMOLVLM_2_MODEL_ID,
+    revision: str = DEFAULT_SMOLVLM_2_MODEL_REVISION,
     device: str | torch.device = "auto",
     optimization_strategy: OptimizationStrategy = OptimizationStrategy.NONE,
     peft_advanced_params: Optional[dict] = None,
     cache_dir: Optional[str] = None,
+    longest_edge: int = 512
 ) -> tuple[AutoProcessor, AutoModelForImageTextToText]:
-    """Loads a SmolVLM 2 model and its associated processor.
-
-    Args:
-        model_id_or_path (str): The identifier or path of the model to load.
-        revision (str): The specific model revision to use.
-        device (torch.device): The device to load the model onto.
-        optimization_strategy (OptimizationStrategy): The optimization strategy to apply to the model.
-        peft_advanced_params: custom lora configuration
-        cache_dir (Optional[str]): Directory to cache the downloaded model files.
-
-    Returns:
-        (SmolVLM2Processor, SmolVLM2ForConditionalGeneration):
-            A tuple containing the loaded processor and model.
-
-    Raises:
-        ValueError: If the model or processor cannot be loaded.
-    """
     device = parse_device_spec(device)
-    processor = AutoProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
+    processor = AutoProcessor.from_pretrained(
+        model_id_or_path,
+        do_resize=True, size={"longest_edge": longest_edge},
+        trust_remote_code=True,
+        revision=revision
+    )
 
-    # TODO: QLORA IS NOT WORKING, MAYBE THE SOLUTION IS CAST THE INPUTS TO blfloat16
     if optimization_strategy in {OptimizationStrategy.LORA, OptimizationStrategy.QLORA}:
-        default_params = DEFAULT_SMOLVLM2_PEFT_PARAMS
+        default_params = DEFAULT_SMOLVLM_2_QLORA_PARAMS if optimization_strategy == OptimizationStrategy.QLORA else DEFAULT_SMOLVLM_2_LORA_PARAMS
         if peft_advanced_params is not None:
             default_params.update(peft_advanced_params)
             try:
@@ -111,45 +108,46 @@ def load_model(
             except TypeError:
                 logger.exception("Invalid parameters for LoraConfig")
                 raise
-        
         else:
-            logger.info("No LoRA parameters provided. Using default configuration.")
+            logger.info("No additiopnal LoRA parameters provided. Using default configuration.")
             lora_config = LoraConfig(**default_params)
-        
-        bnb_config = (BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            #bnb_4bit_compute_dtype=torch.float16,
-            bnb_4bit_use_double_quant=True,
-        ) if optimization_strategy == OptimizationStrategy.QLORA
-            else None)
-        
+
+        bnb_config = (
+            BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.bfloat16
+            )
+            if optimization_strategy == OptimizationStrategy.QLORA
+            else None
+        )
+
         model = AutoModelForImageTextToText.from_pretrained(
-            model_id_or_path,
+            pretrained_model_name_or_path=model_id_or_path,
             revision=revision,
             trust_remote_code=True,
+            device_map="auto",
             quantization_config=bnb_config,
+            torch_dtype=torch.bfloat16,
             cache_dir=cache_dir,
-            #torch_dtype=torch.bfloat16, 
-        ).to(device)
+            _attn_implementation="flash_attention_2",
+        )
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
     else:
-
         model = AutoModelForImageTextToText.from_pretrained(
-            model_id_or_path,
+            pretrained_model_name_or_path=model_id_or_path,
             revision=revision,
             trust_remote_code=True,
-            cache_dir=cache_dir,).to(device)
+            device_map="auto",
+            cache_dir=cache_dir,
+            torch_dtype=torch.bfloat16,
+            _attn_implementation="flash_attention_2"
+        ).to(device)
 
         if optimization_strategy == OptimizationStrategy.FREEZE:
-            # Freeze vision encoder parameters
             for param in model.model.vision_model.parameters():
                 param.requires_grad = False
 
-            # TODO: check if there are more weights to freeze, like:
-            # for param in model.multi_modal_projector.parameters():
-            #     param.requires_grad = False
-
     return processor, model
-

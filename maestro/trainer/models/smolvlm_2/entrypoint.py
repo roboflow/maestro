@@ -6,16 +6,16 @@ import rich
 import typer
 
 from maestro.trainer.logger import get_maestro_logger
-from maestro.trainer.models.smolvlm2.checkpoints import DEFAULT_SMOLVLM2_MODEL_ID, DEFAULT_SMOLVLM2_MODEL_REVISION
-from maestro.trainer.models.smolvlm2.core import SmolVLM2Configuration
-from maestro.trainer.models.smolvlm2.core import train as smolvlm2_train
+from maestro.trainer.models.smolvlm_2.checkpoints import DEFAULT_SMOLVLM_2_MODEL_ID, DEFAULT_SMOLVLM_2_MODEL_REVISION
+from maestro.trainer.models.smolvlm_2.core import SmolVLM2Configuration
+from maestro.trainer.models.smolvlm_2.core import train as smolvlm_2_train
 
 logger = get_maestro_logger()
-smolvlm2_app = typer.Typer(help="Fine-tune and evaluate SmolVLM2 model")
+smolvlm_2_app = typer.Typer(help="Fine-tune and evaluate SmolVLM_2 model")
 
 
-@smolvlm2_app.command(
-    help="Train SmolVLM2 model",
+@smolvlm_2_app.command(
+    help="Train SmolVLM_2 model",
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
 )
 def train(
@@ -28,11 +28,11 @@ def train(
         ),
     ],
     model_id: Annotated[
-        str, typer.Option("--model_id", help="Identifier for the SmolVLM2 model")
-    ] = DEFAULT_SMOLVLM2_MODEL_ID,
+        str, typer.Option("--model_id", help="Identifier for the SmolVLM_2 model")
+    ] = DEFAULT_SMOLVLM_2_MODEL_ID,
     revision: Annotated[
         str, typer.Option("--revision", help="Model revision to use")
-    ] = DEFAULT_SMOLVLM2_MODEL_REVISION,
+    ] = DEFAULT_SMOLVLM_2_MODEL_REVISION,
     device: Annotated[str, typer.Option("--device", help="Device to use for training")] = "auto",
     optimization_strategy: Annotated[
         str, typer.Option("--optimization_strategy", help="Optimization strategy: lora, freeze, or none")
@@ -53,7 +53,7 @@ def train(
     ] = None,
     output_dir: Annotated[
         str, typer.Option("--output_dir", help="Directory to store training outputs")
-    ] = "./training/smolvlm2",
+    ] = "./training/smolvlm_2",
     metrics: Annotated[list[str], typer.Option("--metrics", help="List of metrics to track during training")] = [],
     max_new_tokens: Annotated[
         int,
@@ -107,5 +107,5 @@ def train(
     )
     typer.echo(typer.style("Training configuration", fg=typer.colors.BRIGHT_GREEN, bold=True))
     rich.print(dataclasses.asdict(config))
-    smolvlm2_train(config=config)
+    smolvlm_2_train(config=config)
 

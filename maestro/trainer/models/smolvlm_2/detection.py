@@ -7,13 +7,13 @@ import numpy as np
 def result_to_detections_formatter(
     text: str, resolution_wh: tuple[int, int], classes: Optional[list[str]] = None
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Converts SmolVLM2 text output into detection format.
+    """Converts SmolVLM_2 text output into detection format.
 
-    SmolVLM2 outputs text in a format like:
+    SmolVLM_2 outputs text in a format like:
     "a person standing in front of a car [x1, y1, x2, y2]"
 
     Args:
-        text: SmolVLM2 output text
+        text: SmolVLM_2 output text
         resolution_wh: Target image resolution (width, height)
         classes: Optional list of valid class names
 
@@ -61,7 +61,7 @@ def result_to_detections_formatter(
 def detections_to_text_formatter(
     xyxy: np.ndarray, class_id: np.ndarray, classes: list[str], resolution_wh: tuple[int, int]
 ) -> str:
-    """Converts detections to SmolVLM2 text format.
+    """Converts detections to SmolVLM_2 text format.
 
     Args:
         xyxy: Bounding boxes in xyxy format
@@ -70,7 +70,7 @@ def detections_to_text_formatter(
         resolution_wh: Image resolution (width, height)
 
     Returns:
-        Formatted text string for SmolVLM2
+        Formatted text string for SmolVLM_2
     """
     text_parts = []
 
@@ -90,7 +90,7 @@ def format_prompt_for_detection(
     classes: Optional[list[str]] = None,
     resolution_wh: Optional[tuple[int, int]] = None,
 ) -> str:
-    """Formats a prompt for object detection with SmolVLM2.
+    """Formats a prompt for object detection with SmolVLM_2.
 
     Args:
         prompt: Base prompt

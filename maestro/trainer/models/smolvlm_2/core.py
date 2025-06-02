@@ -16,15 +16,15 @@ from maestro.trainer.common.utils.device import device_is_available, parse_devic
 from maestro.trainer.common.utils.path import create_new_run_directory
 from maestro.trainer.common.utils.seed import ensure_reproducibility
 from maestro.trainer.logger import get_maestro_logger
-from maestro.trainer.models.smolvlm2.checkpoints import (
-    DEFAULT_SMOLVLM2_MODEL_ID,
-    DEFAULT_SMOLVLM2_MODEL_REVISION,
+from maestro.trainer.models.smolvlm_2.checkpoints import (
+    DEFAULT_SMOLVLM_2_MODEL_ID,
+    DEFAULT_SMOLVLM_2_MODEL_REVISION,
     OptimizationStrategy,
     load_model,
     save_model,
 )
-from maestro.trainer.models.smolvlm2.inference import predict_with_inputs
-from maestro.trainer.models.smolvlm2.loaders import evaluation_collate_fn, train_collate_fn
+from maestro.trainer.models.smolvlm_2.inference import predict_with_inputs
+from maestro.trainer.models.smolvlm_2.loaders import evaluation_collate_fn, train_collate_fn
 from typing import Literal, Optional
 from dataclasses import dataclass, field, replace
 from torch.utils.data import DataLoader
@@ -43,60 +43,17 @@ from maestro.trainer.models.florence_2.detection import (
 logger = get_maestro_logger()
 
 
+
 @dataclass()
 class SmolVLM2Configuration:
-    """
-    Configuration for training the SmolVLM2 model.
-
-    Attributes:
-        dataset (str):
-            Local path or Roboflow identifier. If not found locally, it will be resolved (and downloaded) automatically.
-        model_id (str):
-            Identifier for the PaliGemma2 model.
-        revision (str):
-            Model revision to use.
-        device (str | torch.device):
-            Device to run training on. Can be a ``torch.device`` or a string such as
-            "auto", "cpu", "cuda", or "mps". If "auto", the code will pick the best
-            available device.
-        optimization_strategy (Literal["lora", "qlora", "freeze", "none"]):
-            Strategy for optimizing the model parameters.
-        cache_dir (Optional[str]):
-            Directory to cache the model weights locally.
-        epochs (int):
-            Number of training epochs.
-        lr (float):
-            Learning rate for training.
-        batch_size (int):
-            Training batch size.
-        accumulate_grad_batches (int):
-            Number of batches to accumulate before performing a gradient update.
-        val_batch_size (Optional[int]):
-            Validation batch size. If None, defaults to the training batch size.
-        num_workers (int):
-            Number of workers for data loading.
-        val_num_workers (Optional[int]):
-            Number of workers for validation data loading. If None, defaults to num_workers.
-        output_dir (str):
-            Directory to store training outputs.
-        metrics (list[BaseMetric] | list[str]):
-            Metrics to track during training. Can be a list of metric objects or metric names.
-        max_new_tokens (int):
-            Maximum number of new tokens generated during inference.
-        random_seed (Optional[int]):
-            Random seed for ensuring reproducibility. If None, no seeding is applied.
-        peft_advanced_params (Optional[dict]):
-            Custom LoRA configuration . If None, default configuration is applied.
-    """
-
     dataset: str
-    model_id: str = DEFAULT_SMOLVLM2_MODEL_ID
-    revision: str = DEFAULT_SMOLVLM2_MODEL_REVISION
+    model_id: str = DEFAULT_SMOLVLM_2_MODEL_ID
+    revision: str = DEFAULT_SMOLVLM_2_MODEL_REVISION
     device: str | torch.device = "auto"
     optimization_strategy: Literal["lora", "qlora", "freeze", "none"] = "lora"
     cache_dir: Optional[str] = None
     epochs: int = 10
-    lr: float = 2e-5
+    lr: float = 1e-4
     batch_size: int = 4
     accumulate_grad_batches: int = 4
     val_batch_size: Optional[int] = None
@@ -104,7 +61,8 @@ class SmolVLM2Configuration:
     val_num_workers: Optional[int] = None
     output_dir: str = "./training/smol_vlm_2"
     metrics: list[BaseMetric] | list[str] = field(default_factory=list)
-    max_new_tokens: int = 512
+    system_message: Optional[str] = None
+    max_new_tokens: int = 64
     random_seed: Optional[int] = None
     peft_advanced_params: Optional[dict] = None
 
@@ -155,9 +113,12 @@ class SmolVLM2Trainer(MaestroTrainer):
         self.valid_metrics_tracker = MetricsTracker.init(metrics=metrics)
 
     def training_step(self, batch, batch_idx):
-        inputs, labels = batch
+        input_ids, attention_mask, pixel_values, pixel_attention_mask, labels = batch
         outputs = self.model(
-            **inputs,
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            pixel_values=pixel_values,
+            pixel_attention_mask=pixel_attention_mask,
             labels=labels,
         )
         loss = outputs.loss
@@ -165,14 +126,17 @@ class SmolVLM2Trainer(MaestroTrainer):
         self.train_metrics_tracker.register("loss", epoch=self.current_epoch, step=batch_idx, value=loss.item())
         return loss
 
-    def validation_step(self, batch, batch_idx):
-        inputs, prefixes, suffixes = batch
 
-        generated_suffixes = predict_with_inputs(self.model,
-                                            self.processor,
-                                            inputs,
-                                            device = self.config.device,
-                                            max_new_tokens=self.config.max_new_tokens )
+    def validation_step(self, batch, batch_idx):
+        input_ids, attention_mask, pixel_values, pixel_attention_mask, images, prefixes, suffixes = batch
+        generated_suffixes = predict_with_inputs(
+            model=self.model,
+            processor=self.processor,
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            pixel_values=pixel_values,
+            pixel_attention_mask=pixel_attention_mask
+        )
 
         if batch_idx == 0:
             logger.info(f"sample valid prefix: {prefixes[0]}")
