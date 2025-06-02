@@ -94,6 +94,13 @@ def load_model(
     processor = AutoProcessor.from_pretrained(
         model_id_or_path,
         do_resize=True, size={"longest_edge": longest_edge}, max_image_size = {"longest_edge": longest_edge},
+        video_sampling= {
+            "fps": 1,
+            "max_frames": 64,
+            "video_size": {
+            "longest_edge": longest_edge
+            }
+        }
         trust_remote_code=True,
         revision=revision
     )
