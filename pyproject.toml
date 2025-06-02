@@ -91,13 +91,14 @@ qwen_2_5_vl = [
     "bitsandbytes>=0.45.0",
     "qwen-vl-utils>=0.0.8"
 ]
-smolvlm2 = [
+smolvlm_2 = [
     "accelerate>=1.2.1",
     "peft>=0.12",
     "torch>=2.4.0",
     "torchvision>=0.20.0",
     "transformers>=4.49.0",
-    "bitsandbytes>=0.45.0"
+    "bitsandbytes>=0.45.0",
+    num2words
 ]
 
 [project.scripts]
