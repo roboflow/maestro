@@ -59,7 +59,7 @@ class SmolVLM2Configuration:
     val_batch_size: Optional[int] = None
     num_workers: int = 0
     val_num_workers: Optional[int] = None
-    output_dir: str = "./training/smol_vlm_2"
+    output_dir: str = "./training/smolvlm_2"
     metrics: list[BaseMetric] | list[str] = field(default_factory=list)
     system_message: Optional[str] = None
     max_new_tokens: int = 64
