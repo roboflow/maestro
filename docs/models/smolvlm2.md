@@ -11,7 +11,7 @@ Built to balance performance and efficiency, SmolVLM2 provides a valuable option
 ## Install
 
 ```bash
-pip install "maestro[smolvlm2]"
+pip install "maestro[smolvlm_2]"
 ```
 
 ## Train
@@ -23,77 +23,76 @@ The training routines support various optimization strategies such as LoRA, QLoR
 Kick off training from the command line by running the command below. Be sure to replace the dataset path and adjust the hyperparameters (such as epochs and batch size) to suit your needs.
 
 ```bash
-maestro smolvlm2 train \
+maestro smolvlm_2 train \
   --dataset "dataset/location" \
   --epochs 10 \
   --batch-size 4 \
-  --optimization_strategy "qlora" \
+  --accumulate_grad_batches 4 \
+  --optimization_strategy "lora" \
   --metrics "edit_distance"
 ```
 
+
+
 ### Python
-
-For more control, you can fine-tune SmolVLM2 using the Python API. Create a configuration dictionary with your training parameters and pass it to the train function to integrate the process into your custom workflow.
-
 ```python
-from maestro.trainer.models.smolvlm2.core import train
+from maestro.trainer.models.smovlm_2.core import train
 
 config = {
+    "model_id": "HuggingFaceTB/SmolVLM-500M-Instruct",
     "dataset": "dataset/location",
+    "lr": 2e-5,
     "epochs": 10,
     "batch_size": 4,
-    "optimization_strategy": "qlora",
+    "accumulate_grad_batches": 4,
+    "num_workers": 0,
+    "optimization_strategy": "lora",
     "metrics": ["edit_distance"],
+    "device": "cuda"
 }
 
-results = train(config)
+
+train(config)
 ```
 
-## Inference
 
-Use SmolVLM2 for inference on images using either the CLI or Python API.
+## Load
+
+Load a pre-trained or fine-tuned SmolVLM model along with its processor using the load_model function. Specify your model's path and the desired optimization strategy.
+
+```python
+from maestro.trainer.models.smolvlm_2.checkpoints import (
+    OptimizationStrategy, load_model
+)
+
+processor, model = load_model(
+    model_id_or_path="model/location",
+    optimization_strategy=OptimizationStrategy.NONE
+)
+```
+## Predict
+
+Perform inference with SmolVLM using the predict function. Supply an image and a text prefix to obtain predictions, such as object detection outputs or captions.
+
+```python
+from maestro.trainer.common.datasets.jsonl import JSONLDataset
+from maestro.trainer.models.smolvlm_2.inference import predict
+
+ds = JSONLDataset(
+    jsonl_file_path="dataset/location/test/annotations.jsonl",
+    image_directory_path="dataset/location/test",
+)
+
+image, entry = ds[0]
+
+predict(model=model, processor=processor, image=image, prefix=entry["prefix"])
+```
 
 ### CLI
 
 ```bash
-maestro smolvlm2 predict \
+maestro smolvlm_2 predict \
   --image "path/to/image.jpg" \
   --prompt "Describe this image"
 ```
 
-### Python
-
-```python
-from maestro.trainer.models.smolvlm2.entrypoint import SmolVLM2
-
-model = SmolVLM2()
-result = model.generate(
-    images="path/to/image.jpg",
-    prompt="Describe this image",
-    max_new_tokens=512
-)
-
-print(result["text"])
-```
-
-## Object Detection
-
-SmolVLM2 can perform object detection on images, identifying and localizing objects with bounding boxes.
-
-```python
-from maestro.trainer.models.smolvlm2.entrypoint import SmolVLM2
-from maestro.trainer.models.smolvlm2.detection import result_to_detections_formatter
-
-model = SmolVLM2()
-result = model.generate(
-    images="path/to/image.jpg",
-    prompt="Detect the following objects: person, car, dog"
-)
-
-# Convert text output to detections format
-boxes, class_ids = result_to_detections_formatter(
-    text=result["text"],
-    resolution_wh=(640, 480),
-    classes=["person", "car", "dog"]
-)
-```
