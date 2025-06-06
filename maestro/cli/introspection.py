@@ -31,7 +31,7 @@ def find_training_recipes(app: typer.Typer) -> None:
     try:
         from maestro.trainer.models.smolvlm2.entrypoint import smolvlm2_app
 
-        app.add_typer(smolvlm2_app, name="smolvlm2")
+        app.add_typer(smolvlm2_app, name="smolvlm_2")
     except Exception:
         _warn_about_recipe_import_error(model_name="SmolVLM2")
 
