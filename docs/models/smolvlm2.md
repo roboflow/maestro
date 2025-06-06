@@ -4,7 +4,7 @@ comments: true
 
 ## Overview
 
-SmolVLM2 is a lightweight vision-language model developed by Smol AI. It offers impressive capabilities for multimodal understanding while maintaining a compact size compared to larger VLMs. The model excels at tasks such as image captioning, visual question answering, and object detection, making it accessible for applications with limited computational resources.
+SmolVLM2 is a lightweight vision-language model developed by Hugging Face. It offers impressive capabilities for multimodal understanding while maintaining a compact size compared to larger VLMs. The model excels at tasks such as image captioning, visual question answering, and object detection, making it accessible for applications with limited computational resources.
 
 Built to balance performance and efficiency, SmolVLM2 provides a valuable option for developers seeking to implement vision-language capabilities without the overhead of larger models. The 500M parameter variant delivers practical results while being significantly more resource-friendly than multi-billion parameter alternatives.
 
@@ -36,7 +36,7 @@ maestro smolvlm_2 train \
 
 ### Python
 ```python
-from maestro.trainer.models.smovlm_2.core import train
+from maestro.trainer.models.smolvlm_2.core import train
 
 config = {
     "model_id": "HuggingFaceTB/SmolVLM-500M-Instruct",
