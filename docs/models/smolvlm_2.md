@@ -24,6 +24,7 @@ Kick off training from the command line by running the command below. Be sure to
 
 ```bash
 maestro smolvlm_2 train \
+  --model_id "HuggingFaceTB/SmolVLM-500M-Instruct" \
   --dataset "dataset/location" \
   --epochs 10 \
   --batch-size 4 \
