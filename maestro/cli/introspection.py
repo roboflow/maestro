@@ -29,7 +29,7 @@ def find_training_recipes(app: typer.Typer) -> None:
         _warn_about_recipe_import_error(model_name="Qwen2.5-VL")
 
     try:
-        from maestro.trainer.models.smolvlm2.entrypoint import smolvlm2_app
+        from maestro.trainer.models.smolvlm_2.entrypoint import smolvlm2_app
 
         app.add_typer(smolvlm2_app, name="smolvlm_2")
     except Exception:
