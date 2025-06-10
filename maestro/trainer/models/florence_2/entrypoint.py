@@ -35,7 +35,7 @@ def train(
     ] = DEFAULT_FLORENCE2_MODEL_REVISION,
     device: Annotated[str, typer.Option("--device", help="Device to use for training")] = "auto",
     optimization_strategy: Annotated[
-        str, typer.Option("--optimization_strategy", help="Optimization strategy: lora, freeze, or none")
+        str, typer.Option("--optimization_strategy", help="Optimization strategy: lora, qlora, freeze, or none")
     ] = "lora",
     cache_dir: Annotated[
         Optional[str], typer.Option("--cache_dir", help="Directory to cache the model weights locally")
