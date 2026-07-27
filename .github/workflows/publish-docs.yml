@@ -43,7 +43,7 @@ jobs:
 
       - name: 🔑 Create GitHub App token (mkdocs)
         id: mkdocs_token
-        uses: actions/create-github-app-token@c1a285145b9d317df6ced56c09f525b5c2b6f755 # v1.11.1
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           app-id: ${{ secrets.MKDOCS_APP_ID }}
           private-key: ${{ secrets.MKDOCS_PEM }}
