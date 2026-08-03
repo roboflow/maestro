@@ -92,7 +92,7 @@ class Florence2Configuration:
     model_id: str = DEFAULT_FLORENCE2_MODEL_ID
     revision: str = DEFAULT_FLORENCE2_MODEL_REVISION
     device: str | torch.device = "auto"
-    optimization_strategy: Literal["lora", "freeze", "none"] = "lora"
+    optimization_strategy: Literal["lora", "qlora", "freeze", "none"] = "lora"
     cache_dir: Optional[str] = None
     epochs: int = 10
     lr: float = 1e-5

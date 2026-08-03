@@ -4,7 +4,7 @@ from typing import Optional
 
 import torch
 from peft import LoraConfig, get_peft_model
-from transformers import AutoModelForCausalLM, AutoProcessor
+from transformers import AutoModelForCausalLM, AutoProcessor, BitsAndBytesConfig
 
 from maestro.trainer.common.utils.device import parse_device_spec
 from maestro.trainer.logger import get_maestro_logger
@@ -26,6 +26,7 @@ class OptimizationStrategy(Enum):
     """Enumeration for optimization strategies."""
 
     LORA = "lora"
+    QLORA = "qlora"
     FREEZE = "freeze"
     NONE = "none"
 
@@ -58,7 +59,7 @@ def load_model(
     device = parse_device_spec(device)
     processor = AutoProcessor.from_pretrained(model_id_or_path, trust_remote_code=True, revision=revision)
 
-    if optimization_strategy == OptimizationStrategy.LORA:
+    if optimization_strategy in (OptimizationStrategy.LORA, OptimizationStrategy.QLORA):
         default_params = DEFAULT_FLORENCE2_PEFT_PARAMS
         if peft_advanced_params is not None:
             default_params.update(peft_advanced_params)
@@ -71,13 +72,30 @@ def load_model(
         else:
             logger.info("No LoRA parameters provided. Using default configuration.")
             config = LoraConfig(**default_params)
+
+        bnb_config = None
+        if optimization_strategy == OptimizationStrategy.QLORA:
+            bnb_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.bfloat16,
+            )
+            logger.info("Using 4-bit quantization")
+
         model = AutoModelForCausalLM.from_pretrained(
             model_id_or_path,
             revision=revision,
             trust_remote_code=True,
             cache_dir=cache_dir,
+            quantization_config=bnb_config,
+            device_map="auto" if optimization_strategy == OptimizationStrategy.QLORA else None,
         )
         model = get_peft_model(model, config).to(device)
+
+        if optimization_strategy == OptimizationStrategy.QLORA:
+            model = model.to(device)
+
         model.print_trainable_parameters()
     else:
         model = AutoModelForCausalLM.from_pretrained(
