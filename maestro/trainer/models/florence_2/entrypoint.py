@@ -74,6 +74,7 @@ def train(
             raise TypeError("Parsed JSON is not a dictionary")
         return parsed_params
 
+    peft_advanced_params_dict = None
     if peft_advanced_params is not None:
         try:
             peft_advanced_params_dict = parse_lora_params(peft_advanced_params)
